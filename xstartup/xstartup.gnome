@@ -1,0 +1,31 @@
+#!/bin/sh
+
+# VNC Server (Virtual-Mode) start-up script compatible with Ubuntu 12.04
+unset SESSION_MANAGER
+unset XDG_RUNTIME_DIR
+unset DBUS_SESSION_BUS_ADDRESS
+
+# Fix to make GNOME work
+export XKL_XMODMAP_DISABLE=1
+export XLIB_SKIP_ARGB_VISUALS=1
+export NO_KDE=1
+
+# Default case
+if [ -n "${NO_KDE}" ]
+then
+    [ -r $HOME/.Xresources ] && xrdb -merge $HOME/.Xresources
+    xsetroot -solid black &
+    dbus-launch --exit-with-session fvwm2 &
+else
+    dbus-launch --exit-with-session startkde &
+fi
+
+[ -r $HOME/.Xresources ] && xrdb -merge $HOME/.Xresources
+xsetroot -solid black &
+
+# Gnome
+# gnome-panel &
+# gnome-settings-daemon &
+# metacity &
+# nautilus &
+# gnome-terminal &
