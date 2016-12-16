@@ -24,9 +24,6 @@ alias git='/usr/bin/git'
 # Enable 256 colors
 export TERM=xterm-256color
 
-# Sublime Text settings
-export PATH=/opt/sublime_text:$PATH
-
 # Set up general GTAGS location
 export GTAGSLIBPATH=$HOME/.gtags/
 
@@ -92,3 +89,9 @@ $White "
 
 cd $HOME
 
+# The following settings are interpreted by EMACS, do not remove them.
+# Local Variables:
+# mode: shell-script
+# fill-column: 80
+# coding: utf-8
+# End:

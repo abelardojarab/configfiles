@@ -1,5 +1,3 @@
-# -*- Mode: muttrc -*-
-
 # Basic Options
 set abort_nosubject = ask-yes
 set abort_unmodified = yes
@@ -72,13 +70,13 @@ set quote_regexp = "^( {0,4}[>|:#%]| {0,4}[a-z0-9]+[>|]+)+"
 alternative_order text/plain text/enriched text/html
 auto_view text/html text/Html
 
-# Compose View 
+# Compose View
 set realname = "Abelardo Jara-Berrocal"
 set envelope_from
 set sig_dashes
 set edit_headers
 set fast_reply
-set askcc 
+set askcc
 set fcc_attach
 unset mime_forward
 set forward_format = "Fwd: %s"
@@ -89,7 +87,7 @@ set reverse_name
 set include
 set forward_quote
 
-# Key Bindings 
+# Key Bindings
 bind index <tab>    sync-mailbox
 bind compose p postpone-message
 bind index p recall-message
@@ -101,3 +99,9 @@ macro pager \Cu "|urlview<enter>" "call urlview to open links"
 # Email Search
 macro index / "<enter-command>unset wait_key<enter><shell-escape>mutt-notmuch-py ~/.mail/temporary/search<enter><change-folder-readonly>+temporary/search<enter>" "search mail (using notmuch)"
 
+# The following settings are interpreted by EMACS, do not remove them.
+# Local Variables:
+# mode: shell-script
+# fill-column: 80
+# coding: utf-8
+# End:
