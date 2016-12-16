@@ -1,0 +1,24 @@
+# The vncserver service unit file
+#
+# Quick HowTo:
+# 1. Copy this file to /etc/systemd/system/vncserver@:<display>.service
+# 2. Edit <USER> and vncserver parameters appropriately
+#   ("runuser -l <USER> -c /usr/bin/vncserver %i -arg1 -arg2")
+# 3. Run `systemctl daemon-reload`
+# 4. Run `systemctl enable vncserver@:<display>.service`
+#
+
+[Unit]
+Description=Remote desktop service (VNC)
+After=syslog.target network.target
+
+[Service]
+Type=forking
+# Clean any existing files in /tmp/.X11-unix environment
+ExecStartPre=/bin/sh -c '/usr/bin/vncserver -kill %i > /dev/null 2>&1 || :'
+ExecStart=/bin/su abelardojara -c "/usr/bin/vncserver -SecurityTypes=VncAuth -auth /home/abelardojara/.Xauthority -depth 24 -geometry 2048x1152 %i" 
+PIDFile=/home/abelardojara/.vnc/%H%i.pid
+ExecStop=/bin/sh -c '/usr/bin/vncserver -kill %i > /dev/null 2>&1 || :'
+
+[Install]
+WantedBy=multi-user.target
