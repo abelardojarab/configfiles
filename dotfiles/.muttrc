@@ -1,18 +1,29 @@
 # Basic Options
+set realname = "Abelardo Jara-Berrocal"
+set from = "abelardotomasjb@gmail.com"
+set use_from = yes
+set envelope_from = yes
+
+# Configuration options
+set charset = "utf-8"
 set abort_nosubject = ask-yes
 set abort_unmodified = yes
+set delete = ask-yes     # ask
 set wait_key = no        # shut up, mutt
 set mbox_type = Maildir  # mailbox type
 set timeout = 3          # idle time before scanning
 set mail_check = 0       # minimum time between scans
 unset move               # gmail does that
-set delete = ask-yes     # ask
 unset confirmappend      # don't ask, just do!
-set quit                 # don't ask, just do!!
 unset mark_old           # read/new is good enough for me
+unset record
+set move = no            # gmail does that
+set quit                 # don't ask, just do!!
 set beep_new             # bell on new mails
 set pipe_decode          # strip headers and eval mimes when piping
 set thorough_search      # strip headers and eval mimes before searching
+
+# Emacs as external editor for mutt
 set editor = vim
 
 # Security stuff
@@ -23,9 +34,15 @@ set pgp_show_unusable = no
 set pgp_use_gpg_agent = yes
 
 # Certificates
-set certificate_file=~/.mutt_certs
-set folder="imaps://ajaraber@imapmail.intel.com"
-set spoolfile="imaps://ajaraber@imapmail.intel.com"
+set certificate_file=~/.mutt/certificates
+
+# SMTP and IMAP setup
+set smtp_url = "smtps://abelardotomasjb@gmail.com@smtp.gmail.com:465/"
+set imap_user = "abelardotomasjb@gmail.com"
+set folder = "imaps://imap.gmail.com:993"
+set spoolfile = "+INBOX"
+set postponed = "imaps://imap.gmail.com/[Gmail]/Drafts"
+set imap_keepalive = 900
 
 # Paths
 set signature  = ~/.mutt/sig    # my signature file
@@ -71,8 +88,6 @@ alternative_order text/plain text/enriched text/html
 auto_view text/html text/Html
 
 # Compose View
-set realname = "Abelardo Jara-Berrocal"
-set envelope_from
 set sig_dashes
 set edit_headers
 set fast_reply
@@ -88,8 +103,9 @@ set include
 set forward_quote
 
 # Key Bindings
-bind index <tab>    sync-mailbox
 bind compose p postpone-message
+bind index G imap-fetch-mail
+bind index <tab> sync-mailbox
 bind index p recall-message
 macro index O "<shell-escape>offlineimap<enter>" "run offline imap to sync all mail"
 macro index C "<copy-message>?<toggle-mailboxes>" "copy a message to a mailbox"
