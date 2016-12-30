@@ -5,9 +5,6 @@ User abelardotomasjb@gmail.com
 Port 993
 # Pass ************
 UseIMAPS yes
-# SSLType IMAPS
-# RequireSSL yes
-AuthMechs LOGIN
 CertificateFile /etc/ssl/certs/ca-certificates.crt
 
 # Define the remote storage (use the IMAP account specified above)
@@ -18,7 +15,7 @@ Account gmail
 MaildirStore gmail-local
 Path ~/.mbsync/
 Inbox ~/.mbsync/INBOX
-SubFolders Verbatim
+# SubFolders Verbatim
 
 # Connection between remote and local folders
 Channel gmail-inbox
@@ -31,28 +28,28 @@ SyncState *
 
 Channel gmail-trash
 Master :gmail-remote:"[Gmail]/Bin"
-Slave :gmail-local:"[Gmail]/Bin"
+Slave :gmail-local:"[Gmail].Bin"
 Create Both
 Expunge Both
 SyncState *
 
 Channel gmail-sent
 Master :gmail-remote:"[Gmail]/Sent Mail"
-Slave :gmail-local:"[Gmail]/Sent Mail"
+Slave :gmail-local:"[Gmail].Sent Mail"
 Create Both
 Expunge Both
 SyncState *
 
 Channel gmail-all
 Master :gmail-remote:"[Gmail]/All Mail"
-Slave :gmail-local:"[Gmail]/All Mail"
+Slave :gmail-local:"[Gmail].All Mail"
 Create Both
 Expunge Both
 SyncState *
 
 Channel gmail-starred
 Master :gmail-remote:"[Gmail]/Starred"
-Slave :gmail-local:"[Gmail]/Starred"
+Slave :gmail-local:"[Gmail].Starred"
 Create Both
 Expunge Both
 SyncState *
@@ -63,8 +60,8 @@ Group gmail
 Channel gmail-inbox
 Channel gmail-sent
 Channel gmail-trash
-Channel gmail-all
 Channel gmail-starred
+Channel gmail-all
 
 # The following settings are interpreted by EMACS, do not remove them.
 # Local Variables:
