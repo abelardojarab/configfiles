@@ -121,7 +121,15 @@ bind index p recall-message
 
 # Use mu for searching
 
-# looking up addresses with mu cfind
+# first macro does the search according to user query, second macro jumps to result list
+macro index ,f "<enter-command>unset wait_key<enter><shell-escape>read -p'mu query: ' x; mu find --clearlinks --linksdir ~/.mu/results --format links \$x<enter><change-folder-readonly>~/.mu/results\n" "mu find"
+macro index ,,f "<change-folder-readonly>~/.mu/results\n" "display mu-find results"   
+macro index ,,,f  "<change-folder> =INBOX"<enter>
+
+macro index s "<enter-command>unset wait_key<enter><shell-escape>read -p'mu query: ' x; mu find --clearlinks --linksdir ~/.mu/results --format links \$x<enter><change-folder-readonly>~/.mu/results\n" "mu find"
+macro index <home>  "<change-folder> =INBOX"<enter>
+
+# Looking up addresses with mu cfind (press 'Q' inside mutt for querying them)
 set query_command = "mu cfind --format=mutt-ab  '%s'"
 
 # The following settings are interpreted by EMACS, do not remove them.
