@@ -1,27 +1,32 @@
 # Basic Options
 set realname = "Abelardo Jara-Berrocal"
 set from = "abelardotomasjb@gmail.com"
-set use_from = yes
+set use_from = yes       # answer from the address we got the mail to
 set envelope_from = yes
 
 # Configuration options
 set charset = "utf-8"
 set abort_nosubject = ask-yes
 set abort_unmodified = yes
-set delete = ask-yes     # ask
-set wait_key = no        # shut up, mutt
-set mbox_type = Maildir  # mailbox type
-set timeout = 3          # idle time before scanning
-set mail_check = 0       # minimum time between scans
-unset move               # gmail does that
-unset confirmappend      # don't ask, just do!
-unset mark_old           # read/new is good enough for me
+set delete = ask-yes        # ask
+set wait_key = no           # shut up, mutt
+set mbox_type = Maildir     # mailbox type
+set timeout = 3             # idle time before scanning
+set mail_check = 0          # minimum time between scans
+unset move                  # gmail does that
+unset confirmappend         # don't ask, just do!
+unset mark_old              # read/new is good enough for me
 unset record
-set move = no            # gmail does that
-set quit                 # don't ask, just do!!
-set beep_new             # bell on new mails
-set pipe_decode          # strip headers and eval mimes when piping
-set thorough_search      # strip headers and eval mimes before searching
+set copy                    # keep a copy of sent messages
+set move = no               # gmail does that
+set quit                    # don't ask, just do!!
+set beep_new                # bell on new mails
+set pipe_decode             # strip headers and eval mimes when piping
+set thorough_search         # strip headers and eval mimes before searching
+set mime_forward
+set mime_forward_rest = yes # forward attachements with mails
+set text_flowed = yes
+set smart_wrap
 
 # Emacs as external editor for mutt
 set editor = vim
@@ -32,20 +37,27 @@ set ssl_force_tls = yes
 set pgp_replyencrypt
 set pgp_show_unusable = no
 set pgp_use_gpg_agent = yes
+set pgp_auto_decode = yes
 
 # Certificates
 set certificate_file=~/.mutt/certificates
 
 # SMTP and IMAP setup
-set smtp_url = "smtps://abelardotomasjb@gmail.com@smtp.gmail.com:465/"
-set imap_user = "abelardotomasjb@gmail.com"
-set folder = "imaps://imap.gmail.com:993"
+# set smtp_url = "smtps://abelardotomasjb@gmail.com@smtp.gmail.com:465/"
+# set imap_user = "abelardotomasjb@gmail.com"
+# set spoolfile = "+INBOX"
+# set folder = "imaps://imap.gmail.com:993"
+# set postponed = "imaps://imap.gmail.com/[Gmail]/Drafts"
+# set imap_keepalive = 900
+
+# postfix and mbsync setup (alternative)
+set mbox_type=Maildir
+set folder=~/.mbsync
 set spoolfile = "+INBOX"
-set postponed = "imaps://imap.gmail.com/[Gmail]/Drafts"
-set imap_keepalive = 900
+set sendmail_wait = -1
 
 # Paths
-set signature  = ~/.mutt/sig    # my signature file
+set signature  = ~/.mutt/signature # signature file
 
 # Caches
 set header_cache     = ~/.mutt/.cache/headercache
@@ -68,7 +80,7 @@ hdr_order from: to: cc: date: subject:  # and in this order
 
 # Index View
 set date_format = "%d/%m/%Y"
-set index_format="%4C %Z %X %[%b %d %H:%M] %-22.22L - %s"
+set index_format = "%4C %Z %X %[%b %d %H:%M] %-22.22L - %s"
 set sort = threads
 set sort_aux = last-date-received
 set sort_browser = reverse-date
@@ -93,7 +105,6 @@ set edit_headers
 set fast_reply
 set askcc
 set fcc_attach
-unset mime_forward
 set forward_format = "Fwd: %s"
 set forward_decode
 set attribution = "On %d, %n wrote:"
@@ -107,13 +118,6 @@ bind compose p postpone-message
 bind index G imap-fetch-mail
 bind index <tab> sync-mailbox
 bind index p recall-message
-macro index O "<shell-escape>offlineimap<enter>" "run offline imap to sync all mail"
-macro index C "<copy-message>?<toggle-mailboxes>" "copy a message to a mailbox"
-macro index M "<save-message>?<toggle-mailboxes>" "move a message to a mailbox"
-macro pager \Cu "|urlview<enter>" "call urlview to open links"
-
-# Email Search
-macro index / "<enter-command>unset wait_key<enter><shell-escape>mutt-notmuch-py ~/.mail/temporary/search<enter><change-folder-readonly>+temporary/search<enter>" "search mail (using notmuch)"
 
 # The following settings are interpreted by EMACS, do not remove them.
 # Local Variables:
