@@ -61,7 +61,7 @@ Channel gmail-inbox
 Channel gmail-sent
 Channel gmail-trash
 Channel gmail-starred
-Channel gmail-all
+# Channel gmail-all
 
 # The following settings are interpreted by EMACS, do not remove them.
 # Local Variables:
