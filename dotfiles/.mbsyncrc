@@ -3,7 +3,7 @@ IMAPAccount gmail
 Host imap.gmail.com
 User abelardotomasjb@gmail.com
 Port 993
-PassCmd "imap-pass -g abelardotomasjb@gmail.com"
+PassCmd "imap-pass.py -g abelardotomasjb@gmail.com"
 UseIMAPS yes
 CertificateFile /etc/ssl/certs/ca-certificates.crt
 
