@@ -1,7 +1,7 @@
 # Basic Options
 set realname = "Abelardo Jara-Berrocal"
-set from = "abelardotomasjb@gmail.com"
-set use_from = yes       # answer from the address we got the mail to
+set from = "abelardojarab@icloud.com"
+set use_from = yes          # answer from the address we got the mail to
 set envelope_from = yes
 
 # Configuration options
