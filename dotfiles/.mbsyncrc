@@ -1,15 +1,14 @@
-# mbsyncrc based on
-# http://www.ict4g.net/adolfo/notes/2014/12/27/EmacsIMAP.html
-# ACCOUNT INFORMATION
+# Account information
 IMAPAccount gmail
-# Address to connect to
 Host imap.gmail.com
 User abelardotomasjb@gmail.com
+Port 993
 # Pass ************
 UseIMAPS yes
+# SSLType IMAPS
+# RequireSSL yes
 AuthMechs LOGIN
 CertificateFile /etc/ssl/certs/ca-certificates.crt
-
 
 # Define the remote storage (use the IMAP account specified above)
 IMAPStore gmail-remote
@@ -19,16 +18,9 @@ Account gmail
 MaildirStore gmail-local
 Path ~/.mbsync/
 Inbox ~/.mbsync/INBOX
+SubFolders Verbatim
 
-# CONNECTIONS SPECIFY LINKS BETWEEN REMOTE AND LOCAL FOLDERS
-#
-# CONNECTIONS ARE SPECIFIED USING PATTERNS, WHICH MATCH REMOTE MAIl
-# FOLDERS. SOME COMMONLY USED PATTERS INCLUDE:
-#
-# 1 "*" TO MATCH EVERYTHING
-# 2 "!DIR" TO EXCLUDE "DIR"
-# 3 "DIR" TO MATCH DIR
-
+# Connection between remote and local folders
 Channel gmail-inbox
 Master :gmail-remote:
 Slave :gmail-local:
@@ -38,39 +30,35 @@ Expunge Both
 SyncState *
 
 Channel gmail-trash
-Master :gmail-remote:"[Google Mail]/Bin"
-Slave :gmail-local:"[Google Mail]/Bin"
+Master :gmail-remote:"[Gmail]/Bin"
+Slave :gmail-local:"[Gmail]/Bin"
 Create Both
 Expunge Both
 SyncState *
 
 Channel gmail-sent
-Master :gmail-remote:"[Google Mail]/Sent Mail"
-Slave :gmail-local:"[Google Mail]/Sent Mail"
+Master :gmail-remote:"[Gmail]/Sent Mail"
+Slave :gmail-local:"[Gmail]/Sent Mail"
 Create Both
 Expunge Both
 SyncState *
 
 Channel gmail-all
-Master :gmail-remote:"[Google Mail]/All Mail"
-Slave :gmail-local:"[Google Mail]/All Mail"
+Master :gmail-remote:"[Gmail]/All Mail"
+Slave :gmail-local:"[Gmail]/All Mail"
 Create Both
 Expunge Both
 SyncState *
 
 Channel gmail-starred
-Master :gmail-remote:"[Google Mail]/Starred"
-Slave :gmail-local:"[Google Mail]/Starred"
+Master :gmail-remote:"[Gmail]/Starred"
+Slave :gmail-local:"[Gmail]/Starred"
 Create Both
 Expunge Both
 SyncState *
 
-# GROUPS PUT TOGETHER CHANNELS, SO THAT WE CAN INVOKE
-# MBSYNC ON A GROUP TO SYNC ALL CHANNELS
-#
-# FOR INSTANCE: "mbsync gmail" GETS MAIL FROM
-# "gmail-inbox", "gmail-sent", and "gmail-trash"
-#
+# Group channels together, so we can sync them
+# Use: "mbsync gmail"
 Group gmail
 Channel gmail-inbox
 Channel gmail-sent
