@@ -15,17 +15,16 @@ if [ -n "${NO_KDE}" ]
 then
     [ -r $HOME/.Xresources ] && xrdb -merge $HOME/.Xresources
     xsetroot -solid black &
-    dbus-launch --exit-with-session fvwm2 &
+    eval `dbus-launch --exit-with-session fvwm2` &
 else
-    dbus-launch --exit-with-session startkde &
+    eval `dbus-launch --exit-with-session startkde` &
 fi
 
+eval `gnome-settings-daemon` &
+
+sleep 1
+xrdb -all -remove
+xrdb -load $HOME/.Xresources
 [ -r $HOME/.Xresources ] && xrdb -merge $HOME/.Xresources
 xsetroot -solid black &
 
-# Gnome
-# gnome-panel &
-# gnome-settings-daemon &
-# metacity &
-# nautilus &
-# gnome-terminal &
