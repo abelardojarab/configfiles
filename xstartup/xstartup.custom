@@ -22,9 +22,6 @@ fi
 
 eval `gnome-settings-daemon` &
 
-sleep 1
-xrdb -all -remove
-xrdb -load $HOME/.Xresources
 [ -r $HOME/.Xresources ] && xrdb -merge $HOME/.Xresources
 xsetroot -solid black &
 
