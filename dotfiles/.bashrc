@@ -63,6 +63,10 @@ fi
 # Custom installs directory
 SW=$HOME/sw
 
+# Editor setup
+export VISUAL=vim
+export EDITOR="$VISUAL"
+
 # Emacs settings
 export EMACS_SERVER_FILE=$HOME/.emacs.cache/server/server
 
@@ -179,7 +183,6 @@ fi
 docker-ip() {
   boot2docker ip 2> /dev/null
 }
-
 
 # set a fancy prompt (non-color, unless we know we "want" color)
 case "$TERM" in
