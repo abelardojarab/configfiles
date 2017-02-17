@@ -20,54 +20,8 @@ HISTFILESIZE=2000
 # update the values of LINES and COLUMNS.
 shopt -s checkwinsize
 
-# If set, the pattern "**" used in a pathname expansion context will
-# match all files and zero or more directories and subdirectories.
-#shopt -s globstar
-
 # make less more friendly for non-text input files, see lesspipe(1)
 [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
-
-# set variable identifying the chroot you work in (used in the prompt below)
-if [ -z "$debian_chroot" ] && [ -r /etc/debian_chroot ]; then
-    debian_chroot=$(cat /etc/debian_chroot)
-fi
-
-# set a fancy prompt (non-color, unless we know we "want" color)
-case "$TERM" in
-    xterm-color) color_prompt=yes;;
-esac
-
-# uncomment for a colored prompt, if the terminal has the capability; turned
-# off by default to not distract the user: the focus in a terminal window
-# should be on the output of commands, not on the prompt
-#force_color_prompt=yes
-
-if [ -n "$force_color_prompt" ]; then
-    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
-        # We have color support; assume it's compliant with Ecma-48
-        # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
-        # a case would tend to support setf rather than setaf.)
-        color_prompt=yes
-    else
-        color_prompt=
-    fi
-fi
-
-if [ "$color_prompt" = yes ]; then
-    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
-else
-    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
-fi
-unset color_prompt force_color_prompt
-
-# If this is an xterm set the title to user@host:dir
-case "$TERM" in
-    xterm*|rxvt*)
-        PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
-        ;;
-    *)
-        ;;
-esac
 
 # enable color support of ls and also add handy aliases
 if [ -x /usr/bin/dircolors ]; then
@@ -106,22 +60,29 @@ if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
     . /etc/bash_completion
 fi
 
-# General settings
+# Custom installs directory
+SW=$HOME/sw
+
+# Emacs settings
 export EMACS_SERVER_FILE=$HOME/.emacs.cache/server/server
-export PYTHONPATH=~/workspace/pythonlibs/lib/python2.7/site-packages
-export PYTHONPATH=${PYTHONPATH}:/opt/oaScript/python2
+
+# Flexlm settings
 export LM_LICENSE_FILE=$HOME/flexlm/license.dat
-export _JAVA_OPTIONS=" -Dswing.defaultlaf=com.sun.java.swing.plaf.gtk.GTKLookAndFeel -Djava.net.preferIPv4Stack=true -Dawt.useSystemAAFontSettings=on -Dswing.aatext=true -Xms512m -Xmx1024m"
 export theHost=`hostname`
 alias lmlicense='/opt/cadence/installs/IC616/tools.lnx86/bin/lmgrd -c'
-
-# OpenAccess
-export OA_UNSUPPORTED_PLAT=linux_rhel50_gcc44x
-export OA_HOME=/opt/cadence/installs/IC616/oa_v22.43.018
 
 # Python settings
 export PYTHONPATH=~/workspace/pythonlibs/lib/python2.7/site-packages
 export PYTHONPATH=${PYTHONPATH}:/opt/oaScript/python2
+
+# Java options
+export JAVA_HOME=/usr/lib/jvm/java-9-oracle
+export _JAVA_OPTIONS=" -Dswing.defaultlaf=com.sun.java.swing.plaf.gtk.GTKLookAndFeel -Djava.net.preferIPv4Stack=true -Djava.awt.headless=true -Dawt.useSystemAAFontSettings=on -Dswing.aatext=true -Xms512m -Xmx1024m"
+export MAVEN_OPTS=" -Xmx1024m -Xms256m -XX:MaxPermSize=256m -Dmaven.artifact.threads=5 -Duser.language=en -Duser.country=US -Duser.timezone=PST -Dhttps.protocols=TLSv1"
+
+# OpenAccess
+export OA_UNSUPPORTED_PLAT=linux_rhel50_gcc44x
+export OA_HOME=/opt/cadence/installs/IC616/oa_v22.43.018
 
 # PDKs
 export CDK_DIR=/opt/ncsu-cdk-1.6.0
@@ -178,13 +139,88 @@ export ALDEC_LICENSE_FILE=$HOME/flexlm/aldec.dat
 
 # Matlab settings
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/matlab.dat
-export PATH=/opt/PyCharm/4.0.6/bin:/opt/IBM/SPSS/Statistics/22/bin:$PYTHONPATH/bin:$PATH:$HOME/workspace/frametools/bin
+
+# SPSS settings
+export PATH=/opt/IBM/SPSS/Statistics/22/bin:$PATH
 
 # Sublime Text settings
 export PATH=/opt/sublime_text:$PATH
 
 # Set up general GTAGS location
 export GTAGSLIBPATH=$HOME/.gtags/
+export GTAGSTHROUGH=true
+export GTAGSLABEL=exuberant-ctags
+
+# Hadoop dev
+export FINDBUGS_HOME=$SW/findbugs-1.3.9
+export FORREST_HOME=$SW/apache-forrest-0.8
+if [ -e ~/.hadoop/HADOOP_HOME ]; then
+    export HADOOP_HOME=$(cat ~/.hadoop/HADOOP_HOME)
+    echo "HADOOP_HOME set to $HADOOP_HOME"
+
+    #export HADOOP_COMMON_HOME=$HADOOP_HOME
+    #export HADOOP_HDFS_HOME=$HADOOP_HOME
+    #export HADOOP_MAPRED_HOME=$HADOOP_HOME
+    #export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
+    #export YARN_HOME=$HADOOP_HOME
+    #export HADOOP_PREFIX=$HADOOP_HOME
+fi
+
+# http://stackoverflow.com/questions/7134723/hadoop-on-osx-unable-to-load-realm-info-from-scdynamicstore
+export HADOOP_OPTS="-Djava.security.krb5.realm= -Djava.security.krb5.kdc="
+
+# Cloudera setup
+if [ -f ~/cloudera/bashrc ]; then
+    . ~/cloudera/bashrc
+fi
+
+# Docker
+# http://viget.com/extend/how-to-use-docker-on-os-x-the-missing-guide
+docker-ip() {
+  boot2docker ip 2> /dev/null
+}
+
+
+# set a fancy prompt (non-color, unless we know we "want" color)
+case "$TERM" in
+    xterm-color) color_prompt=yes;;
+esac
+
+# uncomment for a colored prompt, if the terminal has the capability; turned
+# off by default to not distract the user: the focus in a terminal window
+# should be on the output of commands, not on the prompt
+#force_color_prompt=yes
+
+if [ -n "$force_color_prompt" ]; then
+    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+        # We have color support; assume it's compliant with Ecma-48
+        # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+        # a case would tend to support setf rather than setaf.)
+        color_prompt=yes
+    else
+        color_prompt=
+    fi
+fi
+
+# set variable identifying the chroot you work in (used in the prompt below)
+if [ -z "$debian_chroot" ] && [ -r /etc/debian_chroot ]; then
+    debian_chroot=$(cat /etc/debian_chroot)
+fi
+
+if [ "$color_prompt" = yes ]; then
+    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+else
+    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+fi
+
+# If this is an xterm set the title to user@host:dir
+case "$TERM" in
+    xterm*|rxvt*)
+        PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+        ;;
+    *)
+        ;;
+esac
 
 # Regular Colors
 Black="\[\033[0;30m\]"        # Black
@@ -249,3 +285,5 @@ $White\$SEP\
     fi;\
 )\
 $White "
+
+unset color_prompt force_color_prompt
