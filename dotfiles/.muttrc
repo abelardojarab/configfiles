@@ -29,7 +29,7 @@ set text_flowed = yes
 set smart_wrap
 
 # Emacs as external editor for mutt
-set editor = vim
+set editor='vim + -c "set textwidth=72" -c "set wrap" -c "set nocp" -c "?^$"'
 
 # Security stuff
 set ssl_starttls = yes
@@ -49,6 +49,10 @@ set certificate_file=~/.mutt/certificates
 # set folder = "imaps://imap.gmail.com:993"
 # set postponed = "imaps://imap.gmail.com/[Gmail]/Drafts"
 # set imap_keepalive = 900
+
+# Use postfix according to:
+# https://smalldata.tech/blog/2016/08/03/ubuntu-postfix-mutt-gmail
+set sendmail="/usr/sbin/sendmail -oi -oem"
 
 # postfix and mbsync setup (alternative)
 set mbox_type=Maildir
