@@ -73,7 +73,7 @@ export EMACS_SERVER_FILE=$HOME/.emacs.cache/server/server
 # Flexlm settings
 export LM_LICENSE_FILE=$HOME/flexlm/license.dat
 export theHost=`hostname`
-alias lmlicense='/opt/cadence/installs/IC616/tools.lnx86/bin/lmgrd -c'
+alias lmlicense='/opt/mentor/calibre/2013.3_28.19/bin/lmgrd -c'
 
 # Python settings
 export PYTHONPATH=~/workspace/pythonlibs/lib/python2.7/site-packages
@@ -143,6 +143,7 @@ export ALDEC_LICENSE_FILE=$HOME/flexlm/aldec.dat
 
 # Matlab settings
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/matlab.dat
+export PATH=/opt/MATLAB/R2012b/bin:$PATH
 
 # SPSS settings
 export PATH=/opt/IBM/SPSS/Statistics/22/bin:$PATH
