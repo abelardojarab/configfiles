@@ -52,7 +52,7 @@ set certificate_file=~/.mutt/certificates
 
 # postfix and mbsync setup (alternative)
 set mbox_type=Maildir
-set folder=~/.mbsync
+set folder=~/Maildir
 set spoolfile = "+INBOX"
 set sendmail_wait = -1
 
