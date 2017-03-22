@@ -20,14 +20,12 @@ unset mark_old           # read/new is good enough for me
 set beep_new             # bell on new mails
 set pipe_decode          # strip headers and eval mimes when piping
 set thorough_search      # strip headers and eval mimes before searching
+set text_flowed = yes
+set smart_wrap
 
 # MIME settings
 set mime_forward
 set mime_forward_rest = yes # forward attachments with mails
-
-# View settings
-set text_flowed = yes
-set smart_wrap 
 
 # Editor preferences
 set editor = 'vim + -c "set textwidth=72" -c "set wrap" -c "set nocp" -c "redraw" -c "set spell" -c "?^$"'
