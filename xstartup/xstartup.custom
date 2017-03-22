@@ -16,12 +16,13 @@ then
     [ -r $HOME/.Xresources ] && xrdb -merge $HOME/.Xresources
     xsetroot -solid black &
     eval `dbus-launch --exit-with-session fvwm2` &
+    eval `gnome-settings-daemon` &
+    # /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1 &
+
 else
     eval `dbus-launch --exit-with-session startkde` &
 fi
 
-eval `gnome-settings-daemon` &
 
 [ -r $HOME/.Xresources ] && xrdb -merge $HOME/.Xresources
 xsetroot -solid black &
-
