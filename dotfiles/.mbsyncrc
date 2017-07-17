@@ -13,8 +13,8 @@ Account gmail
 
 # Local storage
 MaildirStore gmail-local
-Path ~/Maildir/
-Inbox ~/Maildir/INBOX
+Path ~/Mail/
+Inbox ~/Mail/INBOX
 # SubFolders Verbatim
 
 # Connection between remote and local folders
