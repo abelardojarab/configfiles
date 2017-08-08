@@ -145,6 +145,10 @@ export ALDEC_LICENSE_FILE=$HOME/flexlm/aldec.dat
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/matlab.dat
 export PATH=/opt/MATLAB/R2012b/bin:$PATH
 
+# Xilinx settings
+export LM_LICENSE_FILE=$LM_LICENSE_FILE::$HOME/flexlm/Xilinx.lic
+export PATH=/opt/Xilinx/14.7/ISE_DS/ISE/bin/lin64:$PATH
+
 # SPSS settings
 export PATH=/opt/IBM/SPSS/Statistics/22/bin:$PATH
 
