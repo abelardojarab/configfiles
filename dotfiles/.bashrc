@@ -155,24 +155,26 @@ export PATH=/opt/IBM/SPSS/Statistics/22/bin:$PATH
 # Sublime Text settings
 export PATH=/opt/sublime_text:$PATH
 
+# Master PDF 3 and PDF Studio
+export PATH=/opt/master-pdf-editor-3:$PATH
+export PATH=/opt/PDFStudio:$PATH
+
 # Set up general GTAGS location
 export GTAGSLIBPATH=$HOME/.gtags/
 export GTAGSTHROUGH=true
 export GTAGSLABEL=exuberant-ctags
 
 # Hadoop dev
-export FINDBUGS_HOME=$SW/findbugs-1.3.9
-export FORREST_HOME=$SW/apache-forrest-0.8
 if [ -e ~/.hadoop/HADOOP_HOME ]; then
-    export HADOOP_HOME=$(cat ~/.hadoop/HADOOP_HOME)
-    echo "HADOOP_HOME set to $HADOOP_HOME"
+    export HADOOP_HOME=$HOME/.hadoop/HADOOP_HOME
 
-    #export HADOOP_COMMON_HOME=$HADOOP_HOME
-    #export HADOOP_HDFS_HOME=$HADOOP_HOME
-    #export HADOOP_MAPRED_HOME=$HADOOP_HOME
-    #export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
-    #export YARN_HOME=$HADOOP_HOME
-    #export HADOOP_PREFIX=$HADOOP_HOME
+    # Extra directories
+    export HADOOP_COMMON_HOME=$HADOOP_HOME
+    export HADOOP_HDFS_HOME=$HADOOP_HOME
+    export HADOOP_MAPRED_HOME=$HADOOP_HOME
+    export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
+    export YARN_HOME=$HADOOP_HOME
+    export HADOOP_PREFIX=$HADOOP_HOME
 fi
 
 # http://stackoverflow.com/questions/7134723/hadoop-on-osx-unable-to-load-realm-info-from-scdynamicstore
