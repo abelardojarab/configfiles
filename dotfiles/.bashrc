@@ -71,7 +71,7 @@ export EDITOR="$VISUAL"
 export EMACS_SERVER_FILE=$HOME/.emacs.cache/server/server
 
 # Flexlm settings
-export LM_LICENSE_FILE=$HOME/flexlm/license.dat
+# export LM_LICENSE_FILE=$HOME/flexlm/license.dat
 export theHost=`hostname`
 alias lmlicense='/opt/mentor/calibre/2013.3_28.19/bin/lmgrd -c'
 
@@ -109,7 +109,7 @@ export CDS_Netlisting_Mode=Analog
 export EDI_ROOT=/opt/cadence/installs/EDI131
 export MMSIM_ROOT=/opt/cadence/installs/MMSIM121
 export PATH=$MMSIM_ROOT/tools/bin:$MMSIM_ROOT/tools/spectre/bin:$CDS_ROOT/tools/bin:$CDS_ROOT/tools/dfII/bin:$EDI_ROOT/bin:$PATH
-export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/cadence.dat
+export LM_LICENSE_FILE=$HOME/flexlm/cadence.dat
 
 # Apache settings
 export APACHEDA_LICENSE_FILE=$HOME/flexlm/apache.dat
@@ -130,30 +130,35 @@ export PATH=$SNPS_HSPICE_ROOT/hspice/linux:$SNPS_DC_ROOT/bin:$SNPS_STARRC_ROOT/b
 export PATH=$SNPS_ICWB_ROOT/bin/amd64:$SNPS_ICV_ROOT/bin/SUSE.64:$PATH
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/synopsys.dat
 
-# Mentor settings
-export MODELSIMROOT=/opt/mentor/modelsim/10.1c
+# Calibre settings
 export CALIBRE_HOME=/opt/mentor/calibre/2013.3_28.19
 export MGC_HOME=/opt/mentor/calibre/2013.3_28.19
-export MGLS_LICENSE_FILE=$HOME/flexlm/calibre.dat:$HOME/flexlm/modelsim.dat
-export PATH=$MODELSIMROOT/modeltech/bin:$CALIBRE_HOME/bin:$PATH
+export PATH=$CALIBRE_HOME/bin:$PATH
+export MGLS_LICENSE_FILE=$HOME/flexlm/calibre.dat
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/calibre.dat
+
+# Modelsim settings
+export MODELSIMROOT=/opt/mentor/modelsim/10.1c
+export PATH=$MODELSIMROOT/modeltech/bin:$PATH
+export LM_LICENSE_FILE=$HOME/flexlm/modelsim.dat:$LM_LICENSE_FILE:
+export MGLS_LICENSE_FILE=$HOME/flexlm/modelsim.dat:$MGLS_LICENSE_FILE
 
 # Aldec settings
 export ALDEC_LICENSE_FILE=$HOME/flexlm/aldec.dat
 
 # Matlab settings
-export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/matlab.dat
 export PATH=/opt/MATLAB/R2012b/bin:$PATH
+export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/matlab.dat
 
 # Altera settings
-export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/altera.dat
 export PATH=/opt/intelFPGA/16.1/quartus/bin:$PATH
 export ALTERAOCLSDKROOT=/opt/intelFPGA/16.1/hld
 export QSYS_ROOTDIR=/opt/intelFPGA/16.1/quartus/sopc_builder/bin
+export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/altera.dat
 
 # Xilinx settings
+export PATH=$PATH:/opt/Xilinx/14.7/ISE_DS/ISE/bin/lin64
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/Xilinx.lic
-export PATH=/opt/Xilinx/14.7/ISE_DS/ISE/bin/lin64:$PATH
 
 # SPSS settings
 export PATH=/opt/IBM/SPSS/Statistics/22/bin:$PATH
