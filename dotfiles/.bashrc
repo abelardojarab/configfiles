@@ -142,6 +142,8 @@ export MODELSIMROOT=/opt/mentor/modelsim/10.1c
 export PATH=$MODELSIMROOT/modeltech/bin:$PATH
 export LM_LICENSE_FILE=$HOME/flexlm/modelsim.dat:$LM_LICENSE_FILE:
 export MGLS_LICENSE_FILE=$HOME/flexlm/modelsim.dat:$MGLS_LICENSE_FILE
+export MTI_VCO_MODE=64
+export COMP64=1
 
 # Aldec settings
 export ALDEC_LICENSE_FILE=$HOME/flexlm/aldec.dat

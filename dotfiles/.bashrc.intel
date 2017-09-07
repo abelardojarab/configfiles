@@ -127,6 +127,8 @@ export PATH=$MODELSIMROOT/modeltech/bin:$PATH
 export PATH=$PATH:$MODELSIMROOT/modeltech/linux_x86_64
 export LM_LICENSE_FILE=$HOME/flexlm/modelsim.dat
 export MGLS_LICENSE_FILE=$HOME/flexlm/modelsim.dat:$MGLS_LICENSE_FILE
+export MTI_VCO_MODE=64
+export COMP64=1
 
 # Altera options
 export QUARTUS_HOME="/p/atp/tools/altera/quartus/Pro_15.1.2.Patch-2.20/quartus"
