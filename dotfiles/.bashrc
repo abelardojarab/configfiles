@@ -108,7 +108,7 @@ export CDS_LOAD_ENV=CWD
 export CDS_Netlisting_Mode=Analog
 export EDI_ROOT=/opt/cadence/installs/EDI131
 export MMSIM_ROOT=/opt/cadence/installs/MMSIM121
-export PATH=$MMSIM_ROOT/tools/bin:$MMSIM_ROOT/tools/spectre/bin:$CDS_ROOT/tools/bin:$CDS_ROOT/tools/dfII/bin:$EDI_ROOT/bin:$PATH
+export PATH=$MMSIM_ROOT/tools/bin:$MMSIM_ROOT/tools/spectre/bin:$CDS_ROOT/tools/bin:$CDS_ROOT/tools/dfII/bin:$PATH:$EDI_ROOT/bin
 export LM_LICENSE_FILE=$HOME/flexlm/cadence.dat
 
 # Apache settings
