@@ -123,7 +123,7 @@ export DICTPATH=$HOME/.emacs.d/dictionaries
 
 # Modelsim options
 export MODELSIMROOT=/srv/data/ajaraber/tools/mentor/modelsim/10.1c
-export MTI_HOME=$MODELSIMROOT
+export MTI_HOME=$MODELSIMROOT/modeltech
 export PATH=$MODELSIMROOT/modeltech/bin:$PATH
 export PATH=$PATH:$MODELSIMROOT/modeltech/linux_x86_64
 export LM_LICENSE_FILE=$HOME/flexlm/modelsim.dat
