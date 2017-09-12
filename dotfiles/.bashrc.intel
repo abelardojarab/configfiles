@@ -127,6 +127,7 @@ export MTI_HOME=$MODELSIMROOT/modeltech
 export PATH=$MODELSIMROOT/modeltech/bin:$PATH
 export PATH=$PATH:$MODELSIMROOT/modeltech/linux_x86_64
 export LM_LICENSE_FILE=$HOME/flexlm/modelsim.dat
+export MGLS_LICENSE_FILE=1717@mentor04p.elic.intel.com:1717@mentor13p.elic.intel.com:1717@mentor15p.elic.intel.com
 export MGLS_LICENSE_FILE=$HOME/flexlm/modelsim.dat:$MGLS_LICENSE_FILE
 export MTI_VCO_MODE=64
 export COMP64=1
@@ -164,8 +165,8 @@ export VCS_HOME="/p/atp/tools/synopsys/vcs/G-2012.09"
 export PATH=${PATH}:$VCS_HOME/bin
 export VCS_PLATFORM=amd64
 export VCS_ARCH_OVERRIDE=linux
-# export VCS_PLATFORM suse64
 
+# SystemC setup
 export SC_INSTALL_DIR="/p/atp/systemc/systemc-2.2.0"
 export CSI_TOP="/p/atp/qpi_bfm/csibfm-QPI1.1-OSCI2.2-gcc410-3.35"
 
