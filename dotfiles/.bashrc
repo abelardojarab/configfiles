@@ -153,7 +153,8 @@ export PATH=/opt/MATLAB/R2012b/bin:$PATH
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/matlab.dat
 
 # Altera settings
-export PATH=/opt/intelFPGA/16.1/quartus/bin:$PATH
+export QUARTUS_DIR=/opt/intelFPGA/16.1
+export PATH=$QUARTUS_DIR/quartus/bin:$PATH
 export ALTERAOCLSDKROOT=/opt/intelFPGA/16.1/hld
 export QSYS_ROOTDIR=/opt/intelFPGA/16.1/quartus/sopc_builder/bin
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/altera.dat
@@ -310,3 +311,13 @@ $White\$SEP\
 $White "
 
 unset color_prompt force_color_prompt
+
+export ALTERAOCLSDKROOT="/opt/intelFPGA/16.1/hld"
+
+export QSYS_ROOTDIR="/opt/intelFPGA/16.1/quartus/sopc_builder/bin"
+
+PATH="/home/abelardojara/perl5/bin${PATH:+:${PATH}}"; export PATH;
+PERL5LIB="/home/abelardojara/perl5/lib/perl5${PERL5LIB:+:${PERL5LIB}}"; export PERL5LIB;
+PERL_LOCAL_LIB_ROOT="/home/abelardojara/perl5${PERL_LOCAL_LIB_ROOT:+:${PERL_LOCAL_LIB_ROOT}}"; export PERL_LOCAL_LIB_ROOT;
+PERL_MB_OPT="--install_base \"/home/abelardojara/perl5\""; export PERL_MB_OPT;
+PERL_MM_OPT="INSTALL_BASE=/home/abelardojara/perl5"; export PERL_MM_OPT;

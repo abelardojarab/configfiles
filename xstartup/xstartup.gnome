@@ -20,11 +20,11 @@ else
     eval `dbus-launch --exit-with-session startkde` &
 fi
 
-eval `gnome-settings-daemon` &
+# eval `gnome-settings-daemon` &
 
-sleep 1
-xrdb -all -remove
-xrdb -load $HOME/.Xresources
-[ -r $HOME/.Xresources ] && xrdb -merge $HOME/.Xresources
-xsetroot -solid black &
+# sleep 1
+# xrdb -all -remove
+#xrdb -load $HOME/.Xresources
+#[ -r $HOME/.Xresources ] && xrdb -merge $HOME/.Xresources
+#xsetroot -solid black &
 
