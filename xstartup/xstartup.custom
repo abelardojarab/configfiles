@@ -5,10 +5,28 @@ unset SESSION_MANAGER
 unset XDG_RUNTIME_DIR
 unset DBUS_SESSION_BUS_ADDRESS
 
+export LC_MESSAGES=en_US.utf8
+export GTK2_RC_FILES=$HOME/.gtkrc-2.0
+[ -n "$HOSTDISPLAY" ] || export HOSTDISPLAY="$(uname -n)$DISPLAY"
+
 # Fix to make GNOME work
 export XKL_XMODMAP_DISABLE=1
 export XLIB_SKIP_ARGB_VISUALS=1
 export NO_KDE=1
+
+# Fix XAuthority handling with GDM3
+[ "$XAUTHORITY" = $HOME/.Xauthority ] || {
+    XAUTHORITY=$HOME/.Xauthority xauth merge $XAUTHORITY
+    export XAUTHORITY=$HOME/.Xauthority
+}
+
+# Run a composition manager if available
+[ -x /usr/bin/xcompmgr ] && xcompmgr &
+
+# And run pulseaudio
+[ -x /usr/bin/pulseaudio ] && {
+    pulseaudio --check || pulseaudio -D
+}
 
 # Default case
 if [ -n "${NO_KDE}" ]
@@ -17,12 +35,10 @@ then
     xsetroot -solid black &
     eval `dbus-launch --exit-with-session fvwm2` &
     eval `gnome-settings-daemon` &
-    # /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1 &
-
+    /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1 &
 else
     eval `dbus-launch --exit-with-session startkde` &
 fi
-
 
 [ -r $HOME/.Xresources ] && xrdb -merge $HOME/.Xresources
 xsetroot -solid black &
