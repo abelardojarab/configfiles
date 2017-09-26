@@ -1,3 +1,6 @@
+# -*-conf-*-
+#
+
 # Basic Options
 set realname = "Abelardo Jara-Berrocal"
 set from = "abelardojarab@gmail.com"
@@ -27,6 +30,8 @@ set mime_forward
 set mime_forward_rest = yes # forward attachements with mails
 set text_flowed = yes
 set smart_wrap
+set ignore_linear_white_space = yes
+set rfc2047_parameters = yes
 
 # Emacs as external editor for mutt
 set editor='vim + -c "set textwidth=72" -c "set wrap" -c "set nocp" -c "redraw" -c "set spell" -c "?^$"'
@@ -61,8 +66,8 @@ set folder=~/Mail
 set spoolfile = "+INBOX"
 set sendmail_wait = -1
 
-# Paths
-set signature  = ~/.mutt/signature # signature file
+# Signature file
+set signature  = ~/.mutt/signature
 
 # Caches
 set header_cache     = ~/.mutt/.cache/headercache
@@ -123,6 +128,8 @@ bind compose p postpone-message
 bind index G imap-fetch-mail
 bind index <tab> sync-mailbox
 bind index p recall-message
+bind editor <tab> complete-query
+bind editor ^T complete
 
 # Use mu for searching
 
