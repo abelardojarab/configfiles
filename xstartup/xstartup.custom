@@ -23,11 +23,6 @@ export NO_KDE=1
 # Run a composition manager if available
 [ -x /usr/bin/xcompmgr ] && xcompmgr &
 
-# And run pulseaudio
-[ -x /usr/bin/pulseaudio ] && {
-    pulseaudio --check || pulseaudio -D
-}
-
 # Default case
 if [ -n "${NO_KDE}" ]
 then
