@@ -2,19 +2,37 @@
 hardstatus alwayslastline '%{= wk} %-w%{+b wk}%50> %n* %t %{= wk}%+w%< %{= wk}%-=%D %m/%d/%y | %C:%s %A | %1`%{-} %2`%{-}'
 hardstatus string '%{= kG}[%{G}%H%? %1`%?%{g}][%= %{= kw}%-w%{+b yk} %n*%t%?(%u)%? %{-}%+w %=%{g}][%{B}%m/%d %{W}%C%A%{g}]'
 
+# format activity message
+activity "%c activity -> %n%f %t"
+
+# if we accidentally hangup, don't be all attached when we come back. 
+autodetach on
+
 # huge scrollback buffer
 defscrollback 5000
 
-# To clear the screen after closing some programs
+# to clear the screen after closing some programs
 altscreen on
 
-# COLORS! and some useful terminfo
+# Enable colors and some useful terminfo
 term screen-256color
 terminfo rxvt-unicode 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm'
+
+# Tell screen how to set colors. AB = background, AF=foreground
+termcapinfo xterm 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm'
+
+# Enables use of shift-PgUp and shift-PgDn
+termcapinfo xterm|xterms|xs|rxvt ti@:te@
+
+# have screen update terminal emulators titlebar
+defhstatus "screen ^E (^Et) | $USER@^EH"
 
 # terminfo and termcap for nice 256 color terminal
 # allow bold colors - necessary for some reason
 attrcolor b ".I" 
+
+# nicer shell title
+shelltitle "$ |bash"
 
 # erase background with current bg color 
 defbce "on"
@@ -28,7 +46,49 @@ utf8 on
 
 # Enable scrolling support
 defscrollback 15000
-termcapinfo xterm* ti@:te@
+
+# default windows
+screen -t Shell1  1 bash
+screen -t Shell2  2 bash
+screen -t Shell3  3 bash
+screen -t Python  4 python
+select 0
+bind c screen 1 # window numbering starts at 1 not 0
+bind 0 select 10
+
+# get rid of silly xoff stuff
+bind s split
+
+# layouts
+layout autosave on
+layout new one
+select 1
+layout new two
+select 1
+split
+resize -v +8
+focus down
+select 4
+focus up
+layout new three
+select 1
+split -v
+resize -h +7
+focus right
+select 2
+split
+resize -h +10
+focus down
+select 3
+focus up
+focus left
+
+layout attach three
+layout select three
+
+# F5 and F6 to move one screen forward or backward
+bindkey -k k5 prev
+bindkey -k k6 next
 
 # navigating regions with Ctrl-arrows
 bindkey "^[[1;5D" focus left
