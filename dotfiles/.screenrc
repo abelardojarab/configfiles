@@ -1,3 +1,6 @@
+# -*-conf-*-
+#
+
 # the following two lines give a two-line status, with the current window highlighted
 hardstatus alwayslastline '%{= wk} %-w%{+b wk}%50> %n* %t %{= wk}%+w%< %{= wk}%-=%D %m/%d/%y | %C:%s %A | %1`%{-} %2`%{-}'
 hardstatus string '%{= kG}[%{G}%H%? %1`%?%{g}][%= %{= kw}%-w%{+b yk} %n*%t%?(%u)%? %{-}%+w %=%{g}][%{B}%m/%d %{W}%C%A%{g}]'
@@ -122,3 +125,10 @@ bind -c rsz -k kl eval "focus left"  "command -c rsz" # Left
 bind -c rsz -k kr eval "focus right" "command -c rsz" # Right
 bind -c rsz -k ku eval "focus up"    "command -c rsz" # Up
 bind -c rsz -k kd eval "focus down"  "command -c rsz" # Down
+
+# The following settings are interpreted by EMACS, do not remove them.
+# Local Variables:
+# mode: shell-script
+# fill-column: 80
+# coding: utf-8
+# End:
