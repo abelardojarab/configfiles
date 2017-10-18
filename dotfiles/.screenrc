@@ -56,14 +56,12 @@ screen -t Shell2  2 bash
 screen -t Shell3  3 bash
 screen -t Python  4 python
 screen -t Email   5 mutt
-screen -t News    6 newsbeuter
+screen -t Chat    6 finch
+screen -t News    7 newsbeuter
 
 select 0
 bind c screen 1 # window numbering starts at 1 not 0
 bind 0 select 10
-
-# get rid of silly xoff stuff
-bind s split
 
 # layouts
 layout autosave on
@@ -91,6 +89,25 @@ focus left
 
 layout attach three
 layout select three
+
+# Instead of Control-a, make the escape/command character be Control-b
+escape ^Bb
+
+# get rid of silly xoff stuff
+bind s split
+
+# resizing regions
+bind + resize +5
+bind - resize -5
+bind = resize =
+
+# Use Alt-PageUp and Alt-PageDown to navigate tabs
+bindkey -t ^[[5;3~ prev
+bindkey -t ^[[6;3~ next
+
+# Use Ctrl-PageUp and Ctrl-PageDown to navigate tabs, too
+bindkey -t ^[[5;5~ prev 
+bindkey -t ^[[6;5~ next
 
 # F3 and F4 to move one screen forward or backward
 bindkey -k k3 prev
