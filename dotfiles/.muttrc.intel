@@ -1,8 +1,11 @@
+# -*-conf-*-
+#
 # -*- Mode: muttrc -*-
 set realname = "Abelardo Jara-Berrocal"
 set from = "abelardo.jara-berrocal@intel.com"
 set use_from = yes   # answer from the address we got email to
 set envelope_from = yes
+set envelope_from_address = "abelardo.jara-berrocal@intel.com"
 
 # Basic Options
 set charset = "utf-8"
@@ -39,6 +42,11 @@ set pgp_use_gpg_agent = yes
 
 # Certificates
 set certificate_file=~/.mutt_certs
+
+# SMTP and IMAP setup
+set smtp_url = "smtp://smtp.intel.com"
+set postponed = "imaps://ajaraber@imapmap.intel.com/Drafts"
+set imap_keepalive = 900
 set folder="imaps://ajaraber@imapmail.intel.com"
 set spoolfile="imaps://ajaraber@imapmail.intel.com"
 
@@ -86,8 +94,6 @@ alternative_order text/plain text/enriched text/html
 auto_view text/html text/Html
 
 # Compose View
-set realname = "Abelardo Jara-Berrocal"
-set envelope_from
 set sig_dashes
 set edit_headers
 set fast_reply
@@ -113,6 +119,9 @@ macro pager \Cu "|urlview<enter>" "call urlview to open links"
 
 # Email Search
 macro index / "<enter-command>unset wait_key<enter><shell-escape>mutt-notmuch-py ~/.mail/temporary/search<enter><change-folder-readonly>+temporary/search<enter>" "search mail (using notmuch)"
+
+# Fetch the GnuPG encrypted password
+source "gpg2 -d ~/.mutt/passwords.intel.gpg |"
 
 # The following settings are interpreted by EMACS, do not remove them.
 # Local Variables:

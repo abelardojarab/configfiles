@@ -105,9 +105,10 @@ bind = resize =
 bindkey -t ^[[5;3~ prev
 bindkey -t ^[[6;3~ next
 
+# Disabled to not conflict with Emacs tabbar
 # Use Ctrl-PageUp and Ctrl-PageDown to navigate tabs, too
-bindkey -t ^[[5;5~ prev 
-bindkey -t ^[[6;5~ next
+# bindkey -t ^[[5;5~ prev
+# bindkey -t ^[[6;5~ next
 
 # F3 and F4 to move one screen forward or backward
 bindkey -k k3 prev
