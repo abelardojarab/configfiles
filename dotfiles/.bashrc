@@ -178,6 +178,13 @@ export GTAGSLIBPATH=$HOME/.gtags/
 export GTAGSTHROUGH=true
 export GTAGSLABEL=exuberant-ctags
 
+# Perl options (needed by Verilator)
+PATH="${HOME}/perl5/bin${PATH:+:${PATH}}"; export PATH;
+PERL5LIB="${HOME}/perl5/lib/perl5${PERL5LIB:+:${PERL5LIB}}"; export PERL5LIB;
+PERL_LOCAL_LIB_ROOT="${HOME}/perl5${PERL_LOCAL_LIB_ROOT:+:${PERL_LOCAL_LIB_ROOT}}"; export PERL_LOCAL_LIB_ROOT;
+PERL_MB_OPT="--install_base \"${HOME}/perl5\""; export PERL_MB_OPT;
+PERL_MM_OPT="INSTALL_BASE=${HOME}/perl5"; export PERL_MM_OPT;
+
 # Hadoop dev
 if [ -e ~/.hadoop/HADOOP_HOME ]; then
     export HADOOP_HOME=$HOME/.hadoop/HADOOP_HOME
@@ -311,13 +318,3 @@ $White\$SEP\
 $White "
 
 unset color_prompt force_color_prompt
-
-export ALTERAOCLSDKROOT="/opt/intelFPGA/16.1/hld"
-
-export QSYS_ROOTDIR="/opt/intelFPGA/16.1/quartus/sopc_builder/bin"
-
-PATH="/home/abelardojara/perl5/bin${PATH:+:${PATH}}"; export PATH;
-PERL5LIB="/home/abelardojara/perl5/lib/perl5${PERL5LIB:+:${PERL5LIB}}"; export PERL5LIB;
-PERL_LOCAL_LIB_ROOT="/home/abelardojara/perl5${PERL_LOCAL_LIB_ROOT:+:${PERL_LOCAL_LIB_ROOT}}"; export PERL_LOCAL_LIB_ROOT;
-PERL_MB_OPT="--install_base \"/home/abelardojara/perl5\""; export PERL_MB_OPT;
-PERL_MM_OPT="INSTALL_BASE=/home/abelardojara/perl5"; export PERL_MM_OPT;
