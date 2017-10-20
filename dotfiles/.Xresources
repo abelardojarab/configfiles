@@ -37,8 +37,8 @@ xterm*translations: #override \
 ! Bigger font
 xterm*utf8:       2
 xterm*termName:   xterm-256color
-xterm*faceName:   xft:Fira Mono:pixelsize=16
-xterm*faceSize:   14
+xterm*faceName:   xft:Fira Mono:pixelsize=18
+xterm*faceSize:   15
 
 ! Fix up xterm keybindings
 xterm*VT100.translations:   #override \
