@@ -16,7 +16,8 @@ After=syslog.target network.target
 Type=forking
 # Clean any existing files in /tmp/.X11-unix environment
 ExecStartPre=/bin/sh -c '/usr/bin/vncserver -kill %i > /dev/null 2>&1 || :'
-ExecStart=/bin/su abelardojara -c "/usr/bin/vncserver -SecurityTypes=VncAuth -auth /home/abelardojara/.Xauthority -depth 24 -geometry 2048x1152 %i" 
+# Non-RealVNC server expects display number as first argument
+ExecStart=/bin/su abelardojara -c "/usr/bin/vncserver %i -SecurityTypes=VncAuth -auth /home/abelardojara/.Xauthority -depth 24 -geometry 2048x1152 -BlacklistTimeout 0" 
 PIDFile=/home/abelardojara/.vnc/%H%i.pid
 ExecStop=/bin/sh -c '/usr/bin/vncserver -kill %i > /dev/null 2>&1 || :'
 
