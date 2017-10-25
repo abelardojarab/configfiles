@@ -50,7 +50,7 @@ alignment top_right
 # Gap between borders of screen and text
 # same thing as passing -x at command line
 gap_x 35
-gap_y 10
+gap_y 60
 
 # Subtract file system buffers from used memory?
 no_buffers yes
