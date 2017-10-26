@@ -6,7 +6,7 @@
 *foreground: #a08080
 *cursorColor: #aaaaaa
 
-! Emacs preferences
+!-- Emacs settings -- !
 Emacs.pane.menubar.margin: 0
 Emacs*useXIM: false
 Emacs.fontBackend: xft
@@ -24,6 +24,8 @@ Emacs.borderWidth: 0
 Emacs.internalBorder: 0
 Emacs.backgroundType: dark
 
+!-- Xft settings -- !
+
 Xft.dpi: 96
 Xft.antialias: true
 Xft.autohint: true
@@ -31,6 +33,8 @@ Xft.hinting: true
 Xft.hintstyle: hintslight
 Xft.lcdfilter: lcddefault
 Xft.rgba: rgb
+
+!-- xterm settings -- !
 
 ! Fix alt-key inputting
 xterm*eightBitInput: false
@@ -90,7 +94,7 @@ xterm*color13: #ad7fa8
 xterm*color14: #34e2e2
 xterm*color15: #eeeeec
 
-!Theme Nine
+! Theme Nine
 xterm*background: rgb:1a/1a/1a
 xterm*foreground: rgb:d6/d6/d6
 xterm*cursorColor: #d6d6d6
