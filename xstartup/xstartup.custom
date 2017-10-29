@@ -16,8 +16,8 @@ export NO_KDE=1
 
 # Fix XAuthority handling with GDM3
 [ "$XAUTHORITY" = $HOME/.Xauthority ] || {
-    XAUTHORITY=$HOME/.Xauthority xauth merge $XAUTHORITY
     export XAUTHORITY=$HOME/.Xauthority
+    xauth merge $XAUTHORITY
 }
 
 # Run a composition manager if available
