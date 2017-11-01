@@ -264,6 +264,7 @@ BYellow="\[\033[1;33m\]"      # Bold yellow
 Cyan="\[\033[0;36m\]"         # Cyan
 Gray="\[\033[1;30m\]"         # Gray
 White="\[\033[0;37m\]"        # White
+NO_COLOR="\[\033[0m\]"
 
 # Prompt separator
 #  This will go between the git indicators and the dollar sign.  It's empty by default,
@@ -315,6 +316,6 @@ $White\$SEP\
         echo -n '$Green$';\
     fi;\
 )\
-$White "
+$NO_COLOR "
 
 unset color_prompt force_color_prompt
