@@ -3,9 +3,13 @@ IMAPAccount gmail
 Host imap.gmail.com
 User abelardotomasjb@gmail.com
 Port 993
-PassCmd "gpg --decrypt ~/.gpg_auth/.google"
+PassCmd "gpg2 --batch --decrypt ~/.gpg_auth/.google"
 UseIMAPS yes
 CertificateFile /etc/ssl/certs/ca-certificates.crt
+
+# Use SSL
+# SSLType IMAPS
+# SSLVersion TLSv1.2
 
 # Define the remote storage (use the IMAP account specified above)
 IMAPStore gmail-remote
