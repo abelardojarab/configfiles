@@ -89,13 +89,6 @@ focus left
 layout attach three
 layout select three
 
-bindkey -t "`1" select 1
-bindkey -t "`2" select 2
-bindkey -t "`3" select 3
-bindkey -t "`4" select 4
-bindkey -t "`5" select 5
-bindkey -t "`6" select 6
-
 # special hack for C-e, since it should go *past* the last char.
 bindkey -m ^e stuff "\$l"
 
@@ -126,16 +119,19 @@ bind ^g fit
 # C-g and other keys quit copy mode.
 markkeys \033=\015=^G
 
-# resizing regions
-bind + resize +5
-bind - resize -5
-bind = resize =
+#  PREVIOUS WINDOW
+# Ctrl + Alt + Left from gnome-terminal
+bindkey ^[[1;7C prev
 
-# Ctrl-Tab
-bindkey "^[[27;5;9~" next
+# Ctrl+Alt+Left from putty
+bindkey ^[^[[D prev
 
-# Ctrl-Shift-Tab
-bindkey "^[[27;6;9~" prev
+# NEXT WINDOW
+# Ctrl + Alt + Right from gnome-terminal
+bindkey ^[[1;7D next
+
+# Ctrl+Alt+Right from putty
+bindkey ^[^[[C next
 
 # Use Alt-PageUp and Alt-PageDown to navigate tabs
 bindkey -t ^[[5;3~ prev
