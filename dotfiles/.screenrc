@@ -8,6 +8,9 @@ hardstatus string '%{= kG}[%{G}%H%? %1`%?%{g}][%= %{= kw}%-w%{+b yk} %n*%t%?(%u)
 # format activity message
 activity "%c activity -> %n%f %t"
 
+# on split screen, switch window focus by clicking
+mousetrack on
+
 # if we accidentally hangup, don't be all attached when we come back.
 autodetach on
 
@@ -89,6 +92,53 @@ focus left
 layout attach three
 layout select three
 
+# so it won't seem like there is a delay when entering copy mode
+msgminwait 0
+
+# Instead of Control-a, make the escape/command character be Ctrl-b
+escape ^Bb
+
+# C-g  quit command mode
+bind ^g fit
+
+# C-g and other keys quit copy mode.
+markkeys \033=\015=^G
+
+# Ctrl + Alt + Left from gnome-terminal
+bindkey ^[[1;7C prev
+
+# Ctrl+Alt+Left from putty
+bindkey ^[^[[D prev
+
+# Ctrl + Alt + Right from gnome-terminal
+bindkey ^[[1;7D next
+
+# Ctrl+Alt+Right from putty
+bindkey ^[^[[C next
+
+# Use Alt-PageUp and Alt-PageDown to navigate tabs
+bindkey -t ^[[5;3~ prev
+bindkey -t ^[[6;3~ next
+
+# Navigating regions with Ctrl-arrows
+bindkey "^[[1;5D" focus left
+bindkey "^[[1;5C" focus right
+bindkey "^[[1;5A" focus up
+bindkey "^[[1;5B" focus down
+
+# Use hjkl keys to resize regions
+bind -c rsz h eval "resize -h -5" "command -c rsz"
+bind -c rsz j eval "resize -v -5" "command -c rsz"
+bind -c rsz k eval "resize -v +5" "command -c rsz"
+bind -c rsz l eval "resize -h +5" "command -c rsz"
+
+# Quickly switch between regions using tab and arrows
+bind -c rsz \t    eval "focus"       "command -c rsz" # Tab
+bind -c rsz -k kl eval "focus left"  "command -c rsz" # Left
+bind -c rsz -k kr eval "focus right" "command -c rsz" # Right
+bind -c rsz -k ku eval "focus up"    "command -c rsz" # Up
+bind -c rsz -k kd eval "focus down"  "command -c rsz" # Down
+
 # special hack for C-e, since it should go *past* the last char.
 bindkey -m ^e stuff "\$l"
 
@@ -106,75 +156,6 @@ bindkey -m "^l" stuff l     # move forward one character
 bindkey -m "^a" stuff 0     # move to beginning of line
 bindkey -m "^f" stuff ^s    # incremental search forward
 bindkey -m "^g" stuff q     # exit copy mode
-
-# so it won't seem like there is a delay when entering copy mode
-msgminwait 0
-
-# Instead of Control-a, make the escape/command character be Ctrl-b
-escape ^Bb
-
-# C-g  quit command mode
-bind ^g fit
-
-# C-g and other keys quit copy mode.
-markkeys \033=\015=^G
-
-#  PREVIOUS WINDOW
-# Ctrl + Alt + Left from gnome-terminal
-bindkey ^[[1;7C prev
-
-# Ctrl+Alt+Left from putty
-bindkey ^[^[[D prev
-
-# NEXT WINDOW
-# Ctrl + Alt + Right from gnome-terminal
-bindkey ^[[1;7D next
-
-# Ctrl+Alt+Right from putty
-bindkey ^[^[[C next
-
-# Use Alt-PageUp and Alt-PageDown to navigate tabs
-bindkey -t ^[[5;3~ prev
-bindkey -t ^[[6;3~ next
-
-# Disabled to not conflict with Emacs tabbar
-# Use Ctrl-PageUp and Ctrl-PageDown to navigate tabs, too
-# bindkey -t ^[[5;5~ prev
-# bindkey -t ^[[6;5~ next
-
-# F3 and F4 to move one screen forward or backward
-bindkey -k k3 prev
-bindkey -k k4 next
-
-# Again, switch windows with F3 (prev) and F4 (next)
-bindkey "^[OR" prev
-bindkey "^[OS" next
-
-# Navigating regions with Ctrl-arrows
-bindkey "^[[1;5D" focus left
-bindkey "^[[1;5C" focus right
-bindkey "^[[1;5A" focus up
-bindkey "^[[1;5B" focus down
-
-# Switch layouts with Ctrl+F3 (prev layout) and Ctrl+F4 (next)
-bindkey "^[O1;5R" layout prev
-bindkey "^[O1;5S" layout next
-
-# F2 puts screen into resize mode. Resize regions using hjkl keys.
-bindkey "^[OQ" eval "command -c rsz" # enter resize mode
-
-# Use hjkl keys to resize regions
-bind -c rsz h eval "resize -h -5" "command -c rsz"
-bind -c rsz j eval "resize -v -5" "command -c rsz"
-bind -c rsz k eval "resize -v +5" "command -c rsz"
-bind -c rsz l eval "resize -h +5" "command -c rsz"
-
-# Quickly switch between regions using tab and arrows
-bind -c rsz \t    eval "focus"       "command -c rsz" # Tab
-bind -c rsz -k kl eval "focus left"  "command -c rsz" # Left
-bind -c rsz -k kr eval "focus right" "command -c rsz" # Right
-bind -c rsz -k ku eval "focus up"    "command -c rsz" # Up
-bind -c rsz -k kd eval "focus down"  "command -c rsz" # Down
 
 # The following settings are interpreted by EMACS, do not remove them.
 # Local Variables:
