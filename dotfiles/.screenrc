@@ -89,8 +89,8 @@ select 3
 focus up
 focus left
 
-layout attach three
-layout select three
+layout attach one
+layout select one
 
 # so it won't seem like there is a delay when entering copy mode
 msgminwait 0
@@ -126,6 +126,13 @@ bindkey "^[[1;5C" focus right
 bindkey "^[[1;5A" focus up
 bindkey "^[[1;5B" focus down
 
+# Split window
+bind _ eval 'split' focus screen
+bind | eval 'split -v' focus screen
+
+# trigger for window sub-commands
+bind w eval "command -c rsz" # enter resize mode
+
 # Use hjkl keys to resize regions
 bind -c rsz h eval "resize -h -5" "command -c rsz"
 bind -c rsz j eval "resize -v -5" "command -c rsz"
@@ -139,23 +146,20 @@ bind -c rsz -k kr eval "focus right" "command -c rsz" # Right
 bind -c rsz -k ku eval "focus up"    "command -c rsz" # Up
 bind -c rsz -k kd eval "focus down"  "command -c rsz" # Down
 
-# special hack for C-e, since it should go *past* the last char.
-bindkey -m ^e stuff "\$l"
+# trigger for layout sub-commands
+bind y eval 'command -c layout' 'layout show'
 
-# make copy mode behave more like my emacs
-bindkey "^[k" eval "copy" "stuff ^b"
-bindkey "^k" eval "copy" "stuff k"
-bindkey -m "^[j" stuff ^f   # move down one page
-bindkey -m "^[k" stuff ^b   # move up one page
-bindkey -m "^[h" stuff b    # move backward word
-bindkey -m "^[l" stuff w    # move forward by word
-bindkey -m "^j" stuff j     # move down one line
-bindkey -m "^k" stuff k     # move up one line
-bindkey -m "^h" stuff h     # move back one character
-bindkey -m "^l" stuff l     # move forward one character
-bindkey -m "^a" stuff 0     # move to beginning of line
-bindkey -m "^f" stuff ^s    # incremental search forward
-bindkey -m "^g" stuff q     # exit copy mode
+# create/remove layout
+bind -c layout c eval 'layout new'    'layout show'
+bind -c layout X eval 'layout remove' 'layout show'
+
+# switch to other layout
+bind -c layout n eval 'layout next'     'layout show'
+bind -c layout p eval 'layout prev'     'layout show'
+bind -c layout 0 eval 'layout select 0' 'layout show'
+bind -c layout 1 eval 'layout select 1' 'layout show'
+bind -c layout 2 eval 'layout select 2' 'layout show'
+bind -c layout 3 eval 'layout select 3' 'layout show'
 
 # The following settings are interpreted by EMACS, do not remove them.
 # Local Variables:
