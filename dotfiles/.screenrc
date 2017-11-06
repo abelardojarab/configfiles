@@ -98,6 +98,9 @@ msgminwait 0
 # Instead of Control-a, make the escape/command character be Ctrl-b
 escape ^Bb
 
+# Reload .screenrc
+bind r eval "source $HOME/.screenrc" "echo '.screenrc reloaded!'"
+
 # C-g  quit command mode
 bind ^g fit
 
