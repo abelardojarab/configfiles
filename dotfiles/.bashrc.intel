@@ -120,12 +120,12 @@ fi
 export http_proxy=http://proxy-chain.intel.com:911
 export https_proxy=https://proxy-chain.intel.com:912
 export ftp_proxy=http://proxy-chain.intel.com:911
+export socks_proxy=proxy-us.intel.com:1080
 export all_proxy=socks://proxy-socks.fm.intel.com:1080
 
 # FIXME Some things honor no_proxy
 # Trying this - may break things - 20161018
-export no_proxy='intel.com,.intel.com,localhost,127.0.0.1'
-export no_proxy=intel.com,.intel.com,10.0.0.0/8,192.168.0.0/16,localhost,127.0.0.0/8,134.134.0.0/16
+export no_proxy=intel.com,.intel.com,10.0.0.0/8,192.168.0.0/16,localhost,.local,127.0.0.0/8,134.134.0.0/16
 
 # Emacs settings
 export GDK_NATIVE_WINDOWS=1
