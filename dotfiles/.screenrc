@@ -108,16 +108,16 @@ bind ^g fit
 markkeys \033=\015=^G
 
 # Ctrl + Alt + Left from gnome-terminal
-bindkey ^[[1;7C prev
+bindkey ^[[1;7C next
 
 # Ctrl+Alt+Left from putty
-bindkey ^[^[[D prev
+bindkey ^[^[[D next
 
 # Ctrl + Alt + Right from gnome-terminal
-bindkey ^[[1;7D next
+bindkey ^[[1;7D prev
 
 # Ctrl+Alt+Right from putty
-bindkey ^[^[[C next
+bindkey ^[^[[C prev
 
 # Use Alt-PageUp and Alt-PageDown to navigate tabs
 bindkey -t ^[[5;3~ prev
