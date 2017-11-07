@@ -43,12 +43,20 @@ set pgp_use_gpg_agent = yes
 # Certificates
 set certificate_file=~/.mutt_certs
 
-# SMTP and IMAP setup
-set smtp_url = "smtp://smtp.intel.com"
+# IMAP setup
 set postponed = "imaps://ajaraber@imapmap.intel.com/Drafts"
 set imap_keepalive = 900
 set folder="imaps://ajaraber@imapmail.intel.com"
 set spoolfile="imaps://ajaraber@imapmail.intel.com"
+
+# Passwords
+set my_gmail_pw=`gpg2 --batch -q --decrypt ~/.gpg_auth/.google`
+
+# Sendmail
+set sendmail=/usr/sbin/sendmail
+set sendmail_wait=-1
+set smtp_url="smtp://abelardotomasjb@gmail.com@smtp.gmail.com:587/"
+set smtp_pass=$my_gmail_pw
 
 # Paths
 set signature  = ~/.mutt/sig    # my signature file
