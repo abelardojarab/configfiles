@@ -1,38 +1,34 @@
 !* Use the command "xrdb < $HOME/.Xdefaults" to reread in changes to .Xdefaults
 !*
 
-! sets colors for everything.
-*background: #272822
-*foreground: #a08080
-*cursorColor: #aaaaaa
-
 !-- Emacs settings -- !
 Emacs.pane.menubar.margin: 0
-Emacs*useXIM: false
-Emacs.fontBackend: xft
-Emacs.bitmapIcon: on
-Emacs.font:              Fira Mono-13
-Emacs.FACE.italicFont:   Fira Mono-13
-Emacs.FACE.boldFont:     Fira Mono-13
-Emacs*menubar*font:      Fira Mono-13
-Emacs.menu*.font:        Fira Mono-13
-Emacs.pane.menubar.font: Fira Mono-13
-Emacs.dialog*.font:      Fira Mono-13
-Emacs.menuBar: on
-Emacs.toolBar: off
-Emacs.borderWidth: 0
-Emacs.internalBorder: 0
-Emacs.backgroundType: dark
+Emacs*useXIM:              false
+Emacs.fontBackend:         xft
+Emacs.bitmapIcon:          on
+Emacs.font:                Fira Mono-12
+Emacs.FACE.italicFont:     Fira Mono-12
+Emacs.FACE.boldFont:       Fira Mono-12
+Emacs*menubar*font:        Fira Mono-12
+Emacs.menu*.font:          Fira Mono-12
+Emacs.pane.menubar.font:   Fira Mono-12
+Emacs.dialog*.font:        Fira Mono-12
+Emacs.menuBar:             on
+Emacs.toolBar:             off
+Emacs.borderWidth:         0
+Emacs.internalBorder:      0
+Emacs.backgroundType:      dark
+Emacs*geometry:            100x45
 
 !-- Xft settings -- !
 
-Xft.dpi: 96
+Xft.dpi:       96
 Xft.antialias: true
-Xft.autohint: true
-Xft.hinting: true
+Xft.autohint:  true
+Xft.hinting:   true
 Xft.hintstyle: hintslight
 Xft.lcdfilter: lcddefault
-Xft.rgba: rgb
+Xft.rgba:      rgb
 
 !-- xterm settings -- !
 
