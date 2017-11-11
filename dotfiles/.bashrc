@@ -72,6 +72,7 @@ export EDITOR="$VISUAL"
 
 # Emacs settings
 export EMACS_SERVER_FILE=$HOME/.emacs.cache/server/server
+export PATH=$HOME/.cask/bin:$PATH
 
 # Flexlm settings
 # export LM_LICENSE_FILE=$HOME/flexlm/license.dat
