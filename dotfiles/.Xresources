@@ -17,7 +17,7 @@ Emacs.menuBar:             on
 Emacs.toolBar:             off
 Emacs.borderWidth:         0
 Emacs.internalBorder:      0
-Emacs.backgroundType:      dark
+Emacs.backgroundType:      light
 Emacs*geometry:            100x45
 
 !-- Xft settings -- !
