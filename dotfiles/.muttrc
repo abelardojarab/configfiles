@@ -111,7 +111,7 @@ auto_view text/html text/Html
 
 # Compose View
 set sig_dashes
-set edit_headers
+set edit_headers = yes # Include headers in the editor's message
 set fast_reply
 set askcc
 set fcc_attach
@@ -131,18 +131,45 @@ bind index p recall-message
 bind editor <tab> complete-query
 bind editor ^T complete
 
-# Use mu for searching
+# Gmail-style keyboard shortcuts - for IMAP GMail operations (not mbsync)
+folder-hook '+\[Gmail\]/All Mail' 'macro index d ";s+[Gmail]/Trash<enter><enter>" "Move to Gmail Trash"'
+folder-hook '+\[Gmail\]/All Mail' 'macro pager d "s+[Gmail]/Trash<enter><enter>" "Move to Gmail Trash"'
+folder-hook '+\[Gmail\]/Trash' 'macro pager d "<delete-message>" "Move to never never land"'
+folder-hook '+\[Gmail\]/Trash' 'macro index d ";<delete-message>" "Move to never never land"'
+
+macro index <home>  "<change-folder> =INBOX"<enter>
+macro index,pager gi "<change-folder>=INBOX<enter>" "Go to inbox"
+macro index,pager ga "<change-folder>=[Gmail]/All Mail<enter>" "Go to all mail"
+macro index,pager gs "<change-folder>=[Gmail]/Sent Mail<enter>" "Go to sent messages"
+macro index,pager gd "<change-folder>=[Gmail]/Drafts<enter>" "Go to drafts"
 
 # first macro does the search according to user query, second macro jumps to result list
 macro index ,f "<enter-command>unset wait_key<enter><shell-escape>read -p'mu query: ' x; mu find --clearlinks --linksdir ~/.mu/results --format links \$x<enter><change-folder-readonly>~/.mu/results\n" "mu find"
 macro index ,,f "<change-folder-readonly>~/.mu/results\n" "display mu-find results"
 macro index ,,,f  "<change-folder> =INBOX"<enter>
-
 macro index s "<enter-command>unset wait_key<enter><shell-escape>read -p'mu query: ' x; mu find --clearlinks --linksdir ~/.mu/results --format links \$x<enter><change-folder-readonly>~/.mu/results\n" "mu find"
-macro index <home>  "<change-folder> =INBOX"<enter>
 
 # Looking up addresses with mu cfind (press 'Q' inside mutt for querying them)
 set query_command = "mu cfind --format=mutt-ab  '%s'"
+
+# Finally, use notmuch to perform lightning fast searches via F8.
+# F9 can also show threading based on the current message.
+#
+# To set notmuch up, I just "notmuch setup" once,
+# and then invoke "notmuch new" after every "mbsync gmail".
+#
+macro index <F8> \
+      "<enter-command>unset wait_key<enter><shell-escape>notmuch-mutt -r --prompt search<enter><change-folder-readonly>~/.cache/notmuch/mutt/results<enter>" \
+      "notmuch: search mail"
+macro index <F9> \
+      "<enter-command>unset wait_key<enter><pipe-message>notmuch-mutt -r thread<enter><change-folder-readonly>~/.cache/notmuch/mutt/results<enter><enter-command>set wait_key<enter>" \
+      "notmuch: reconstruct thread"
+
+# Encryption
+source /usr/share/doc/mutt/examples/gpg.rc
+set pgp_timeout = 3600
+set crypt_autosign = yes
+set crypt_replyencrypt = yes
 
 # The following settings are interpreted by EMACS, do not remove them.
 # Local Variables:
