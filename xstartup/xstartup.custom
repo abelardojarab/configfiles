@@ -12,6 +12,27 @@ export GTK2_RC_FILES=$HOME/.gtkrc-2.0
 # Fix to make GNOME work
 export XKL_XMODMAP_DISABLE=1
 export XLIB_SKIP_ARGB_VISUALS=1
+
+targetkbMap="pc+us+us(intl):2"
+if which setxkbmap > /dev/null 2>&1 && \
+  which sed > /dev/null 2>&1 && \
+  which xkbcomp > /dev/null 2>&1 ; then
+  setxkbmap -symbols "$targetkbMap" -print | sed -n '/xkb_keymap {/,$p' | xkbcomp - $DISPLAY
+fi
+
+if [ -x /usr/bin/gnome-session -a -z "$VNC_SYSTEMXORG" ]; then
+  # Some gnome session types won't work with Xvnc, try to pick a sensible
+  # default.
+  for SESSION in "ubuntu-2d" "2d-gnome" "gnome-classic" "gnome-fallback"; do
+    if [ -f /usr/share/gnome-session/sessions/$SESSION.session ]; then
+      DESKTOP_SESSION=$SESSION; export DESKTOP_SESSION
+      GDMSESSION=$SESSION; export GDMSESSION
+      STARTUP="/usr/bin/gnome-session --session=$SESSION"; export STARTUP
+    fi
+  done
+fi
+
+# Prefer not using KDE
 export NO_KDE=1
 
 # Fix XAuthority handling with GDM3
@@ -24,16 +45,20 @@ export NO_KDE=1
 [ -x /usr/bin/xcompmgr ] && xcompmgr &
 
 # Default case
+SESSIONBIN="eval `dbus-launch --exit-with-session fvwm2`"
+XTERM_COMMAND="xterm -geometry 80x24+10+10 -ls"
+
 if [ -n "${NO_KDE}" ]
 then
     [ -r $HOME/.Xresources ] && xrdb -merge $HOME/.Xresources
     xsetroot -solid black &
-    eval `dbus-launch --exit-with-session fvwm2` &
+    echo "Starting session: $SESSIONBIN"
+    $SESSIONBIN
+    # eval `dbus-launch --exit-with-session fvwm2` &
     eval `gnome-settings-daemon` &
     /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1 &
 else
     eval `dbus-launch --exit-with-session startkde` &
 fi
 
-[ -r $HOME/.Xresources ] && xrdb -merge $HOME/.Xresources
-xsetroot -solid black &
+
