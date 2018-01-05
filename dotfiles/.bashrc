@@ -142,8 +142,8 @@ export MGLS_LICENSE_FILE=$HOME/flexlm/calibre.dat
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/calibre.dat
 
 # Modelsim settings
-export MODELSIMROOT=/opt/mentor/modelsim/10.1c
-export PATH=$MODELSIMROOT/modeltech/bin:$PATH
+export MTI_HOME=/opt/mentor/modelsim/10.1c/modeltech
+export PATH=$MTI_HOME/bin:$PATH
 export LM_LICENSE_FILE=$HOME/flexlm/modelsim.dat:$LM_LICENSE_FILE:
 export MGLS_LICENSE_FILE=$HOME/flexlm/modelsim.dat:$MGLS_LICENSE_FILE
 export MTI_VCO_MODE=64
@@ -157,10 +157,11 @@ export PATH=/opt/MATLAB/R2012b/bin:$PATH
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/matlab.dat
 
 # Altera settings
-export QUARTUS_DIR=/opt/intelFPGA/16.1
-export PATH=$QUARTUS_DIR/quartus/bin:$PATH
-export ALTERAOCLSDKROOT=/opt/intelFPGA/16.1/hld
-export QSYS_ROOTDIR=/opt/intelFPGA/16.1/quartus/sopc_builder/bin
+export QUARTUS_ROOT=/opt/intelFPGA/16.1
+export QUARTUS_HOME=$QUARTUS_ROOT/quartus
+export PATH=$QUARTUS_ROOT/quartus/bin:$PATH
+export ALTERAOCLSDKROOT=$QUARTUS_ROOT/hld
+export QSYS_ROOTDIR=$QUARTUS_ROOT/quartus/sopc_builder/bin
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/altera.dat
 
 # Xilinx settings
