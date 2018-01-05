@@ -54,9 +54,6 @@ then
     xsetroot -solid black &
     echo "Starting session: $SESSIONBIN"
     $SESSIONBIN
-    # eval `dbus-launch --exit-with-session fvwm2` &
-    eval `gnome-settings-daemon` &
-    /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1 &
 else
     eval `dbus-launch --exit-with-session startkde` &
 fi
