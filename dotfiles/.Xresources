@@ -6,28 +6,55 @@ Xft.dpi:       96
 Xft.antialias: true
 Xft.autohint:  true
 Xft.hinting:   true
-Xft.hintstyle: hintslight
+Xft.hintstyle: hintfull
 Xft.lcdfilter: lcddefault
-Xft.rgba:      rgb
+Xft.rgba:      rgbc
 
 !-- Emacs settings -- !
-Emacs.pane.menubar.margin:  0
-Emacs*useXIM:               false
-Emacs.fontBackend:          xft
-Emacs.bitmapIcon:           on
-Emacs.font:                 Fira Mono-12
-Emacs.FACE.italicFont:      Fira Mono-12
-Emacs.FACE.boldFont:        Fira Mono-12
-Emacs*menubar*font:         Fira Mono-12
-Emacs.menu*.font:           Fira Mono-12
-Emacs.pane.menubar.font:    Fira Mono-12
-Emacs.dialog*.font:         Fira Mono-12
-Emacs.menuBar:              on
-Emacs.toolBar:              off
-Emacs.borderWidth:          0
-Emacs.internalBorder:       0
-Emacs.backgroundType:       dark
-Emacs*geometry:             100x45
+Emacs.pane.menubar.margin:         0
+Emacs.fontBackend:                 xft
+Emacs.bitmapIcon:                  on
+Emacs.bold.attributeBold:          on
+Emacs.bold-italic.attributeItalic: on
+Emacs.bold-italic.attributeBold:   on
+Emacs.italic.attributeItalic:      on
+Emacs.font:                        Source Code Pro-12
+Emacs.menu*.font:                  Source Code Pro-12
+Emacs.pane.menubar.font:           Source Code Pro-12
+Emacs.dialog*.font:                Source Code Pro-12
+Emacs.menuBar:                     on
+Emacs.toolBar:                     off
+Emacs.borderWidth:                 0
+Emacs.internalBorder:              0
+Emacs.backgroundType:              dark
+Emacs*geometry:                    97x26+0+30
+
+!-- xscreensaver settings -- !
+xscreensaver.timeout:           15
+xscreensaver.lock:              true
+xscreensaver.lockTimeout:       5
+xscreensaver.splash:            False
+xscreensaver.dpmsEnabled:       True
+xscreensaver.dpmsStandby:       9
+xscreensaver.dpmsSuspend:       9
+xscreensaver.dpmsOff:           10
+xscreensaver.grabDesktopImages: False
+xscreensaver.grabVideoFrames:   False
+xscreensaver.mode:              blank
+
+!-- xlock settings -- !
+XLock.mode:        space
+XLock.username:    Username:
+XLock.password:    Password:
+XLock.description: false
+XLock.info:
+XLock.validate:    Validating login...
+XLock.invalid:     Login      failed
+XLock*font:        Source     Code Pro-12
+XLock.ncolors:     200
+XLock.dpmsstandby: 600
+XLock.dpmssuspend: 1200
+XLock.dpmsoff:     1800
 
 !-- xterm settings -- !
 
