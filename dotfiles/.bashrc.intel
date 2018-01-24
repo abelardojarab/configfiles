@@ -118,7 +118,7 @@ fi
 
 # Proxy settings
 export http_proxy=http://proxy-chain.intel.com:911
-export https_proxy=https://proxy-chain.intel.com:912
+export https_proxy=https://proxy-chain.intel.com:911
 export ftp_proxy=http://proxy-chain.intel.com:911
 export socks_proxy=proxy-us.intel.com:1080
 export all_proxy=socks://proxy-socks.fm.intel.com:1080
