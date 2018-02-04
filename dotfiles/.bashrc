@@ -31,8 +31,8 @@ MY_BASH_BLUE="\033[0;34m" #Blue
 MY_BASH_NOCOLOR="\033[0m"
 export HISTTIMEFORMAT=`echo -e ${MY_BASH_BLUE}[%F %T] $MY_BASH_NOCOLOR `
 
-# Save each command after entering
-PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
+#  Automatically append command to history without requiring the session to end
+export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
 
 # check the window size after each command and, if necessary,
 # update the values of LINES and COLUMNS.
