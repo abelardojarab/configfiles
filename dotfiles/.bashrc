@@ -23,8 +23,8 @@ export HISTIGNORE="&:ls:[bf]g:[cb]d:b:history:exit:[ ]*"
 shopt -s histappend
 
 # for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
-export HISTSIZE=1000
-export HISTFILESIZE=2000
+export HISTSIZE=50000
+export HISTFILESIZE=50000
 
 # useful timestamp format
 export HISTTIMEFORMAT=" [%F %T]   "
