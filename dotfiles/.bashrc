@@ -27,7 +27,9 @@ export HISTSIZE=50000
 export HISTFILESIZE=50000
 
 # useful timestamp format
-export HISTTIMEFORMAT=" [%F %T]   "
+MY_BASH_BLUE="\033[0;34m" #Blue
+MY_BASH_NOCOLOR="\033[0m"
+export HISTTIMEFORMAT=`echo -e ${MY_BASH_BLUE}[%F %T] $MY_BASH_NOCOLOR `
 
 # Save each command after entering
 PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
