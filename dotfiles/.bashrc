@@ -7,14 +7,15 @@
 
 # don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options
-HISTCONTROL=ignoreboth
+export HISTCONTROL=ignoreboth
+export HISTIGNORE="&:ls:[bf]g:[cb]d:b:exit:[ ]*"
 
 # append to the history file, don't overwrite it
 shopt -s histappend
 
 # for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
-HISTSIZE=1000
-HISTFILESIZE=2000
+export HISTSIZE=1000
+export HISTFILESIZE=2000
 
 # check the window size after each command and, if necessary,
 # update the values of LINES and COLUMNS.
@@ -27,9 +28,6 @@ shopt -s checkwinsize
 if [ -x /usr/bin/dircolors ]; then
     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
     alias ls='ls --color=auto'
-    #alias dir='dir --color=auto'
-    #alias vdir='vdir --color=auto'
-
     alias grep='grep --color=auto'
     alias fgrep='fgrep --color=auto'
     alias egrep='egrep --color=auto'
@@ -75,7 +73,6 @@ export EMACS_SERVER_FILE=$HOME/.emacs.cache/server/server
 export PATH=$HOME/.cask/bin:$PATH
 
 # Flexlm settings
-# export LM_LICENSE_FILE=$HOME/flexlm/license.dat
 export theHost=`hostname`
 alias lmlicense='/opt/mentor/calibre/2013.3_28.19/bin/lmgrd -c'
 
