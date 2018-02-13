@@ -31,9 +31,6 @@ MY_BASH_BLUE="\033[0;34m" #Blue
 MY_BASH_NOCOLOR="\033[0m"
 export HISTTIMEFORMAT=`echo -e ${MY_BASH_BLUE}[%F %T] $MY_BASH_NOCOLOR `
 
-#  Automatically append command to history without requiring the session to end
-export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
-
 # check the window size after each command and, if necessary,
 # update the values of LINES and COLUMNS.
 shopt -s checkwinsize
@@ -161,7 +158,7 @@ export MGLS_LICENSE_FILE=$HOME/flexlm/calibre.dat
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/calibre.dat
 
 # Modelsim settings
-export MTI_HOME=/opt/mentor/modelsim/10.1c/modeltech
+export MTI_HOME=/opt/mentor/modelsim/10.5a/modeltech
 export PATH=$MTI_HOME/bin:$PATH
 export LM_LICENSE_FILE=$HOME/flexlm/modelsim.dat:$LM_LICENSE_FILE:
 export MGLS_LICENSE_FILE=$HOME/flexlm/modelsim.dat:$MGLS_LICENSE_FILE
@@ -181,7 +178,7 @@ export QUARTUS_HOME=$QUARTUS_ROOT/quartus
 export PATH=$QUARTUS_ROOT/quartus/bin:$PATH
 export ALTERAOCLSDKROOT=$QUARTUS_ROOT/hld
 export QSYS_ROOTDIR=$QUARTUS_ROOT/quartus/sopc_builder/bin
-export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/altera.dat
+export LM_LICENSE_FILE=1800@ubuntu01:1900@ubuntu01:$LM_LICENSE_FILE:$HOME/flexlm/altera.dat
 
 # Xilinx settings
 export PATH=$PATH:/opt/Xilinx/14.7/ISE_DS/ISE/bin/lin64
