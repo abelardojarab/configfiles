@@ -101,8 +101,6 @@ export PYTHONPATH=${PYTHONPATH}:/opt/oaScript/python2
 
 # Java options
 export JAVA_HOME=/usr/lib/jvm/java-9-oracle
-export _JAVA_OPTIONS=" -Dswing.defaultlaf=com.sun.java.swing.plaf.gtk.GTKLookAndFeel -Djava.net.preferIPv4Stack=true -Djava.awt.headless=true -Dawt.useSystemAAFontSettings=on -Dswing.aatext=true -Xms512m -Xmx1024m"
-export MAVEN_OPTS=" -Xmx1024m -Xms256m -XX:MaxPermSize=256m -Dmaven.artifact.threads=5 -Duser.language=en -Duser.country=US -Duser.timezone=PST -Dhttps.protocols=TLSv1"
 
 # OpenAccess
 export OA_UNSUPPORTED_PLAT=linux_rhel50_gcc44x
@@ -193,6 +191,13 @@ export PATH=/opt/sublime_text:$PATH
 # Master PDF 3 and PDF Studio
 export PATH=/opt/master-pdf-editor-3:$PATH
 export PATH=/opt/PDFStudio:$PATH
+
+# JetBrains tools
+export PATH=/opt/JetBrains/clion-2017.2.2/bin:$PATH
+export PATH=/opt/JetBrains/pycharm-2017.2.3/bin:$PATH
+export PATH=/opt/JetBrains/WebStorm-172.4155.35/bin:$PATH
+export PATH=/opt/JetBrains/license_server:$PATH
+alias jblicense='/opt/JetBrains/license_server/jb_licsrv.linux.amd64'
 
 # Set up general GTAGS location
 export GTAGSLIBPATH=$HOME/.gtags/
