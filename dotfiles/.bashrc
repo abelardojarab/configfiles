@@ -60,6 +60,10 @@ alias l='ls -CF'
 # Use gpg2
 alias gpg='gpg2'
 
+# rsync utilities
+alias rsynccopy="rsync --partial --progress --append --rsh=ssh -r -h "
+alias rsyncmove="rsync --partial --progress --append --rsh=ssh -r -h --remove-sent-files"
+
 # Add an "alert" alias for long running commands.  Use like so:
 #   sleep 10; alert
 alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
