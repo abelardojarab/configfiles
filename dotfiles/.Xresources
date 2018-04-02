@@ -2,7 +2,7 @@
 !*
 
 !-- Xft settings -- !
-Xft.dpi:       96
+Xft.dpi:       94
 Xft.antialias: true
 Xft.autohint:  true
 Xft.hinting:   true
@@ -18,10 +18,10 @@ Emacs.bold.attributeBold:          on
 Emacs.bold-italic.attributeItalic: on
 Emacs.bold-italic.attributeBold:   on
 Emacs.italic.attributeItalic:      on
-Emacs.font:                        Source Code Pro-12
-Emacs.menu*.font:                  Source Code Pro-12
-Emacs.pane.menubar.font:           Source Code Pro-12
-Emacs.dialog*.font:                Source Code Pro-12
+Emacs.font:                        Source Code Pro-11
+Emacs.menu*.font:                  Source Code Pro-11
+Emacs.pane.menubar.font:           Source Code Pro-11
+Emacs.dialog*.font:                Source Code Pro-11
 Emacs.menuBar:                     on
 Emacs.toolBar:                     off
 Emacs.borderWidth:                 0
@@ -49,8 +49,8 @@ XLock.password:    Password:
 XLock.description: false
 XLock.info:
 XLock.validate:    Validating login...
-XLock.invalid:     Login      failed
-XLock*font:        Source     Code Pro-12
+XLock.invalid:     Login failed
+XLock*font:        Source Code Pro-12
 XLock.ncolors:     200
 XLock.dpmsstandby: 600
 XLock.dpmssuspend: 1200
@@ -99,16 +99,16 @@ xterm*scrollTtyOutput: false
 
 ! This colormap is copied from terminators builtin *Ambience* scheme
 ! (see /usr/lib/python2.7/site-packages/terminatorlib/prefseditor.py):
-xterm*color0: #2e3436
-xterm*color1: #cc0000
-xterm*color2: #4e9a06
-xterm*color3: #c4a000
-xterm*color4: #3465a4
-xterm*color5: #75507b
-xterm*color6: #06989a
-xterm*color7: #d3d7cf
-xterm*color8: #555753
-xterm*color9: #ef2929
+xterm*color0:  #2e3436
+xterm*color1:  #cc0000
+xterm*color2:  #4e9a06
+xterm*color3:  #c4a000
+xterm*color4:  #3465a4
+xterm*color5:  #75507b
+xterm*color6:  #06989a
+xterm*color7:  #d3d7cf
+xterm*color8:  #555753
+xterm*color9:  #ef2929
 xterm*color10: #8ae234
 xterm*color11: #fce94f
 xterm*color12: #729fcf
@@ -117,8 +117,8 @@ xterm*color14: #34e2e2
 xterm*color15: #eeeeec
 
 ! Theme Nine
-xterm*background: rgb:1a/1a/1a
-xterm*foreground: rgb:d6/d6/d6
+xterm*background:  rgb:1a/1a/1a
+xterm*foreground:  rgb:d6/d6/d6
 xterm*cursorColor: #d6d6d6
 
 ! *** Xdefaults Affecting CADENCE TOOLS ***
@@ -158,52 +158,53 @@ Opus.topShadowColor:           #ffffff
 Opus.bottomShadowColor:        #999999
 Opus.buttonColor:              #800000
 Opus.editorBackground:         #000000
-Opus.showFixedMenuLabels: True
+Opus.showFixedMenuLabels:      True
 
-cdsLibManager*textFontList: -misc-fixed-medium-r-normal--0-0-100-100-c-0-iso8859-14
-cdsLibManager*buttonFontList: -misc-fixed-medium-r-normal--0-0-100-100-c-0-iso8859-14
-cdsLibManager*labelFontList: -misc-fixed-medium-r-normal--0-0-100-100-c-0-iso8859-14
-cdsLibManager*XbaeMatrix*fontList: -misc-fixed-medium-r-normal--0-0-100-100-c-0-iso8859-14
-cdsLibManager*Tree.XmHierButton.fontList: -misc-fixed-medium-r-normal--0-0-100-100-c-0-iso8859-14
-cdsLibManager*copyErrorDestLib.fontList: -misc-fixed-medium-r-normal--0-0-100-100-c-0-iso8859-14
-cdsLibManager*copyErrorMessage.fontList: -misc-fixed-medium-r-normal--0-0-100-100-c-0-iso8859-14
-cdsLibManager*cdsComboBox.edit.fontList: -misc-fixed-medium-r-normal--0-0-100-100-c-0-iso8859-14
-cdsLibManager*XmMenuShell.buttonFontList: -misc-fixed-medium-r-normal--0-0-100-100-c-0-iso8859-14
+cdsLibManager*textFontList:                           -misc-fixed-medium-r-normal--0-0-100-100-c-0-iso8859-14
+cdsLibManager*buttonFontList:                         -misc-fixed-medium-r-normal--0-0-100-100-c-0-iso8859-14
+cdsLibManager*labelFontList:                          -misc-fixed-medium-r-normal--0-0-100-100-c-0-iso8859-14
+cdsLibManager*XbaeMatrix*fontList:                    -misc-fixed-medium-r-normal--0-0-100-100-c-0-iso8859-14
+cdsLibManager*Tree.XmHierButton.fontList:             -misc-fixed-medium-r-normal--0-0-100-100-c-0-iso8859-14
+cdsLibManager*copyErrorDestLib.fontList:              -misc-fixed-medium-r-normal--0-0-100-100-c-0-iso8859-14
+cdsLibManager*copyErrorMessage.fontList:              -misc-fixed-medium-r-normal--0-0-100-100-c-0-iso8859-14
+cdsLibManager*cdsComboBox.edit.fontList:              -misc-fixed-medium-r-normal--0-0-100-100-c-0-iso8859-14
+cdsLibManager*XmMenuShell.buttonFontList:             -misc-fixed-medium-r-normal--0-0-100-100-c-0-iso8859-14
 cdsLibManager*menuBar.XmCascadeButtonGadget.fontList: -misc-fixed-medium-r-normal--0-0-100-100-c-0-iso8859-14
 
 ! ****************************************************
 ! * These resources allow you to specify the default *
 ! * positions for forms.                             *
 ! ****************************************************
-Opus.formPlacement: top
-Opus.formRelativeTo: currentWindow
-Opus.optionFormPlacement: center
+Opus.formPlacement:        top
+Opus.formRelativeTo:       currentWindow
+Opus.optionFormPlacement:  center
 Opus.optionFormRelativeTo: screen
 !
 ! added 1/2/93 to try to fix the problem with a black opus window
 OpenWindows.ColorFocusLocked: True
-Twm*colormapFocusPolicy: explicit
+Twm*colormapFocusPolicy:      explicit
 
 ! **************
 ! ** END OPUS RESOURCES
 ! **************
 ! Mwm options that Cadence recommends
-Mwm*clientAutoPlace: False
-Mwm*colormapFocusPolicy: explicit
-Mwm*keyboardFocusPolicy: pointer
+Mwm*clientAutoPlace:      False
+Mwm*colormapFocusPolicy:  explicit
+Mwm*keyboardFocusPolicy:  pointer
 Mwm*interactivePlacement: False
-Mwm*positionIsFrame: False
+Mwm*positionIsFrame:      False
+
 ! **************
 ! FrameMaker options recommended by Cadence
 ! **************
-Maker*background: #c0c0c0
-Maker*bottomShadowColor:#999999
-Maker*topShadowColor: #ffffff
-Maker*foreground: #800000
-Maker*fontList: -misc-fixed-medium-r-normal--0-0-100-100-c-0-iso8859-14
-Maker.colorDocs: True
-Maker.useBackingStore: True
-Maker.colorImages: True
+Maker*background:        #c0c0c0
+Maker*bottomShadowColor: #999999
+Maker*topShadowColor:    #ffffff
+Maker*foreground:        #800000
+Maker*fontList:          -misc-fixed-medium-r-normal--0-0-100-100-c-0-iso8859-14
+Maker.colorDocs:         True
+Maker.useBackingStore:   True
+Maker.colorImages:       True
 ! ********************
 ! * END of XDEFAULTS *
 ! ********************
