@@ -41,9 +41,6 @@ export NO_KDE=1
     xauth merge $XAUTHORITY
 }
 
-# Run a composition manager if available
-[ -x /usr/bin/xcompmgr ] && xcompmgr &
-
 # Default case
 SESSIONBIN="eval `dbus-launch --exit-with-session fvwm2`"
 XTERM_COMMAND="xterm -geometry 80x24+10+10 -ls"
@@ -57,5 +54,3 @@ then
 else
     eval `dbus-launch --exit-with-session startkde` &
 fi
-
-

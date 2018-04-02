@@ -9,11 +9,9 @@ unset DBUS_SESSION_BUS_ADDRESS
 # Fix to make GNOME work
 export XKL_XMODMAP_DISABLE=1
 
-
 # Apply settings
 [ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources
 xsetroot -solid grey &
 vncconfig -iconic &
 
 startkde &
-
