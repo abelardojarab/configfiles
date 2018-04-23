@@ -106,11 +106,6 @@ export PATH=$HOME/.cask/bin:$PATH
 export theHost=`hostname`
 alias lmlicense='/opt/mentor/calibre/2013.3_28.19/bin/lmgrd -c'
 
-# Python settings
-export PYTHONPATH=${PYTHONPATH}:/usr/local/lib/python2.7/dist-packages:/usr/lib/python2.7/dist-packages:~/workspace/pythonlibs/lib/python2.7/dist-packages
-export PYTHONPATH=${PYTHONPATH}:/usr/local/lib/python2.7/site-packages:/usr/lib/python2.7/site-packages
-export PYTHONPATH=${PYTHONPATH}:/opt/oaScript/python2
-
 # Java options
 export JAVA_HOME=/usr/lib/jvm/java-9-oracle
 
