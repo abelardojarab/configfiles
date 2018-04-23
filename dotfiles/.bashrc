@@ -35,10 +35,6 @@ export HISTTIMEFORMAT=`echo -e ${MY_BASH_BLUE}[%F %T] $MY_BASH_NOCOLOR `
 # update the values of LINES and COLUMNS.
 shopt -s checkwinsize
 
-# autocorrect minor spelling errors
-shopt -s dirspell
-shopt -s cdspell
-
 # make less more friendly for non-text input files, see lesspipe(1)
 [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
 
