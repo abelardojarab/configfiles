@@ -311,7 +311,7 @@ SEP=""
 export PS1="\
 $Gray[\t] \
 $Green\u@\h \
-$Yellow\W \
+$Yellow\$PWD \
 \$(\
     # get the reference description
     if refname=\$(git name-rev --name-only HEAD 2> /dev/null); then\
@@ -332,7 +332,7 @@ $Yellow\W \
             || echo -n '$BGreen*';\
         git diff --quiet &> /dev/null \
             || echo -n '$BRed*';\
-  git status --porcelain 2> /dev/null | grep -q ^?? \
+        git status --porcelain 2> /dev/null | grep -q ^?? \
         && echo -n '$Gray*';\
         echo -n ' ';\
     fi\
