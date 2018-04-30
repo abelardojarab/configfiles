@@ -10,7 +10,9 @@ Xft.hintstyle: hintfull
 Xft.lcdfilter: lcddefault
 Xft.rgba:      rgbc
 
-!-- Emacs settings -- !
+! --- emacs {{{1
+! -----------------------------------------------------------------------------
+
 Emacs.pane.menubar.margin:         0
 Emacs.fontBackend:                 xft
 Emacs.bitmapIcon:                  on
@@ -29,20 +31,45 @@ Emacs.internalBorder:              0
 Emacs.backgroundType:              dark
 Emacs*geometry:                    97x26+0+30
 
-!-- xscreensaver settings -- !
-xscreensaver.timeout:           15
-xscreensaver.lock:              true
-xscreensaver.lockTimeout:       5
+! --- xscreensaver {{{1
+! -----------------------------------------------------------------------------
+
+!general dialog box (affects main hostname, username, password text)
+xscreensaver.Dialog.foreground: #ffffff
+xscreensaver.Dialog.background: #111111
+xscreensaver.Dialog.topShadowColor: #111111
+xscreensaver.Dialog.bottomShadowColor: #111111
+xscreensaver.Dialog.Button.foreground: #666666
+xscreensaver.Dialog.Button.background: #ffffff
+!username/password input box and date text colour
+xscreensaver.Dialog.text.foreground: #666666
+xscreensaver.Dialog.text.background: #ffffff
+xscreensaver.Dialog.internalBorderWidth:24
+xscreensaver.Dialog.borderWidth: 20
+xscreensaver.Dialog.shadowThickness: 2
+!timeout bar (background is actually determined by Dialog.text.background)
+xscreensaver.passwd.thermometer.foreground: #ff0000
+xscreensaver.passwd.thermometer.background: #000000
+xscreensaver.passwd.thermometer.width: 8
+!datestamp format--see the strftime(3) manual page for details
+xscreensaver.dateFormat: %I:%M%P %a %b %d, %Y
+xscreensaver.timeout: 0:10:00
+xscreensaver.cycle: 0:10:00
+xscreensaver.lock: True
+xscreensaver.lockTimeout: 0:05:00
+xscreensaver.passwdTimeout: 0:00:30
+xscreensaver.dpmsEnabled: True
+xscreensaver.dpmsStandby: 0:10:00
+xscreensaver.dpmsSuspend: 0:15:00
+xscreensaver.dpmsOff: 0:20:00
 xscreensaver.splash:            False
-xscreensaver.dpmsEnabled:       True
-xscreensaver.dpmsStandby:       9
-xscreensaver.dpmsSuspend:       9
-xscreensaver.dpmsOff:           10
 xscreensaver.grabDesktopImages: False
 xscreensaver.grabVideoFrames:   False
 xscreensaver.mode:              blank
 
-!-- xlock settings -- !
+! --- xlock {{{1
+! -----------------------------------------------------------------------------
+
 XLock.mode:        space
 XLock.username:    Username:
 XLock.password:    Password:
@@ -56,29 +83,35 @@ XLock.dpmsstandby: 600
 XLock.dpmssuspend: 1200
 XLock.dpmsoff:     1800
 
-!-- xterm settings -- !
+! --- xterm {{{1
+! -----------------------------------------------------------------------------
 
 ! Fix alt-key inputting
-xterm*eightBitInput:        false
-xterm*metaSendsEscape:      true
+xterm*metaSendsEscape: true
+
+! Allow utf8 in/out
+xterm*utf8: 2
+xterm*eightBitInput: true
+xtere*eightBitControl: false
+xterm*eightBitOutput: true
 
 ! Bigger font
-xterm*utf8:       2
+xterm*renderFont: true
 xterm*termName:   xterm-256color
 xterm*faceName:   xft:Fira Mono:pixelsize=17
-xterm*faceSize:   14
+xterm*wideChars: true
+
+! Define the size increments used when changing font size
+xterm*faceSize: 12
+xterm*faceSize1: 14
+xterm*faceSize2: 16
+xterm*faceSize3: 18
+xterm*faceSize4: 20
+xterm*faceSize5: 22
+xterm*faceSize6: 24
 
 ! Fix up xterm keybindings
 xterm*VT100.translations:   #override \
-      <Key>BackSpace:    string(0x7F) \n\
-      <Key>Insert:       string(0x1b) string("[2~")\n\
-      <Key>Delete:       string(0x1b) string("[3~")\n\
-      <Key>Home:         string(0x1b) string("[1~")\n\
-      <Key>End:          string(0x1b) string("[4~")\n\
-      <Key>Page_Up:      string(0x1b) string("[5~")\n\
-      <Key>Page_Down:    string(0x1b) string("[6~")\n\
-      <KeyPress>Prior:   scroll-back(1,page)\n\
-      <KeyPress>Next:    scroll-forw(1,page)
 
 ! Every shell is a login shell by default (for inclusion of all necessary environment variables)
 xterm*loginshell: true
@@ -86,7 +119,7 @@ xterm*loginshell: true
 ! Scrolling
 xterm*savelines: 16384
 
-! double-click to select whole URLs :D
+! Matches URLs and emails and selects them on double-click
 xterm*charClass: 3:48,33:48,35:48,37:48,43:48,45-47:48,64:48,95:48,126:48,35:48,58:48,63:48,61:48,44:48,38:48,59:48
 
 ! right hand side scrollbar...
@@ -96,6 +129,13 @@ xterm*rightScrollBar: true
 
 ! stop output to terminal from jumping down to bottom of scroll again
 xterm*scrollTtyOutput: false
+
+! Scroll multiple lines at a time for faster redrawing:
+xterm*jumpScroll: true
+xterm*multiScroll: true
+
+! trim whitespace from selection before copying
+xterm*trimSelection: true
 
 ! This colormap is copied from terminators builtin *Ambience* scheme
 ! (see /usr/lib/python2.7/site-packages/terminatorlib/prefseditor.py):
@@ -121,7 +161,123 @@ xterm*background:  rgb:1a/1a/1a
 xterm*foreground:  rgb:d6/d6/d6
 xterm*cursorColor: #d6d6d6
 
-! *** Xdefaults Affecting CADENCE TOOLS ***
+! Hold Shift to use CLIPBOARD instead of PRIMARY to copy or paste
+! Change font size with ctrl-+/-/= (or mousewheel).
+! Add a few alt- shortcuts for quick access to special characters
+xterm*vt100.Translations: #override \n\
+    <Key>BackSpace:    string(0x7F) \n\
+    <Key>Insert:       string(0x1b) string("[2~")\n\
+    <Key>Delete:       string(0x1b) string("[3~")\n\
+    <Key>Home:         string(0x1b) string("[1~")\n\
+    <Key>End:          string(0x1b) string("[4~")\n\
+    <Key>Page_Up:      string(0x1b) string("[5~")\n\
+    <Key>Page_Down:    string(0x1b) string("[6~")\n\
+    <KeyPress>Prior:   scroll-back(1,page)\n\
+    <KeyPress>Next:    scroll-forw(1,page)
+    ~Shift~Ctrl<Btn2Up>: insert-selection(PRIMARY, CUT_BUFFER0) \n\
+    Shift~Ctrl<Btn2Up>: insert-selection(CLIPBOARD, CUT_BUFFER1) \n\
+    ~Shift<BtnUp>: select-end(PRIMARY, CUT_BUFFER0) \n\
+    Shift<BtnUp>: select-end(CLIPBOARD, CUT_BUFFER1) \n\
+    Shift Ctrl <Key> =: larger-vt-font() \n\
+    Shift Ctrl <Key> -: smaller-vt-font() \n\
+    Shift Ctrl <Key> 0: set-vt-font(d) \n\
+    Ctrl <Btn4Down>: larger-vt-font() \n\
+    Ctrl <Btn5Down>: smaller-vt-font() \n\
+    Meta ~Shift <Key> bracketleft: string("‘") \n\
+    Meta ~Shift <Key> bracketright: string("’") \n\
+    Meta Shift <Key> bracketleft: string("“") \n\
+    Meta Shift <Key> bracketright: string("”") \n\
+    Meta ~Shift <Key> period: string("…") \n\
+    Meta ~Shift <Key> -: string("—") \n\
+    Meta Shift <Key> -: string("–") \n\
+    Meta ~Shift <Key> exclam: string("¡") \n\
+    Meta ~Shift <Key> question: string("¿") \n\
+    Meta ~Shift <Key> 0: string("ʘ") \n\
+    Meta ~Shift <Key> o: string("°") \n\
+    Meta ~Shift <Key> t: string("™") \n\
+    Meta ~Shift <Key> c: string("©") \n\
+    Meta ~Shift <Key> x: string("×") \n\
+    Meta ~Shift <Key> d: string("ಠ")
+
+! --- xmag {{{1
+! -----------------------------------------------------------------------------
+xmag*source: 100x100
+xmag*Command.background: gray85
+xmag*Command.foreground: gray15
+xmag*Label.foreground: rgb:e/b/b
+xmag*Label.background: IndianRed
+xmag*paste.background: ivory3
+xmag*helpLabel.background: gray80
+xmag*helpLabel.foreground: gray40
+! opens the window at the bottom right
+xmag*geometry: -0-0
+! automatically show the hex color and set up some keyboard shortcuts
+xmag*Scale.baseTranslations:#augment\
+        <EnterWindow>:popup-pixel()\n\
+        <Motion>:update-pixel()\n\
+        <Key>q:close()\n\
+        Ctrl<Key>c:close()\n\
+        <Key>space:replace()
+
+! --- xpdf {{{1
+! -----------------------------------------------------------------------------
+xpdf*initialZoom: page
+xpdf*urlCommand: firefox %s
+xpdf*textEncoding: utf-8
+xpdf*enableFreetype: yes
+xpdf*antialias: yes
+xpdf*viKeys: on
+
+! --- gv {{{1
+! -----------------------------------------------------------------------------
+gv*antialias: true
+
+! --- xcalc {{{1
+! -----------------------------------------------------------------------------
+xcalc*ti.button1.vertDistance: 4
+xcalc*ti.button2.vertDistance: 4
+xcalc*ti.button3.vertDistance: 4
+xcalc*ti.button4.vertDistance: 4
+xcalc*ti.button5.vertDistance: 4
+xcalc*ti.background: gray90
+xcalc*ti.bevel.borderColor: gray65
+xcalc*ti.bevel.borderWidth: 1
+xcalc*ti.bevel.vertDistance: 4
+xcalc*ti.bevel.defaultDistance: 0
+xcalc*ti.bevel.background: rgb:b/c/b
+xcalc*ti.bevel.screen*background: rgb:b/c/b
+xcalc*ti.bevel.screen.borderColor: rgb:b/c/b
+xcalc*ti.bevel.screen.vertDistance: 10
+xcalc*ti.bevel.screen.horizDistance: 10
+xcalc*ti.bevel.screen*left: chainLeft
+xcalc*ti.bevel.screen*right: chainRight
+xcalc*ti.bevel.screen*top: chainTop
+xcalc*ti.bevel.screen*bottom: chainBottom
+xcalc*ti.bevel.screen*LCD.foreground: gray10
+xcalc*ti.bevel.screen*INV.vertDistance: 0
+xcalc*ti.Command.borderColor: gray65
+xcalc*ti.Command.background: gray85
+xcalc*ti.Command.foreground: gray30
+xcalc*ti.button5.background: rgb:e/b/b
+xcalc*ti.button20.background: rgb:e/d/c
+xcalc*ti.button25.background: rgb:e/d/c
+xcalc*ti.button30.background: rgb:e/d/c
+xcalc*ti.button35.background: rgb:e/d/c
+xcalc*ti.button40.background: rgb:b/b/e
+xcalc*ti.button22.background: gray95
+xcalc*ti.button23.background: gray95
+xcalc*ti.button24.background: gray95
+xcalc*ti.button27.background: gray95
+xcalc*ti.button28.background: gray95
+xcalc*ti.button29.background: gray95
+xcalc*ti.button32.background: gray95
+xcalc*ti.button33.background: gray95
+xcalc*ti.button34.background: gray95
+xcalc*ti.button37.background: gray95
+xcalc*ti.button38.background: gray95
+xcalc*ti.button39.background: gray95
+
+! *** Xdefaults Affecting CADENCE tools ***
 
 ! ********************************************************
 ! * These resources set the default position of the CIW. *
