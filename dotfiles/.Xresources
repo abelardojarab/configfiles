@@ -295,10 +295,20 @@ URxvt*scrollBar_floating: true
 URxvt*scrollstyle: plain
 URxvt*saveLines: 10000
 
+! Perl extensions
+URxvt.perl-ext-common:      default,matcher
+URxvt.matcher.button:       1
+URxvt.urlLauncher:          firefox
+
 ! to match gnome-terminal "Linux console" scheme
 ! foreground/background
-URxvt*background: [82]#000000
+URxvt*background: [82]#002b36
 URxvt*foreground: #ffffff
+URxvt*fadeColor: #002b36
+URxvt*cursorColor: #93a1a1
+URxvt*pointerColorBackground: #586e75
+URxvt*pointerColorForeground: #93a1a1
+
 ! black
 URxvt*color0  : #2E3436
 URxvt*color8  : #555753
