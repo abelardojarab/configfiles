@@ -1,7 +1,9 @@
 !* Use the command "xrdb < $HOME/.Xdefaults" to reread in changes to .Xdefaults
 !*
 
-!-- Xft settings -- !
+!-- Xft settings {{{
+! -----------------------------------------------------------------------------
+
 Xft.dpi:       94
 Xft.antialias: true
 Xft.autohint:  true
@@ -10,7 +12,9 @@ Xft.hintstyle: hintfull
 Xft.lcdfilter: lcddefault
 Xft.rgba:      rgbc
 
-! --- emacs {{{1
+! }}}
+
+! --- emacs {{{
 ! -----------------------------------------------------------------------------
 
 Emacs.pane.menubar.margin:         0
@@ -31,7 +35,9 @@ Emacs.internalBorder:              0
 Emacs.backgroundType:              dark
 Emacs*geometry:                    97x26+0+30
 
-! --- xscreensaver {{{1
+! }}}
+
+! --- xscreensaver {{{
 ! -----------------------------------------------------------------------------
 
 !general dialog box (affects main hostname, username, password text)
@@ -67,7 +73,9 @@ xscreensaver.grabDesktopImages: False
 xscreensaver.grabVideoFrames:   False
 xscreensaver.mode:              blank
 
-! --- xlock {{{1
+! }}}
+
+! --- xlock {{{
 ! -----------------------------------------------------------------------------
 
 XLock.mode:        space
@@ -83,7 +91,9 @@ XLock.dpmsstandby: 600
 XLock.dpmssuspend: 1200
 XLock.dpmsoff:     1800
 
-! --- xterm {{{1
+! }}}
+
+! --- xterm {{{
 ! -----------------------------------------------------------------------------
 
 ! Fix alt-key inputting
@@ -199,7 +209,9 @@ xterm*vt100.Translations: #override \n\
     Meta ~Shift <Key> x: string("×") \n\
     Meta ~Shift <Key> d: string("ಠ")
 
-! --- xmag {{{1
+! }}}
+
+! --- xmag {{{
 ! -----------------------------------------------------------------------------
 xmag*source: 100x100
 xmag*Command.background: gray85
@@ -219,7 +231,9 @@ xmag*Scale.baseTranslations:#augment\
         Ctrl<Key>c:close()\n\
         <Key>space:replace()
 
-! --- xpdf {{{1
+! }}}
+
+! --- xpdf {{{
 ! -----------------------------------------------------------------------------
 xpdf*initialZoom: page
 xpdf*urlCommand: firefox %s
@@ -227,12 +241,14 @@ xpdf*textEncoding: utf-8
 xpdf*enableFreetype: yes
 xpdf*antialias: yes
 xpdf*viKeys: on
+! }}}
 
-! --- gv {{{1
+! --- gv {{{
 ! -----------------------------------------------------------------------------
 gv*antialias: true
+! }}}
 
-! --- xcalc {{{1
+! --- xcalc {{{
 ! -----------------------------------------------------------------------------
 xcalc*ti.button1.vertDistance: 4
 xcalc*ti.button2.vertDistance: 4
@@ -276,14 +292,13 @@ xcalc*ti.button34.background: gray95
 xcalc*ti.button37.background: gray95
 xcalc*ti.button38.background: gray95
 xcalc*ti.button39.background: gray95
+! }}}
 
-! URxvt settings
-
+! -- URxvt {{{
 URxvt.depth: 32
-! URxvt.scrollstyle: xterm
 URxvt*loginShell: true
 
-!Xft settings
+! Xft settings
 URxvt.font: xft:Fira Mono:style=Book:pixelsize=17,xft:DejaVu Sans Mono for Powerline
 URxvt*letterSpace: -1
 
@@ -294,6 +309,11 @@ URxvt*scrollColor: #c2dd5a
 URxvt*scrollBar_floating: true
 URxvt*scrollstyle: plain
 URxvt*saveLines: 10000
+
+! Fix scroll wheel
+URxvt.secondaryScreen: 1
+URxvt.secondaryScroll: 0
+URxvt.secondaryWheel: 1
 
 ! Perl extensions
 URxvt.perl-ext-common:      default,matcher
@@ -308,6 +328,9 @@ URxvt*fadeColor: #002b36
 URxvt*cursorColor: #93a1a1
 URxvt*pointerColorBackground: #586e75
 URxvt*pointerColorForeground: #93a1a1
+
+! This colormap is copied from terminators builtin *Ambience* scheme
+! (see /usr/lib/python2.7/site-packages/terminatorlib/prefseditor.py):
 
 ! black
 URxvt*color0  : #2E3436
@@ -350,6 +373,8 @@ URxvt.keysym.C-S-Down: \033[1;6B
 
 URxvt.iso14755: false
 URxvt.iso14755_52: false
+
+! }}}
 
 ! *** Xdefaults Affecting CADENCE tools ***
 
@@ -435,6 +460,7 @@ Maker*fontList:          -misc-fixed-medium-r-normal--0-0-100-100-c-0-iso8859-14
 Maker.colorDocs:         True
 Maker.useBackingStore:   True
 Maker.colorImages:       True
+
 ! ********************
 ! * END of XDEFAULTS *
 ! ********************
