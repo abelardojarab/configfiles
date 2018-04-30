@@ -277,6 +277,70 @@ xcalc*ti.button37.background: gray95
 xcalc*ti.button38.background: gray95
 xcalc*ti.button39.background: gray95
 
+! URxvt settings
+
+URxvt.depth: 32
+! URxvt.scrollstyle: xterm
+URxvt*loginShell: true
+
+!Xft settings
+URxvt.font: xft:Fira Mono:style=Book:pixelsize=17,xft:DejaVu Sans Mono for Powerline
+URxvt*letterSpace: -1
+
+! Scroll bar
+URxvt*scrollBar: true
+URxvt*scrollBar_right: true
+URxvt*scrollColor: #c2dd5a
+URxvt*scrollBar_floating: true
+URxvt*scrollstyle: plain
+URxvt*saveLines: 10000
+
+! to match gnome-terminal "Linux console" scheme
+! foreground/background
+URxvt*background: [82]#000000
+URxvt*foreground: #ffffff
+! black
+URxvt*color0  : #2E3436
+URxvt*color8  : #555753
+! red
+URxvt*color1  : #CC0000
+URxvt*color9  : #EF2929
+! green
+URxvt*color2  : #4E9A06
+URxvt*color10 : #8AE234
+! yellow
+URxvt*color3  : #C4A000
+URxvt*color11 : #FCE94F
+! blue
+URxvt*color4  : #3465A4
+URxvt*color12 : #729FCF
+! magenta
+URxvt*color5  : #75507B
+URxvt*color13 : #AD7FA8
+! cyan
+URxvt*color6  : #06989A
+URxvt*color14 : #34E2E2
+! white
+URxvt*color7  : #D3D7CF
+URxvt*color15 : #EEEEEC
+
+! Key codes
+URxvt.keysym.S-Up: \033[1;2A
+URxvt.keysym.S-Down: \033[1;2B
+URxvt.keysym.S-Right: \033[1;2C
+URxvt.keysym.S-Left: \033[1;2D
+URxvt.keysym.S-Home: \033[1;2H
+URxvt.keysym.S-End: \033[1;2F
+URxvt.keysym.C-Up: \033[1;5A
+URxvt.keysym.C-Down: \033[1;5B
+URxvt.keysym.C-Right: \033[1;5C
+URxvt.keysym.C-Left: \033[1;5D
+URxvt.keysym.C-S-Up: \033[1;6A
+URxvt.keysym.C-S-Down: \033[1;6B
+
+URxvt.iso14755: false
+URxvt.iso14755_52: false
+
 ! *** Xdefaults Affecting CADENCE tools ***
 
 ! ********************************************************
