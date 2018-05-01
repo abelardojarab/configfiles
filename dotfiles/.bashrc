@@ -26,6 +26,9 @@ shopt -s histappend
 export HISTSIZE=50000
 export HISTFILESIZE=50000
 
+# No ._ files in archives please
+export COPYFILE_DISABLE=true
+
 # useful timestamp format
 MY_BASH_BLUE="\033[0;34m" #Blue
 MY_BASH_NOCOLOR="\033[0m"
@@ -40,12 +43,12 @@ shopt -s checkwinsize
 
 # enable color support of ls and also add handy aliases
 if [ -x /usr/bin/dircolors ]; then
-    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
-    export LS_COLORS='di=34:ln=36:so=0:pi=0:ex=32:bd=0:cd=0:su=0:sg=0:tw=34:ow=34:'
-    alias ls='ls --color=auto'
-    alias grep='grep --color=auto'
-    alias fgrep='fgrep --color=auto'
-    alias egrep='egrep --color=auto'
+  test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+  export LS_COLORS='di=34:ln=36:so=0:pi=0:ex=32:bd=0:cd=0:su=0:sg=0:tw=34:ow=34:'
+  alias ls='ls --color=auto'
+  alias grep='grep --color=auto'
+  alias fgrep='fgrep --color=auto'
+  alias egrep='egrep --color=auto'
 fi
 
 # some more ls aliases
@@ -60,6 +63,10 @@ alias gpg='gpg2'
 alias rsynccopy="rsync --partial --progress --append --rsh=ssh -r -h "
 alias rsyncmove="rsync --partial --progress --append --rsh=ssh -r -h --remove-sent-files"
 
+# Directory sizes
+alias bigdir="du | sort -nr | cut -f2- | xargs du -hs | head -n 20"
+alias bigdir1="du -d1 | sort -nr | cut -f2- | xargs du -hs | head -n 20"
+
 # Add an "alert" alias for long running commands.  Use like so:
 #   sleep 10; alert
 alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
@@ -70,14 +77,18 @@ alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo
 # See /usr/share/doc/bash-doc/examples in the bash-doc package.
 
 if [ -f ~/.bash_aliases ]; then
-    . ~/.bash_aliases
+  . ~/.bash_aliases
 fi
+
+function show-empty-folders {
+  find . -depth -type d -empty
+}
 
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
 # sources /etc/bash.bashrc).
 if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
-    . /etc/bash_completion
+  . /etc/bash_completion
 fi
 
 # Custom installs directory
@@ -216,15 +227,15 @@ PERL_MM_OPT="INSTALL_BASE=${HOME}/perl5"; export PERL_MM_OPT;
 
 # Hadoop dev
 if [ -e ~/.hadoop/HADOOP_HOME ]; then
-    export HADOOP_HOME=$HOME/.hadoop/HADOOP_HOME
+  export HADOOP_HOME=$HOME/.hadoop/HADOOP_HOME
 
-    # Extra directories
-    export HADOOP_COMMON_HOME=$HADOOP_HOME
-    export HADOOP_HDFS_HOME=$HADOOP_HOME
-    export HADOOP_MAPRED_HOME=$HADOOP_HOME
-    export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
-    export YARN_HOME=$HADOOP_HOME
-    export HADOOP_PREFIX=$HADOOP_HOME
+  # Extra directories
+  export HADOOP_COMMON_HOME=$HADOOP_HOME
+  export HADOOP_HDFS_HOME=$HADOOP_HOME
+  export HADOOP_MAPRED_HOME=$HADOOP_HOME
+  export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
+  export YARN_HOME=$HADOOP_HOME
+  export HADOOP_PREFIX=$HADOOP_HOME
 fi
 
 # http://stackoverflow.com/questions/7134723/hadoop-on-osx-unable-to-load-realm-info-from-scdynamicstore
@@ -232,7 +243,7 @@ export HADOOP_OPTS="-Djava.security.krb5.realm= -Djava.security.krb5.kdc="
 
 # set a fancy prompt (non-color, unless we know we "want" color)
 case "$TERM" in
-    xterm-color) color_prompt=yes;;
+  xterm-color) color_prompt=yes;;
 esac
 
 # uncomment for a colored prompt, if the terminal has the capability; turned
@@ -241,14 +252,14 @@ esac
 #force_color_prompt=yes
 
 if [ -n "$force_color_prompt" ]; then
-    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
-        # We have color support; assume it's compliant with Ecma-48
-        # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
-        # a case would tend to support setf rather than setaf.)
-        color_prompt=yes
-    else
-        color_prompt=
-    fi
+  if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+    # We have color support; assume it's compliant with Ecma-48
+    # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+    # a case would tend to support setf rather than setaf.)
+    color_prompt=yes
+  else
+    color_prompt=
+  fi
 fi
 
 # Regular Colors
@@ -264,23 +275,49 @@ Gray="\[\033[1;30m\]"         # Gray
 White="\[\033[0;37m\]"        # White
 NO_COLOR="\[\033[0m\]"
 
-# Prompt separator
-#  This will go between the git indicators and the dollar sign.  It's empty by default,
-#  but something I commonly do in the shell is to assign a newline to it, so you have
-#  a status line, and then the prompt where you type your command is on the next line.
-#
-# Example:
-#     [12:38:13] user@hostname example_repo (master)*$ SEP="
-#     > "
-#     [12:41:54] user@hostname example_repo (master)*
-#     $
+RED="\[\033[0;31m\]"
+PINK="\[\033[1;31m\]"
+YELLOW="\[\033[1;33m\]"
+GREEN="\[\033[0;32m\]"
+LT_GREEN="\[\033[1;32m\]"
+BLUE="\[\033[0;34m\]"
+WHITE="\[\033[1;37m\]"
+PURPLE="\[\033[1;35m\]"
+CYAN="\[\033[1;36m\]"
+BROWN="\[\033[0;33m\]"
+LIGHT="\[\033[0;37m\]"
+DARK="\[\033[0;90m\]"
+COLOR_NONE="\[\033[0m\]"
 
+LIGHTNING_BOLT="⚡"
+UP_ARROW="↑"
+DOWN_ARROW="↓"
+UD_ARROW="↕"
+FF_ARROW="→"
+RECYCLE="♺"
+MIDDOT="•"
+PLUSMINUS="±"
+
+
+# Prompt separator
 SEP=""
 
-export PS1="\
+function set_prompt {
+
+  # create a $fill of all screen width minus the time string and a space:
+  let fillsize=${COLUMNS}-11
+  fill=""
+  while [ "$fillsize" -gt "0" ]
+  do
+    fill="-${fill}" # fill with underscores to work on
+    let fillsize=${fillsize}-1
+  done
+
+  # Prompt variable:
+  export PS1="\
 $Gray[\t] \
 $Green\u@\h \
-$Yellow\$PWD \
+$Yellow[\w] \
 \$(\
     # get the reference description
     if refname=\$(git name-rev --name-only HEAD 2> /dev/null); then\
@@ -315,5 +352,7 @@ $White\$SEP\
     fi;\
 )\
 $NO_COLOR "
+  unset color_prompt force_color_prompt
 
-unset color_prompt force_color_prompt
+}
+export PROMPT_COMMAND=set_prompt
