@@ -94,6 +94,10 @@ fi
 # Custom installs directory
 SW=$HOME/sw
 
+# Qt4 settings
+export QT_USE_NATIVE_WINDOWS=1
+export QT_X11_NO_MITSHM=1
+
 # NVIDIA settings
 export GPU_FORCE_64BIT_PTR=0
 export GPU_MAX_HEAP_SIZE=100
