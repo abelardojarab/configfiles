@@ -9,16 +9,17 @@ set envelope_from_address = "abelardojarab@gmail.com"
 set mbox_type=Maildir
 set folder=~/Mail
 set spoolfile = "+INBOX"
+set postponed = "+[Gmail]/Drafts"
 
 # Certificates
-set certificate_file=~/.mutt/certificates.gmail
+set certificate_file=~/.mutt/gmail.com/certificates
 
 # Signature file
-set signature  = ~/.mutt/signature.mail
+set signature  = ~/.mutt/gmail.com/signature
 
 # Caches
-set header_cache     = ~/.mutt/gmail/cache/headercache
-set message_cachedir = ~/.mutt/gmail/cache/messagecache
+set header_cache     = ~/.mutt/gmail.com/cache/headers
+set message_cachedir = ~/.mutt/gmail.com/cache/bodies
 
 # The following settings are interpreted by EMACS, do not remove them.
 # Local Variables:

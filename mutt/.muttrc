@@ -5,6 +5,7 @@
 set realname = "Abelardo Jara-Berrocal"
 set use_from = yes          # answer from the address we got the mail to
 set envelope_from = yes
+alternates "(abelardojarab@gmail\.com)|(abelardo.jara-berrocal@intel\.com)"
 
 # Configuration options
 set charset = "utf-8"
@@ -38,10 +39,13 @@ set editor='vim + -c "set textwidth=72" -c "set wrap" -c "set nocp" -c "redraw" 
 # Security stuff
 set ssl_starttls = yes
 set ssl_force_tls = yes
-set pgp_replyencrypt
+set pgp_replyencrypt = no
 set pgp_show_unusable = no
 set pgp_use_gpg_agent = yes
 set pgp_auto_decode = yes
+
+# General IMAP settings
+set imap_keepalive = 900
 
 # Passwords
 set my_gmail_pw=`gpg2 --batch -q --decrypt ~/.gpg_auth/.google`
@@ -53,10 +57,12 @@ set smtp_url="smtp://abelardotomasjb@gmail.com@smtp.gmail.com:587/"
 set smtp_pass=$my_gmail_pw
 
 # .mutt/muttrc
-folder-hook 'intel.com' 'source ~/.muttrc.intel'
-folder-hook 'gmail.com' 'source ~/.muttrc.gmail'
-macro index <f2> '<sync-mailbox><enter-command>source ~/.muttrc.intel<enter><change-folder>!<enter>'
-macro index <f3> '<sync-mailbox><enter-command>source ~/.muttrc.gmail<enter><change-folder>!<enter>'
+account-hook . 'unset imap_user imap_pass' # unset first!
+folder-hook 'gmail.com/*' 'source ~/.mutt/.muttrc.intel'
+folder-hook 'intel.com/*' 'source ~/.mutt/.muttrc.gmail'
+macro index <f2> '<sync-mailbox><enter-command>source ~/.mutt/.muttrc.intel<enter><change-folder>!<enter>'
+macro index <f3> '<sync-mailbox><enter-command>source ~/.mutt/.muttrc.gmail<enter><change-folder>!<enter>'
+source ~/.mutt/.muttrc.gmail
 
 # Sanely handle multi-part messages (prefer text part, but yield to
 # mailcap-configured rendering for html-only)

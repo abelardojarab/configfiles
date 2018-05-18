@@ -6,20 +6,20 @@ set from = "abelardo.jara-berrocal@intel.com"
 set envelope_from_address = "abelardo.jara-berrocal@intel.com"
 
 # IMAP setup
-set imap_keepalive = 900
+set mbox_type=Maildir
 set folder="imaps://ajaraber@imapmail.intel.com"
 set spoolfile="imaps://ajaraber@imapmail.intel.com"
 set postponed = "imaps://ajaraber@imapmap.intel.com/Drafts"
 
 # Certificates
-set certificate_file=~/.mutt/certificates.intel
+set certificate_file=~/.mutt/intel.com/certificates
 
 # Signature file
-set signature  = ~/.mutt/signature.intel
+set signature  = ~/.mutt/intel.com/signature
 
 # Caches
-set header_cache     = ~/.mutt/intel/cache/headercache
-set message_cachedir = ~/.mutt/intel/cache/messagecache
+set header_cache     = ~/.mutt/intel.com/cache/header
+set message_cachedir = ~/.mutt/intel.com/cache/bodies
 
 # The following settings are interpreted by EMACS, do not remove them.
 # Local Variables:
