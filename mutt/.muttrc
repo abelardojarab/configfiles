@@ -57,7 +57,7 @@ set smtp_url="smtp://abelardotomasjb@gmail.com@smtp.gmail.com:587/"
 set smtp_pass=$my_gmail_pw
 
 # .mutt/muttrc
-account-hook . 'unset imap_user imap_pass' # unset first!
+account-hook . 'unset imap_user imap_pass mbox_type' # unset first!
 folder-hook 'gmail.com/*' 'source ~/.mutt/.muttrc.intel'
 folder-hook 'intel.com/*' 'source ~/.mutt/.muttrc.gmail'
 macro index <f2> '<sync-mailbox><enter-command>source ~/.mutt/.muttrc.intel<enter><change-folder>!<enter>'

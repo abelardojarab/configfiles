@@ -6,7 +6,7 @@ set from = "abelardo.jara-berrocal@intel.com"
 set envelope_from_address = "abelardo.jara-berrocal@intel.com"
 
 # IMAP setup
-set mbox_type=Maildir
+unset mbox_type
 set folder="imaps://ajaraber@imapmail.intel.com"
 set spoolfile="imaps://ajaraber@imapmail.intel.com"
 set postponed = "imaps://ajaraber@imapmap.intel.com/Drafts"
