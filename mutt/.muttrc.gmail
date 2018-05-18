@@ -10,6 +10,16 @@ set mbox_type=Maildir
 set folder=~/Mail
 set spoolfile = "+INBOX"
 
+# Certificates
+set certificate_file=~/.mutt/certificates.gmail
+
+# Signature file
+set signature  = ~/.mutt/signature.mail
+
+# Caches
+set header_cache     = ~/.mutt/gmail/cache/headercache
+set message_cachedir = ~/.mutt/gmail/cache/messagecache
+
 # The following settings are interpreted by EMACS, do not remove them.
 # Local Variables:
 # mode: shell-script

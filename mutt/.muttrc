@@ -43,16 +43,6 @@ set pgp_show_unusable = no
 set pgp_use_gpg_agent = yes
 set pgp_auto_decode = yes
 
-# Certificates
-set certificate_file=~/.mutt/certificates
-
-# Signature file
-set signature  = ~/.mutt/signature
-
-# Caches
-set header_cache     = ~/.mutt/.cache/headercache
-set message_cachedir = ~/.mutt/.cache/messagecache
-
 # Passwords
 set my_gmail_pw=`gpg2 --batch -q --decrypt ~/.gpg_auth/.google`
 
