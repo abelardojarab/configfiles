@@ -60,17 +60,17 @@ set smtp_pass=$my_gmail_pw
 account-hook . 'unset imap_user imap_pass mbox_type' # unset first!
 folder-hook 'INBOX' 'source ~/.mutt/.muttrc.gmail'
 folder-hook 'imaps://ajaraber@imapmail.intel.com/*' 'source ~/.mutt/.muttrc.intel'
-macro index <f2> '<sync-mailbox><enter-command>source ~/.mutt/.muttrc.gmail<enter><change-folder> =/INBOX<enter>'
-macro index <f3> '<sync-mailbox><enter-command>source ~/.mutt/.muttrc.intel<enter><change-folder>imaps://ajaraber@imapmail.intel.com/<enter>'
+macro index <f2> '<enter-command>source ~/.mutt/.muttrc.gmail<enter><change-folder> =INBOX<enter><sync-mailbox>'
+macro index <f3> '<enter-command>source ~/.mutt/.muttrc.intel<enter><change-folder>imaps://ajaraber@imapmail.intel.com/<enter><sync-mailbox>'
 
 # folder-hook 'Mail'
-macro index 1 "<change-folder> =/INBOX<enter>"
+macro index 1 "<change-folder> =INBOX<enter>"
 
 # macro index 2
 macro index 2 "!mbsync gmail^M" "Update through mbsync"
 
 # folder-hook 'Work'
-macro index 3 "<sync-mailbox><enter-command>source ~/.mutt/.muttrc.intel<enter><change-folder>imaps://ajaraber@imapmail.intel.com/<enter>"
+macro index 3 "<enter-command>source ~/.mutt/.muttrc.intel<enter><change-folder>imaps://ajaraber@imapmail.intel.com/<enter><sync-mailbox>"
 
 # Sanely handle multi-part messages (prefer text part, but yield to
 # mailcap-configured rendering for html-only)
