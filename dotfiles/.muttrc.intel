@@ -129,7 +129,7 @@ macro pager \Cu "|urlview<enter>" "call urlview to open links"
 macro index / "<enter-command>unset wait_key<enter><shell-escape>mutt-notmuch-py ~/.mail/temporary/search<enter><change-folder-readonly>+temporary/search<enter>" "search mail (using notmuch)"
 
 # Fetch the GnuPG encrypted password
-source "gpg2 -d ~/.mutt/passwords.intel.gpg |"
+# source "gpg2 -d ~/.mutt/passwords.intel.gpg |"
 
 # The following settings are interpreted by EMACS, do not remove them.
 # Local Variables:
