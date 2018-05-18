@@ -58,10 +58,10 @@ set smtp_pass=$my_gmail_pw
 
 # .mutt/muttrc
 account-hook . 'unset imap_user imap_pass mbox_type' # unset first!
-folder-hook 'gmail.com/*' 'source ~/.mutt/.muttrc.intel'
-folder-hook 'intel.com/*' 'source ~/.mutt/.muttrc.gmail'
-macro index <f2> '<sync-mailbox><enter-command>source ~/.mutt/.muttrc.intel<enter><change-folder>!<enter>'
-macro index <f3> '<sync-mailbox><enter-command>source ~/.mutt/.muttrc.gmail<enter><change-folder>!<enter>'
+folder-hook 'Mail/*' 'source ~/.mutt/.muttrc.gmail'
+folder-hook 'imaps://ajaraber@imapmail.intel.com/*' 'source ~/.mutt/.muttrc.intel'
+macro index <f2> '<sync-mailbox><enter-command>source ~/.mutt/.muttrc.intel<enter><change-folder>imaps://ajaraber@imapmail.intel.com/<enter>'
+macro index <f3> '<sync-mailbox><enter-command>source ~/.mutt/.muttrc.gmail<enter><change-folder>~/Mail<enter>'
 source ~/.mutt/.muttrc.gmail
 
 # Sanely handle multi-part messages (prefer text part, but yield to
