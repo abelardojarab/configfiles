@@ -62,7 +62,6 @@ folder-hook 'Mail/*' 'source ~/.mutt/.muttrc.gmail'
 folder-hook 'imaps://ajaraber@imapmail.intel.com/*' 'source ~/.mutt/.muttrc.intel'
 macro index <f2> '<sync-mailbox><enter-command>source ~/.mutt/.muttrc.intel<enter><change-folder>imaps://ajaraber@imapmail.intel.com/<enter>'
 macro index <f3> '<sync-mailbox><enter-command>source ~/.mutt/.muttrc.gmail<enter><change-folder>~/Mail/INBOX<enter>'
-source ~/.mutt/.muttrc.gmail
 
 # Sanely handle multi-part messages (prefer text part, but yield to
 # mailcap-configured rendering for html-only)
