@@ -3,7 +3,6 @@
 
 # Basic Options
 set realname = "Abelardo Jara-Berrocal"
-set from = "abelardojarab@gmail.com"
 set use_from = yes          # answer from the address we got the mail to
 set envelope_from = yes
 
@@ -47,31 +46,27 @@ set pgp_auto_decode = yes
 # Certificates
 set certificate_file=~/.mutt/certificates
 
-# SMTP and IMAP setup
-# set smtp_url = "smtps://abelardotomasjb@gmail.com@smtp.gmail.com:465/"
-# set imap_user = "abelardotomasjb@gmail.com"
-# set spoolfile = "+INBOX"
-# set folder = "imaps://imap.gmail.com:993"
-# set postponed = "imaps://imap.gmail.com/[Gmail]/Drafts"
-# set imap_keepalive = 900
-
-# Use postfix according to:
-# https://smalldata.tech/blog/2016/08/03/ubuntu-postfix-mutt-gmail
-set sendmail="/usr/sbin/sendmail -oi -oem"
-set sendmail_wait = 0 # no please don't silently fail, email is important
-
-# postfix and mbsync setup (alternative)
-set mbox_type=Maildir
-set folder=~/Mail
-set spoolfile = "+INBOX"
-set sendmail_wait = -1
-
 # Signature file
 set signature  = ~/.mutt/signature
 
 # Caches
 set header_cache     = ~/.mutt/.cache/headercache
 set message_cachedir = ~/.mutt/.cache/messagecache
+
+# Passwords
+set my_gmail_pw=`gpg2 --batch -q --decrypt ~/.gpg_auth/.google`
+
+# Sendmail
+set sendmail="/usr/sbin/sendmail -oi -oem"
+set sendmail_wait = 0 # no please don't silently fail, email is important
+set smtp_url="smtp://abelardotomasjb@gmail.com@smtp.gmail.com:587/"
+set smtp_pass=$my_gmail_pw
+
+# .mutt/muttrc
+folder-hook 'intel.com' 'source ~/.muttrc.intel'
+folder-hook 'gmail.com' 'source ~/.muttrc.gmail'
+macro index <f2> '<sync-mailbox><enter-command>source ~/.muttrc.intel<enter><change-folder>!<enter>'
+macro index <f3> '<sync-mailbox><enter-command>source ~/.muttrc.gmail<enter><change-folder>!<enter>'
 
 # Sanely handle multi-part messages (prefer text part, but yield to
 # mailcap-configured rendering for html-only)

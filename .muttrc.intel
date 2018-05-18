@@ -1,0 +1,19 @@
+# -*-conf-*-
+#
+# -*- Mode: muttrc -*-
+
+set from = "abelardo.jara-berrocal@intel.com"
+set envelope_from_address = "abelardo.jara-berrocal@intel.com"
+
+# IMAP setup
+set imap_keepalive = 900
+set folder="imaps://ajaraber@imapmail.intel.com"
+set spoolfile="imaps://ajaraber@imapmail.intel.com"
+set postponed = "imaps://ajaraber@imapmap.intel.com/Drafts"
+
+# The following settings are interpreted by EMACS, do not remove them.
+# Local Variables:
+# mode: shell-script
+# fill-column: 80
+# coding: utf-8
+# End:

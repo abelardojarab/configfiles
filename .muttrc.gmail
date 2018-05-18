@@ -1,0 +1,18 @@
+# -*-conf-*-
+#
+# -*- Mode: muttrc -*-
+
+set from = "abelardojarab@gmail.com"
+set envelope_from_address = "abelardojarab@gmail.com"
+
+# Maildir and mbsync setup (alternative)
+set mbox_type=Maildir
+set folder=~/Mail
+set spoolfile = "+INBOX"
+
+# The following settings are interpreted by EMACS, do not remove them.
+# Local Variables:
+# mode: shell-script
+# fill-column: 80
+# coding: utf-8
+# End:
