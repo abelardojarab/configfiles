@@ -105,6 +105,10 @@ export GPU_USE_SYNC_OBJECTS=1
 export GPU_MAX_ALLOC_PERCENT=95
 export GPU_SINGLE_ALLOC_PERCENT=100
 
+# CUDA 9.2
+export PATH=/usr/local/cuda-9.2/bin${PATH:+:${PATH}}
+export LD_LIBRARY_PATH=/usr/local/cuda-9.2/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+
 # Editor setup
 export VISUAL=vim
 export EDITOR="$VISUAL"
