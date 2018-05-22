@@ -75,7 +75,8 @@ IMAPAccount work
 Host imapmail.intel.com
 User ajaraber
 UseIMAPS yes
-CertificateFile /etc/ssl/certs/ca-certificates.crt
+CertificateFile ~/.cert/imapmail.intel.com.pem
+PipelineDepth 1
 
 # Remote storage
 IMAPStore work-remote
