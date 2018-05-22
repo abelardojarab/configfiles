@@ -79,7 +79,7 @@ CertificateFile /etc/ssl/certs/ca-certificates.crt
 
 # Remote storage
 IMAPStore work-remote
-Account mailbox
+Account work
 
 # Local storage
 MaildirStore work-local
