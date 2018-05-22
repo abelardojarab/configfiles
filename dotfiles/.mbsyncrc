@@ -1,3 +1,7 @@
+#################################
+## Account gmail ################
+#################################
+
 # Account information
 IMAPAccount gmail
 Host imap.gmail.com
@@ -61,6 +65,49 @@ Channel gmail-sent
 Channel gmail-trash
 Channel gmail-starred
 # Channel gmail-all
+
+
+#################################
+######## Account mailbox ########
+#################################
+
+IMAPAccount work
+Host imapmail.intel.com
+User ajaraber
+SSLType IMAPS
+SSLVersions TLSv1.2
+CertificateFile /etc/ssl/certs/ca-certificates.crt
+
+# Remote storage
+IMAPStore work-remote
+Account mailbox
+
+# Local storage
+MaildirStore work-local
+Path ~/Mail/Work/
+Inbox ~/Mail/Work/INBOX
+
+# Connection between remote and local folders
+Channel work-inbox
+Master :work-remote:
+Slave :work-local:
+Patterns "INBOX"
+Create Both
+Expunge Both
+SyncState *
+
+Channel work-sent
+Master :work-remote:"Sent"
+Slave :work-local:"Sent"
+Create Both
+Expunge Both
+SyncState *
+
+# Group channels together, so we can sync them
+# Use: "mbsync work"
+Group work
+Channel work-inbox
+Channel work-sent
 
 # The following settings are interpreted by EMACS, do not remove them.
 # Local Variables:
