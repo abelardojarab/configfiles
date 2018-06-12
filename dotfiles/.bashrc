@@ -196,7 +196,8 @@ export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/matlab.dat
 export QUARTUS_ROOT=/opt/intelFPGA_pro/17.1
 export QUARTUS_HOME=$QUARTUS_ROOT/quartus
 export PATH=$QUARTUS_ROOT/quartus/bin:$PATH
-export ALTERAOCLSDKROOT=$QUARTUS_ROOT/hld
+export INTELFPGAOCLSDKROOT=$QUARTUS_ROOT/hld
+export PATH=$INTELFPGAOCLSDKROOT/host/linux64/bin:$PATH
 export QSYS_ROOTDIR=$QUARTUS_ROOT/quartus/sopc_builder/bin
 export LM_LICENSE_FILE=1800@ubuntu01:1900@ubuntu01:$LM_LICENSE_FILE:$HOME/flexlm/altera.dat
 
@@ -369,3 +370,7 @@ $NO_COLOR "
 
 }
 export PROMPT_COMMAND=set_prompt
+
+export ALTERAOCLSDKROOT="/opt/intelFPGA_pro/17.1/hld"
+
+export QSYS_ROOTDIR="/opt/intelFPGA_pro/18.0/qsys/bin"
