@@ -197,9 +197,11 @@ export QUARTUS_ROOT=/opt/intelFPGA_pro/17.1
 export QUARTUS_HOME=$QUARTUS_ROOT/quartus
 export PATH=$QUARTUS_ROOT/quartus/bin:$PATH
 export INTELFPGAOCLSDKROOT=$QUARTUS_ROOT/hld
+export AOCL_BOARD_PACKAGE_ROOT=$INTELFPGAOCLSDKROOT/board/a10_ref
 export PATH=$INTELFPGAOCLSDKROOT/host/linux64/bin:$PATH
 export QSYS_ROOTDIR=$QUARTUS_ROOT/quartus/sopc_builder/bin
 export LM_LICENSE_FILE=1800@ubuntu01:1900@ubuntu01:$LM_LICENSE_FILE:$HOME/flexlm/altera.dat
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$INTELFPGAOCLSDKROOT/host/linux64/lib:$AOCL_BOARD_PACKAGE_ROOT/linux64/lib
 
 # Xilinx settings
 export PATH=$PATH:/opt/Xilinx/14.7/ISE_DS/ISE/bin/lin64
