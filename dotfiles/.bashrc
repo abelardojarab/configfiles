@@ -94,6 +94,9 @@ fi
 # Custom installs directory
 SW=$HOME/sw
 
+# Verbose ctest outputs
+export CTEST_OUTPUT_ON_FAILURE=1
+
 # Qt4 settings
 export QT_USE_NATIVE_WINDOWS=1
 export QT_X11_NO_MITSHM=1
@@ -195,8 +198,9 @@ export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/matlab.dat
 # Altera settings
 export QUARTUS_ROOT=/opt/intelFPGA_pro/17.1
 export QUARTUS_HOME=$QUARTUS_ROOT/quartus
-export PATH=$QUARTUS_ROOT/quartus/bin:$PATH
+export PATH=$QUARTUS_ROOT/quartus/bin:$QUARTUS_ROOT/qsys/bin:$PATH
 export INTELFPGAOCLSDKROOT=$QUARTUS_ROOT/hld
+export PATH=$PATH:$INTELFPGAOCLSDKROOT/bin
 export AOCL_BOARD_PACKAGE_ROOT=$INTELFPGAOCLSDKROOT/board/a10_ref
 export PATH=$INTELFPGAOCLSDKROOT/host/linux64/bin:$PATH
 export QSYS_ROOTDIR=$QUARTUS_ROOT/quartus/sopc_builder/bin
