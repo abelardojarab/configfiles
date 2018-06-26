@@ -196,15 +196,17 @@ export PATH=/opt/MATLAB/R2012b/bin:$PATH
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/matlab.dat
 
 # Altera settings
-export QUARTUS_ROOT=/opt/intelFPGA_pro/17.1
+export QUARTUS_ROOT=/opt/intelFPGA_pro/18.0
 export QUARTUS_HOME=$QUARTUS_ROOT/quartus
 export PATH=$QUARTUS_ROOT/quartus/bin:$QUARTUS_ROOT/qsys/bin:$PATH
 export INTELFPGAOCLSDKROOT=$QUARTUS_ROOT/hld
 export PATH=$PATH:$INTELFPGAOCLSDKROOT/bin
-export AOCL_BOARD_PACKAGE_ROOT=$INTELFPGAOCLSDKROOT/board/a10_ref
 export PATH=$INTELFPGAOCLSDKROOT/host/linux64/bin:$PATH
 export QSYS_ROOTDIR=$QUARTUS_ROOT/quartus/sopc_builder/bin
 export LM_LICENSE_FILE=1800@ubuntu01:1900@ubuntu01:$LM_LICENSE_FILE:$HOME/flexlm/altera.dat
+
+# Altera accelerator board
+export AOCL_BOARD_PACKAGE_ROOT=$INTELFPGAOCLSDKROOT/board/a10_ref
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$INTELFPGAOCLSDKROOT/host/linux64/lib:$AOCL_BOARD_PACKAGE_ROOT/linux64/lib
 
 # Xilinx settings
