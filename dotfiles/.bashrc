@@ -382,3 +382,5 @@ export PROMPT_COMMAND=set_prompt
 export ALTERAOCLSDKROOT="/opt/intelFPGA_pro/17.1/hld"
 
 export QSYS_ROOTDIR="/opt/intelFPGA_pro/18.0/qsys/bin"
+
+export INTELFPGAOCLSDKROOT="/opt/intelFPGA_pro/18.0/hld"
