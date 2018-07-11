@@ -247,6 +247,9 @@ PERL_LOCAL_LIB_ROOT="${HOME}/perl5${PERL_LOCAL_LIB_ROOT:+:${PERL_LOCAL_LIB_ROOT}
 PERL_MB_OPT="--install_base \"${HOME}/perl5\""; export PERL_MB_OPT;
 PERL_MM_OPT="INSTALL_BASE=${HOME}/perl5"; export PERL_MM_OPT;
 
+# added by Anaconda3 installer
+export PATH=/opt/anaconda3/bin:$PATH
+
 # Hadoop dev
 if [ -e ~/.hadoop/HADOOP_HOME ]; then
   export HADOOP_HOME=$HOME/.hadoop/HADOOP_HOME
