@@ -196,7 +196,7 @@ export PATH=/opt/MATLAB/R2012b/bin:$PATH
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/matlab.dat
 
 # Altera settings
-export QUARTUS_ROOT=/opt/intelFPGA_pro/17.1
+export QUARTUS_ROOT=/opt/intelFPGA_pro/18.0
 export QUARTUS_HOME=$QUARTUS_ROOT/quartus
 export PATH=$QUARTUS_ROOT/quartus/bin:$QUARTUS_ROOT/qsys/bin:$PATH
 export INTELFPGAOCLSDKROOT=$QUARTUS_ROOT/hld
