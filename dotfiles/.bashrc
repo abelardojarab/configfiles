@@ -202,8 +202,9 @@ export PATH=$QUARTUS_ROOT/quartus/bin:$QUARTUS_ROOT/qsys/bin:$PATH
 export INTELFPGAOCLSDKROOT=$QUARTUS_ROOT/hld
 export PATH=$PATH:$INTELFPGAOCLSDKROOT/bin
 export PATH=$INTELFPGAOCLSDKROOT/host/linux64/bin:$PATH
-export QSYS_ROOTDIR=$QUARTUS_ROOT/quartus/sopc_builder/bin
+export QSYS_ROOTDIR=$QUARTUS_ROOT/qsys/bin
 export LM_LICENSE_FILE=1800@ubuntu01:1900@ubuntu01:$LM_LICENSE_FILE:$HOME/flexlm/altera.dat
+export ALTERAOCLSDKROOT=$INTELFPGAOCLSDKROOT
 
 # Altera accelerator board
 export AOCL_BOARD_PACKAGE_ROOT=$INTELFPGAOCLSDKROOT/board/s10_ref
@@ -382,8 +383,3 @@ $NO_COLOR "
 }
 export PROMPT_COMMAND=set_prompt
 
-export ALTERAOCLSDKROOT="/opt/intelFPGA_pro/17.1/hld"
-
-export QSYS_ROOTDIR="/opt/intelFPGA_pro/18.0/qsys/bin"
-
-export INTELFPGAOCLSDKROOT="/opt/intelFPGA_pro/18.0/hld"
