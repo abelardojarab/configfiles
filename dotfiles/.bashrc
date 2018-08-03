@@ -264,8 +264,12 @@ if [ -e ~/.hadoop/HADOOP_HOME ]; then
   export HADOOP_PREFIX=$HADOOP_HOME
 fi
 
-# http://stackoverflow.com/questions/7134723/hadoop-on-osx-unable-to-load-realm-info-from-scdynamicstore
 export HADOOP_OPTS="-Djava.security.krb5.realm= -Djava.security.krb5.kdc="
+
+# Local settings
+if [ -f $HOME/.bashrc_local ]; then
+  source ~/.bashrc_local
+fi
 
 # set a fancy prompt (non-color, unless we know we "want" color)
 case "$TERM" in
@@ -382,7 +386,3 @@ $NO_COLOR "
 
 }
 export PROMPT_COMMAND=set_prompt
-
-if [ -f $HOME/.bashrc_local ]; then
-  source ~/.bashrc_local
-fi
