@@ -250,6 +250,19 @@ PERL_MM_OPT="INSTALL_BASE=${HOME}/perl5"; export PERL_MM_OPT;
 # added by Anaconda3 installer
 export PATH=/opt/anaconda3/bin:$PATH
 
+# Python env
+if [[ -d ${HOME}/.pyenv ]] ; then
+  export PYENV_ROOT="${HOME}/.pyenv"
+  export PATH="${PYENV_ROOT}/bin:${PATH}"
+  eval "$(pyenv init -)"
+fi
+
+# Node env
+if [[ -s ${HOME}/.nvm/nvm.sh ]] ; then
+  export NVM_DIR="${HOME}/.nvm"
+  [ -s "${NVM_DIR}/nvm.sh" ] && . "${NVM_DIR}/nvm.sh"  # This loads nvm
+fi
+
 # Hadoop dev
 if [ -e ~/.hadoop/HADOOP_HOME ]; then
   export HADOOP_HOME=$HOME/.hadoop/HADOOP_HOME
