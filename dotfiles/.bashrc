@@ -97,6 +97,9 @@ SW=$HOME/sw
 # Verbose ctest outputs
 export CTEST_OUTPUT_ON_FAILURE=1
 
+# Vagrant
+export VAGRANT_LOG=error
+
 # Qt4 settings
 export QT_USE_NATIVE_WINDOWS=1
 export QT_X11_NO_MITSHM=1
@@ -197,6 +200,7 @@ export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/matlab.dat
 
 # Altera settings
 export QUARTUS_ROOT=/opt/intelFPGA_pro/18.0
+export QUARTUS_ROOTDIR=$QUARTUS_ROOT
 export QUARTUS_HOME=$QUARTUS_ROOT/quartus
 export PATH=$QUARTUS_ROOT/quartus/bin:$QUARTUS_ROOT/qsys/bin:$PATH
 export INTELFPGAOCLSDKROOT=$QUARTUS_ROOT/hld
@@ -205,10 +209,6 @@ export PATH=$INTELFPGAOCLSDKROOT/host/linux64/bin:$PATH
 export QSYS_ROOTDIR=$QUARTUS_ROOT/qsys/bin
 export LM_LICENSE_FILE=1800@ubuntu01:1900@ubuntu01:$LM_LICENSE_FILE:$HOME/flexlm/altera.dat
 export ALTERAOCLSDKROOT=$INTELFPGAOCLSDKROOT
-
-# Altera accelerator board
-export AOCL_BOARD_PACKAGE_ROOT=$INTELFPGAOCLSDKROOT/board/s10_ref
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$INTELFPGAOCLSDKROOT/host/linux64/lib:$AOCL_BOARD_PACKAGE_ROOT/linux64/lib
 
 # Xilinx settings
 export PATH=$PATH:/opt/Xilinx/14.7/ISE_DS/ISE/bin/lin64
@@ -383,3 +383,6 @@ $NO_COLOR "
 }
 export PROMPT_COMMAND=set_prompt
 
+if [ -f $HOME/.bashrc_local ]; then
+  source ~/.bashrc_local
+fi
