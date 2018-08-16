@@ -201,6 +201,7 @@ export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/matlab.dat
 # Altera settings
 export QUARTUS_ROOT=/opt/intelFPGA_pro/18.0
 export QUARTUS_HOME=$QUARTUS_ROOT/quartus
+export QUARTUS_ROOTDIR=$QUARTUS_HOME
 export PATH=$QUARTUS_ROOT/quartus/bin:$QUARTUS_ROOT/qsys/bin:$PATH
 export INTELFPGAOCLSDKROOT=$QUARTUS_ROOT/hld
 export PATH=$PATH:$INTELFPGAOCLSDKROOT/bin
@@ -249,6 +250,19 @@ PERL_MM_OPT="INSTALL_BASE=${HOME}/perl5"; export PERL_MM_OPT;
 
 # added by Anaconda3 installer
 export PATH=/opt/anaconda3/bin:$PATH
+
+# Python env
+if [[ -d ${HOME}/.pyenv ]] ; then
+  export PYENV_ROOT="${HOME}/.pyenv"
+  export PATH="${PYENV_ROOT}/bin:${PATH}"
+  eval "$(pyenv init -)"
+fi
+
+# Node env
+if [[ -s ${HOME}/.nvm/nvm.sh ]] ; then
+  export NVM_DIR="${HOME}/.nvm"
+  [ -s "${NVM_DIR}/nvm.sh" ] && . "${NVM_DIR}/nvm.sh"  # This loads nvm
+fi
 
 # Hadoop dev
 if [ -e ~/.hadoop/HADOOP_HOME ]; then
@@ -385,3 +399,6 @@ $NO_COLOR "
 
 }
 export PROMPT_COMMAND=set_prompt
+
+# After each command, append to the history file and reread it
+export PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"
