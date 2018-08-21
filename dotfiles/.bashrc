@@ -100,6 +100,9 @@ export CTEST_OUTPUT_ON_FAILURE=1
 # Vagrant
 export VAGRANT_LOG=error
 
+# Fix GTK3 scroll not working
+export GDK_CORE_DEVICE_EVENTS=1
+
 # Qt4 settings
 export QT_USE_NATIVE_WINDOWS=1
 export QT_X11_NO_MITSHM=1
