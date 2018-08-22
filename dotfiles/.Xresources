@@ -24,10 +24,10 @@ Emacs.bold.attributeBold:          on
 Emacs.bold-italic.attributeItalic: on
 Emacs.bold-italic.attributeBold:   on
 Emacs.italic.attributeItalic:      on
-Emacs.font:                        Source Code Pro-11
-Emacs.menu*.font:                  Source Code Pro-11
-Emacs.pane.menubar.font:           Source Code Pro-11
-Emacs.dialog*.font:                Source Code Pro-11
+Emacs.font:                        Iosevka-11
+Emacs.menu*.font:                  Iosevka-11
+Emacs.pane.menubar.font:           Iosevka-11
+Emacs.dialog*.font:                Iosevka-11
 Emacs.menuBar:                     on
 Emacs.toolBar:                     off
 Emacs.borderWidth:                 0
@@ -47,7 +47,7 @@ XLock.description: false
 XLock.info:
 XLock.validate:    Validating login...
 XLock.invalid:     Login failed
-XLock*font:        Source Code Pro-12
+XLock*font:        Ivosevka-12
 XLock.ncolors:     200
 XLock.dpmsstandby: 600
 XLock.dpmssuspend: 1200
@@ -70,7 +70,7 @@ xterm*eightBitOutput:  true
 ! Bigger font
 xterm*renderFont: true
 xterm*termName:   xterm-256color
-xterm*faceName:   xft:Fira Mono:pixelsize=17
+xterm*faceName:   xft:Iosevka:pixelsize=17
 xterm*wideChars:  true
 
 ! Define the size increments used when changing font size
