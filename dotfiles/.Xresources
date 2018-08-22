@@ -24,10 +24,10 @@ Emacs.bold.attributeBold:          on
 Emacs.bold-italic.attributeItalic: on
 Emacs.bold-italic.attributeBold:   on
 Emacs.italic.attributeItalic:      on
-Emacs.font:                        Iosevka-11
-Emacs.menu*.font:                  Iosevka-11
-Emacs.pane.menubar.font:           Iosevka-11
-Emacs.dialog*.font:                Iosevka-11
+Emacs.font:                        Iosevka-12
+Emacs.menu*.font:                  Iosevka-12
+Emacs.pane.menubar.font:           Iosevka-12
+Emacs.dialog*.font:                Iosevka-12
 Emacs.menuBar:                     on
 Emacs.toolBar:                     off
 Emacs.borderWidth:                 0
