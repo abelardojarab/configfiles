@@ -233,8 +233,8 @@ export PATH=/opt/master-pdf-editor-3:$PATH
 export PATH=/opt/PDFStudio:$PATH
 
 # JetBrains tools
-export PATH=/opt/JetBrains/clion-2017.2.2/bin:$PATH
-export PATH=/opt/JetBrains/pycharm-2017.2.3/bin:$PATH
+export PATH=/opt/JetBrains/clion-2018.2.2/bin:$PATH
+export PATH=/opt/JetBrains/pycharm-2018.2.2/bin:$PATH
 export PATH=/opt/JetBrains/WebStorm-172.4155.35/bin:$PATH
 export PATH=/opt/JetBrains/license_server:$PATH
 alias jblicense='/opt/JetBrains/license_server/jb_licsrv.linux.amd64'

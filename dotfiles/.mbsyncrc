@@ -10,6 +10,7 @@ Port 993
 PassCmd "gpg2 --batch --decrypt ~/.gpg_auth/.google"
 UseIMAPS yes
 CertificateFile /etc/ssl/certs/ca-certificates.crt
+PipelineDepth 50
 
 # Define the remote storage (use the IMAP account specified above)
 IMAPStore gmail-remote
@@ -19,6 +20,7 @@ Account gmail
 MaildirStore gmail-local
 Path ~/Mail/
 Inbox ~/Mail/INBOX
+SubFolders Verbatim
 
 # Connection between remote and local folders
 Channel gmail-inbox
