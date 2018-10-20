@@ -72,7 +72,7 @@ alias bigdir1="du -d1 | sort -nr | cut -f2- | xargs du -hs | head -n 20"
 alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
 
 # sudo alias
-alias sudo='sudo -E env "PATH=$PATH"'
+alias psudo='sudo -E env "PATH=$PATH"'
 
 # Alias definitions.
 # You may want to put all your additions into a separate file like
