@@ -243,6 +243,12 @@ export PATH=/opt/JetBrains/WebStorm-172.4155.35/bin:$PATH
 export PATH=/opt/JetBrains/license_server:$PATH
 alias jblicense='/opt/JetBrains/license_server/jb_licsrv.linux.amd64'
 
+# Intel performance tools
+export INTELPARALLELSTUDIO=/opt/intel/parallel_studio_xe_2018
+if [ -f $INTELPARALLELSTUDIO/psxevars.sh ]; then
+  source $INTELPARALLELSTUDIO/psxevars.sh
+fi
+
 # Set up general GTAGS location
 export GTAGSLIBPATH=$HOME/.gtags/
 export GTAGSTHROUGH=true
