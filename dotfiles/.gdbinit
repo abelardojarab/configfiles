@@ -493,7 +493,7 @@ define reg
     if ($64BITS == 1)
      printf "\t\t\t\t"
     end
-    dumpjump
+    # dumpjump
     printf "\n"
 end
 document reg
