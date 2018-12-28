@@ -221,6 +221,9 @@ export ALTERAOCLSDKROOT=$INTELFPGAOCLSDKROOT
 export PATH=$PATH:/opt/Xilinx/14.7/ISE_DS/ISE/bin/lin64
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/Xilinx.lic
 
+# Bitware tools
+export PATH=$PATH:/opt/bwtk/2018.6L/bin
+
 # Synopsys Synplify
 export SNPSLMD_LICENSE_FILE=$HOME/flexlm/synplify.dat
 export PATH=$PATH:/opt/synopsys/Synplify/L-2016.03-SP1/bin
