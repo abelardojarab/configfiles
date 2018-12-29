@@ -1,4 +1,4 @@
 # Altera accelerator board
 export AOCL_BOARD_PACKAGE_ROOT=$INTELFPGAOCLSDKROOT/board/pac_a10
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$INTELFPGAOCLSDKROOT/host/linux64/lib:$AOCL_BOARD_PACKAGE_ROOT/linux64/lib:/home/abelardojara/cmake_builds/opae-sdk/lib
-export PATH=$PATH:/home/abelardojara/cmake_builds/opae-sdk/bin
+export LD_LIBRARY_PATH=$INTELFPGAOCLSDKROOT/host/linux64/lib:$AOCL_BOARD_PACKAGE_ROOT/linux64/lib:/home/abelardojara/cmake_builds/opae-sdk/lib:$LD_LIBRARY_PATH
+export PATH=/home/abelardojara/cmake_builds/opae-sdk/bin:$PATH
