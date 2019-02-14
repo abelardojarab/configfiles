@@ -1879,7 +1879,29 @@ end
 
 
 # _______________process control______________
-define n
+define nextr
+    if $argc == 0
+        next
+        refresh
+    end
+    if $argc == 1
+        next $arg0
+        refresh
+    end
+    if $argc > 1
+        help nextr
+    end
+end
+document nextr
+document nextr
+Step one line of code, but proceed through subroutine calls.
+Code view (through tui) will be refreshed.
+If NUM is given, then repeat it NUM times or till program stops.
+This is alias for nexti.
+Usage: nextr <NUM>
+end
+
+define ni
     if $argc == 0
         nexti
     end
@@ -1887,14 +1909,14 @@ define n
         nexti $arg0
     end
     if $argc > 1
-        help n
+        help ni
     end
 end
-document n
+document ni
 Step one instruction, but proceed through subroutine calls.
 If NUM is given, then repeat it NUM times or till program stops.
 This is alias for nexti.
-Usage: n <NUM>
+Usage: ni <NUM>
 end
 
 
