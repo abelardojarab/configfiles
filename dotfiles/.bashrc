@@ -180,7 +180,7 @@ export SNPS_ICWB_ROOT=/opt/synopsys/icweb/G-2012.06-SP1
 export SNPS_ICV_ROOT=/opt/synopsys/icvalidator/H-2013.06
 export PATH=$SNPS_HSPICE_ROOT/hspice/linux:$SNPS_DC_ROOT/bin:$SNPS_STARRC_ROOT/bin:$SNPS_COSMOSSCOPE_ROOT/ai_bin:$PATH
 export PATH=$SNPS_ICWB_ROOT/bin/amd64:$SNPS_ICV_ROOT/bin/SUSE.64:$PATH
-# export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/synopsys.dat
+export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/synopsys.dat
 
 # Calibre settings
 export CALIBRE_HOME=/opt/mentor/calibre/2013.3_28.19
@@ -214,7 +214,7 @@ export INTELFPGAOCLSDKROOT=$QUARTUS_ROOT/hld
 export PATH=$PATH:$INTELFPGAOCLSDKROOT/bin
 export PATH=$INTELFPGAOCLSDKROOT/host/linux64/bin:$PATH
 export QSYS_ROOTDIR=$QUARTUS_ROOT/qsys/bin
-export LM_LICENSE_FILE=1800@ubuntu01:1900@ubuntu01:$LM_LICENSE_FILE:$HOME/flexlm/altera.dat
+export LM_LICENSE_FILE=$HOME/flexlm/altera.dat
 export ALTERAOCLSDKROOT=$INTELFPGAOCLSDKROOT
 
 # Xilinx settings
@@ -227,7 +227,7 @@ export PATH=$PATH:/opt/bwtk/2018.6L/bin
 # Synopsys Synplify
 export SNPSLMD_LICENSE_FILE=$HOME/flexlm/synplify.dat
 export PATH=$PATH:/opt/synopsys/Synplify/L-2016.03-SP1/bin
-export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/synplify.dat
+export LM_LICENSE_FILE=47323@ubuntu01:$LM_LICENSE_FILE:$HOME/flexlm/synplify.dat
 
 # SPSS settings
 export PATH=/opt/IBM/SPSS/Statistics/22/bin:$PATH
