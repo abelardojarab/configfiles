@@ -171,7 +171,7 @@ export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/apache.dat
 
 # Synopsys settings
 export SYNOPSYS=/opt/synopsys
-# export SNPSLMD_LICENSE_FILE=$HOME/flexlm/synopsys.dat
+export SNPSLMD_LICENSE_FILE=$HOME/flexlm/synopsys.dat
 export SNPS_DC_ROOT=/opt/synopsys/designcompiler/B-2008.09
 export SNPS_HSPICE_ROOT=/opt/synopsys/hspice/F-2011.09-SP2
 export SNPS_STARRC_ROOT=/opt/synopsys/starrc/H-2012.12
@@ -281,19 +281,20 @@ if [[ -s ${HOME}/.nvm/nvm.sh ]] ; then
 fi
 
 # Hadoop dev
-if [ -e ~/.hadoop/HADOOP_HOME ]; then
-  export HADOOP_HOME=$HOME/.hadoop/HADOOP_HOME
-
+export HADOOP_HOME=/opt/hadoop/3.2.0
+export PATH=$PATH:$HADOOP_HOME/bin
+if [ -e ~/.hadoop/HADOOP_LOCAL_HOME ]; then
   # Extra directories
-  export HADOOP_COMMON_HOME=$HADOOP_HOME
-  export HADOOP_HDFS_HOME=$HADOOP_HOME
-  export HADOOP_MAPRED_HOME=$HADOOP_HOME
-  export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
-  export YARN_HOME=$HADOOP_HOME
-  export HADOOP_PREFIX=$HADOOP_HOME
+  export HADOOP_LOCAL_HOME=$HOME/.hadoop/HADOOP_LOCAL_HOME
+  export HADOOP_HDFS_HOME=$HADOOP_LOCAL_HOME
+  export HADOOP_CONF_DIR=$HADOOP_LOCAL_HOME/etc/hadoop
 fi
-
 export HADOOP_OPTS="-Djava.security.krb5.realm= -Djava.security.krb5.kdc="
+
+# Spark settings
+export SPARK_HOME=/opt/spark/spark-2.4.0-bin-hadoop2.7
+export PATH=$PATH:$SPARK_HOME/bin
+export SPARK_MASTER_HOST='192.168.3.2'
 
 # Local settings
 if [ -f $HOME/.bashrc_local ]; then
