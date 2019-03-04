@@ -283,9 +283,9 @@ fi
 # Hadoop dev
 export HADOOP_HOME=/opt/hadoop/3.2.0
 export PATH=$PATH:$HADOOP_HOME/bin
-if [ -e ~/.hadoop/HADOOP_LOCAL_HOME ]; then
+if [ -e ~/.hadoop/etc/hadoop ]; then
   # Extra directories
-  export HADOOP_LOCAL_HOME=$HOME/.hadoop/HADOOP_LOCAL_HOME
+  export HADOOP_LOCAL_HOME=$HOME/.hadoop
   export HADOOP_HDFS_HOME=$HADOOP_LOCAL_HOME
   export HADOOP_CONF_DIR=$HADOOP_LOCAL_HOME/etc/hadoop
 fi
@@ -294,7 +294,18 @@ export HADOOP_OPTS="-Djava.security.krb5.realm= -Djava.security.krb5.kdc="
 # Spark settings
 export SPARK_HOME=/opt/spark/spark-2.4.0-bin-hadoop2.7
 export PATH=$PATH:$SPARK_HOME/bin
+
+# Spark cluster settings
 export SPARK_MASTER_HOST='192.168.3.2'
+export SPARK_WORKER_CORES=2
+export SPARK_WORKER_INSTANCES=2
+export SPARK_WORKER_MEMORY=2g
+
+# For a ipython notebook and pyspark integration
+if which pyspark > /dev/null; then
+  export PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/build:$PYTHONPATH
+  export PYTHONPATH=$SPARK_HOME/python/lib/py4j-0.10.7-src.zip:$PYTHONPATH
+fi
 
 # Local settings
 if [ -f $HOME/.bashrc_local ]; then
