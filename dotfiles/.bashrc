@@ -289,7 +289,7 @@ if [ -e ~/.hadoop/etc/hadoop ]; then
   export HADOOP_HDFS_HOME=$HADOOP_LOCAL_HOME
   export HADOOP_CONF_DIR=$HADOOP_LOCAL_HOME/etc/hadoop
 fi
-export HADOOP_OPTS="-Djava.security.krb5.realm= -Djava.security.krb5.kdc="
+# export HADOOP_OPTS="-Djava.security.krb5.realm= -Djava.security.krb5.kdc="
 
 # Spark settings
 export SPARK_HOME=/opt/spark/spark-2.4.0-bin-hadoop2.7
