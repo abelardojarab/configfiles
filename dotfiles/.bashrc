@@ -206,7 +206,7 @@ export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/matlab.dat
 
 # Altera settings
 export QUARTUS_64BIT=1
-export QUARTUS_ROOT=/opt/intelFPGA_pro/17.1
+export QUARTUS_ROOT=/media/btrfsdrive4/Installers/inteldevstack/intelFPGA_pro
 export QUARTUS_HOME=$QUARTUS_ROOT/quartus
 export QUARTUS_ROOTDIR=$QUARTUS_HOME
 export PATH=$QUARTUS_ROOT/quartus/bin:$QUARTUS_ROOT/qsys/bin:$PATH
@@ -214,7 +214,7 @@ export INTELFPGAOCLSDKROOT=$QUARTUS_ROOT/hld
 export PATH=$PATH:$INTELFPGAOCLSDKROOT/bin
 export PATH=$INTELFPGAOCLSDKROOT/host/linux64/bin:$PATH
 export QSYS_ROOTDIR=$QUARTUS_ROOT/qsys/bin
-export LM_LICENSE_FILE=$HOME/flexlm/altera.dat
+export LM_LICENSE_FILE=$HOME/flexlm/altera.dat:9800@localhost
 export ALTERAOCLSDKROOT=$INTELFPGAOCLSDKROOT
 
 # Xilinx settings
