@@ -131,61 +131,21 @@ export MTI_VCO_MODE=64
 export COMP64=1
 
 # Altera options
-export QUARTUS_HOME=/tools/altera/17.1.1.273/quartus
+export QUARTUS_HOME=/opt/inteldevstack/intelFPGA_pro/quartus
 export QUARTUS_ROOTDIR=$QUARTUS_HOME
 export QUARTUS_64BIT=1
 export QUARTUS_ROOTDIR_OVERRIDE=$QUARTUS_HOME
-export PATH="${QUARTUS_HOME}/bin:${QUARTUS_HOME}/sopc_builder/bin:${PATH}"
+export PATH="${QUARTUS_HOME}/bin:${QUARTUS_HOME}/sopc_builder/bin:${QUARTUS_HOME}/../hld/bin${PATH}"
 
 # Altera Quartus
-export LM_LICENSE_FILE="${LM_LICENSE_FILE}:1800@altera02p.elic.intel.com"
-export LM_LICENSE_FILE="${LM_LICENSE_FILE}:1800@fmylic7001.fm.intel.com"
-export LM_LICENSE_FILE="${LM_LICENSE_FILE}:1800@fmylic7008.fm.intel.com"
-export LM_LICENSE_FILE="${LM_LICENSE_FILE}:1800@plxs0402.pdx.intel.com"
+export LM_LICENSE_FILE="${LM_LICENSE_FILE}:1800@ldap.meghcomputing"
 
-# set license for VCS
-export SNPSLMD_LICENSE_FILE="26586@plxs0402.pdx.intel.com"
-export SNPSLMD_LICENSE_FILE="${SNPSLMD_LICENSE_FILE}:26586@plxs0405.pdx.intel.com"
-export SNPSLMD_LICENSE_FILE="${SNPSLMD_LICENSE_FILE}:26586@plxs0406.pdx.intel.com"
-export SNPSLMD_LICENSE_FILE="${SNPSLMD_LICENSE_FILE}:26586@plxs0408.pdx.intel.com"
-export SNPSLMD_LICENSE_FILE="${SNPSLMD_LICENSE_FILE}:26586@plxs0414.pdx.intel.com"
-export SNPSLMD_LICENSE_FILE="${SNPSLMD_LICENSE_FILE}:26586@plxs0415.pdx.intel.com"
-export SNPSLMD_LICENSE_FILE="${SNPSLMD_LICENSE_FILE}:26586@plxs0416.pdx.intel.com"
-export SNPSLMD_LICENSE_FILE="${SNPSLMD_LICENSE_FILE}:26586@plxs0418.pdx.intel.com"
-export SNPS_FPGA="/p/atp/tools/synopsys/fpga/linux/fpga_e201009sp3"
-export PATH=${PATH}:$SNPS_FPGA/bin
-
-# set OVM_HOME to OVM installation directory
-export OVM_HOME="/p/atp/ovm/ovm-2.1.2"
-
-# set VCS_HOME to VCS installation directory
-export VCS_HOME="/p/atp/tools/synopsys/vcs/G-2012.09"
-export PATH=${PATH}:$VCS_HOME/bin
-export VCS_PLATFORM=amd64
-export VCS_ARCH_OVERRIDE=linux
-
-# SystemC setup
-export SC_INSTALL_DIR="/p/atp/systemc/systemc-2.2.0"
-export CSI_TOP="/p/atp/qpi_bfm/csibfm-QPI1.1-OSCI2.2-gcc410-3.35"
-
-# set XILINX_HOME and XILINX
-export XILINX_HOME="/p/atp/tools/xilinx/13.4"
-export XILINX=$XILINX_HOME/ISE
-export XILINX_EDK=$XILINX_HOME/EDK
-export XILINX_DSP=$XILINX_HOME/ISE
-export XILINX_PLANAHEAD=$XILINX_HOME/PlanAhead
-
-# Boost
-export BOOST_ROOT="/usr/intel/pkgs/boost/1.59.0"
-
-# set LD_LIBRARY_PATH
-export LD_LIBRARY_PATH="${HOME}/bin/lib"
-export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}"
-export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/usr/lib64:/usr/lib:/lib"
-export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${VCS_HOME}/amd64/lib"
-export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${SC_INSTALL_DIR}/lib-linux64"
-export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${CSI_TOP}/sysverilog/Linux_x86_64/lib:${CSI_TOP}/lib/Linux_x86_64:${CSI_TOP}/csi/crm_1_1"
-export PERL5LIB="/p/atp/tools/common"
+# Altera board
+export OPAE_PLATFORM_ROOT=/home/aberroc/workspace/pac_a10_1.2_pv
+export OPAE_PLATFORM_FPGA_FAMILY=A10
+export AOCL_BOARD_PACKAGE_ROOT=$OPAE_PLATFORM_ROOT/opencl/opencl_bsp
+export LD_LIBRARY_PATH=$INTELFPGAOCLSDKROOT/host/linux64/lib:$AOCL_BOARD_PACKAGE_ROOT/linux64/lib
+source $QUARTUS_HOME/../hld/init_opencl.sh
 
 # Set up general GTAGS location
 export GTAGSLIBPATH=$HOME/.gtags/
