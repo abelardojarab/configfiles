@@ -141,5 +141,5 @@ set foldmethod=manual       " manual fold
 set foldnestmax=3           " deepest fold is 3 levels
 set nofoldenable            " don't fold by default
 
-source .vimrc.win
+source $HOME/.vimrc.win
 behave mswin
