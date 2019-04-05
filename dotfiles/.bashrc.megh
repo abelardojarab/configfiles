@@ -1,0 +1,255 @@
+# ~/.bashrc: executed by bash(1) for non-login shells.
+# see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
+# for examples
+
+# If not running interactively, don't do anything
+case $- in
+    *i*) ;;
+      *) return;;
+esac
+
+# don't put duplicate lines or lines starting with space in the history.
+# See bash(1) for more options
+HISTCONTROL=ignoreboth
+
+# append to the history file, don't overwrite it
+shopt -s histappend
+
+# for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
+HISTSIZE=1000
+HISTFILESIZE=2000
+
+# check the window size after each command and, if necessary,
+# update the values of LINES and COLUMNS.
+shopt -s checkwinsize
+
+# If set, the pattern "**" used in a pathname expansion context will
+# match all files and zero or more directories and subdirectories.
+#shopt -s globstar
+
+# make less more friendly for non-text input files, see lesspipe(1)
+[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+
+# set variable identifying the chroot you work in (used in the prompt below)
+if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
+    debian_chroot=$(cat /etc/debian_chroot)
+fi
+
+# set a fancy prompt (non-color, unless we know we "want" color)
+case "$TERM" in
+    xterm-color) color_prompt=yes;;
+esac
+
+# uncomment for a colored prompt, if the terminal has the capability; turned
+# off by default to not distract the user: the focus in a terminal window
+# should be on the output of commands, not on the prompt
+#force_color_prompt=yes
+
+if [ -n "$force_color_prompt" ]; then
+    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+    # We have color support; assume it's compliant with Ecma-48
+    # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+    # a case would tend to support setf rather than setaf.)
+    color_prompt=yes
+    else
+    color_prompt=
+    fi
+fi
+
+if [ "$color_prompt" = yes ]; then
+    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+else
+    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+fi
+unset color_prompt force_color_prompt
+
+# If this is an xterm set the title to user@host:dir
+case "$TERM" in
+xterm*|rxvt*)
+    PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+    ;;
+*)
+    ;;
+esac
+
+# enable color support of ls and also add handy aliases
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    alias ls='ls --color=auto'
+    #alias dir='dir --color=auto'
+    #alias vdir='vdir --color=auto'
+
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+fi
+
+# some more ls aliases
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+
+# Use gpg2
+alias gpg='gpg2'
+
+# Add an "alert" alias for long running commands.  Use like so:
+#   sleep 10; alert
+alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
+
+# Alias definitions.
+# You may want to put all your additions into a separate file like
+# ~/.bash_aliases, instead of adding them here directly.
+# See /usr/share/doc/bash-doc/examples in the bash-doc package.
+
+if [ -f ~/.bash_aliases ]; then
+    . ~/.bash_aliases
+fi
+
+# enable programmable completion features (you don't need to enable
+# this, if it's already enabled in /etc/bash.bashrc and /etc/profile
+# sources /etc/bash.bashrc).
+if ! shopt -oq posix; then
+  if [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+  elif [ -f /etc/bash_completion ]; then
+    . /etc/bash_completion
+  fi
+fi
+
+# Emacs settings
+export GDK_NATIVE_WINDOWS=1
+export EMACS_SERVER_FILE=$HOME/.emacs.cache/server/server
+export DICTPATH=$HOME/.emacs.d/dictionaries
+
+# Modelsim options
+export MODELSIMROOT=/tools/mentor/modelsim_se_10.5a
+export MTI_HOME=$MODELSIMROOT/modeltech
+export PATH=$MODELSIMROOT/modeltech/bin:$PATH
+export PATH=$PATH:$MODELSIMROOT/modeltech/linux_x86_64
+export LM_LICENSE_FILE=1800@ldap.meghcomputing
+export MTI_VCO_MODE=64
+export COMP64=1
+
+# Altera options
+export QUARTUS_HOME=/tools/altera/17.1.1.273/quartus
+export QUARTUS_ROOTDIR=$QUARTUS_HOME
+export QUARTUS_64BIT=1
+export QUARTUS_ROOTDIR_OVERRIDE=$QUARTUS_HOME
+export PATH="${QUARTUS_HOME}/bin:${QUARTUS_HOME}/sopc_builder/bin:${PATH}"
+
+# Altera Quartus
+export LM_LICENSE_FILE="${LM_LICENSE_FILE}:1800@altera02p.elic.intel.com"
+export LM_LICENSE_FILE="${LM_LICENSE_FILE}:1800@fmylic7001.fm.intel.com"
+export LM_LICENSE_FILE="${LM_LICENSE_FILE}:1800@fmylic7008.fm.intel.com"
+export LM_LICENSE_FILE="${LM_LICENSE_FILE}:1800@plxs0402.pdx.intel.com"
+
+# set license for VCS
+export SNPSLMD_LICENSE_FILE="26586@plxs0402.pdx.intel.com"
+export SNPSLMD_LICENSE_FILE="${SNPSLMD_LICENSE_FILE}:26586@plxs0405.pdx.intel.com"
+export SNPSLMD_LICENSE_FILE="${SNPSLMD_LICENSE_FILE}:26586@plxs0406.pdx.intel.com"
+export SNPSLMD_LICENSE_FILE="${SNPSLMD_LICENSE_FILE}:26586@plxs0408.pdx.intel.com"
+export SNPSLMD_LICENSE_FILE="${SNPSLMD_LICENSE_FILE}:26586@plxs0414.pdx.intel.com"
+export SNPSLMD_LICENSE_FILE="${SNPSLMD_LICENSE_FILE}:26586@plxs0415.pdx.intel.com"
+export SNPSLMD_LICENSE_FILE="${SNPSLMD_LICENSE_FILE}:26586@plxs0416.pdx.intel.com"
+export SNPSLMD_LICENSE_FILE="${SNPSLMD_LICENSE_FILE}:26586@plxs0418.pdx.intel.com"
+export SNPS_FPGA="/p/atp/tools/synopsys/fpga/linux/fpga_e201009sp3"
+export PATH=${PATH}:$SNPS_FPGA/bin
+
+# set OVM_HOME to OVM installation directory
+export OVM_HOME="/p/atp/ovm/ovm-2.1.2"
+
+# set VCS_HOME to VCS installation directory
+export VCS_HOME="/p/atp/tools/synopsys/vcs/G-2012.09"
+export PATH=${PATH}:$VCS_HOME/bin
+export VCS_PLATFORM=amd64
+export VCS_ARCH_OVERRIDE=linux
+
+# SystemC setup
+export SC_INSTALL_DIR="/p/atp/systemc/systemc-2.2.0"
+export CSI_TOP="/p/atp/qpi_bfm/csibfm-QPI1.1-OSCI2.2-gcc410-3.35"
+
+# set XILINX_HOME and XILINX
+export XILINX_HOME="/p/atp/tools/xilinx/13.4"
+export XILINX=$XILINX_HOME/ISE
+export XILINX_EDK=$XILINX_HOME/EDK
+export XILINX_DSP=$XILINX_HOME/ISE
+export XILINX_PLANAHEAD=$XILINX_HOME/PlanAhead
+
+# Boost
+export BOOST_ROOT="/usr/intel/pkgs/boost/1.59.0"
+
+# set LD_LIBRARY_PATH
+export LD_LIBRARY_PATH="${HOME}/bin/lib"
+export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}"
+export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/usr/lib64:/usr/lib:/lib"
+export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${VCS_HOME}/amd64/lib"
+export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${SC_INSTALL_DIR}/lib-linux64"
+export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${CSI_TOP}/sysverilog/Linux_x86_64/lib:${CSI_TOP}/lib/Linux_x86_64:${CSI_TOP}/csi/crm_1_1"
+export PERL5LIB="/p/atp/tools/common"
+
+# Set up general GTAGS location
+export GTAGSLIBPATH=$HOME/.gtags/
+
+# Regular Colors
+Black="\[\033[0;30m\]"        # Black
+Red="\[\033[0;31m\]"          # Red
+BRed="\[\033[1;31m\]"         # Bold red
+Green="\[\033[0;32m\]"        # Green
+BGreen="\[\033[1;32m\]"       # Bold green
+Yellow="\[\033[0;33m\]"       # Yellow
+BYellow="\[\033[1;33m\]"      # Bold yellow
+Cyan="\[\033[0;36m\]"         # Cyan
+Gray="\[\033[1;30m\]"         # Gray
+White="\[\033[0;37m\]"        # White
+NO_COLOR="\[\033[0m\]"
+
+#
+# Example:
+#     [12:38:13] user@hostname example_repo (master)*$ SEP="
+#     > "
+#     [12:41:54] user@hostname example_repo (master)*
+#     $
+
+
+SEP=""
+
+export PS1="\
+$Gray[\t] \
+$Green\u@\h \
+$Yellow\W \
+\$(\
+    # get the reference description
+    if refname=\$(git name-rev --name-only HEAD 2> /dev/null); then\
+        # on a branch
+        if curbranch=\$(git symbolic-ref HEAD 2> /dev/null); then\
+            echo -n '$Cyan('\${curbranch##refs/heads/}')';\
+        # detached head
+        else\
+            # unreachable
+            if [ \$refname = 'undefined' ]; then\
+                echo -n '$BRed(Unreachable detached HEAD: '\$(git rev-parse HEAD | head -c7)')';\
+            # reachable
+            else\
+                echo -n '$White('\$(git rev-parse HEAD | head -c7)': '\$refname')';\
+            fi;\
+        fi;\
+        git diff --quiet --cached &> /dev/null \
+            || echo -n '$BGreen*';\
+        git diff --quiet &> /dev/null \
+            || echo -n '$BRed*';\
+  git status --porcelain 2> /dev/null | grep -q ^?? \
+        && echo -n '$Gray*';\
+        echo -n ' ';\
+    fi\
+)\
+$White\$SEP\
+\$(\
+    if [ \$USER = 'root' ]; then\
+        echo -n '$Yellow#';\
+    else\
+        echo -n '$Green$';\
+    fi;\
+)\
+$NO_COLOR "
+
+unset color_prompt force_color_prompt
