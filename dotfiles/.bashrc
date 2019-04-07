@@ -207,6 +207,10 @@ export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/matlab.dat
 # Altera settings
 export QUARTUS_64BIT=1
 export QUARTUS_ROOT=/opt/intelFPGA_pro/17.1
+
+# alternative
+# export QUARTUS_ROOT=/media/btrfsdrive4/Installers/inteldevstack/intelFPGA_pro
+
 export QUARTUS_HOME=$QUARTUS_ROOT/quartus
 export QUARTUS_ROOTDIR=$QUARTUS_HOME
 export PATH=$QUARTUS_ROOT/quartus/bin:$QUARTUS_ROOT/qsys/bin:$PATH

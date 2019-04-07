@@ -24,8 +24,6 @@ set number                      " always show line numbers
 set ignorecase                  " ignore case when searching
 set smartcase                   " ignore case if search pattern is all lowercase,
 set timeout timeoutlen=200 ttimeoutlen=100
-set visualbell           " don't beep
-set noerrorbells         " don't beep
 set autowrite  "Save on buffer switch
 set mouse=a
 
@@ -99,8 +97,11 @@ if has('gui_running')
                             "   truncate msgs (avoid press ENTER msgs).
 endif
 
+syntax enable
+colorscheme slate
+set cursorline
+hi CursorLine term=bold cterm=bold guibg=Grey40
 
-set cursorline              " Highlight current line
 set laststatus=2            " Always show status line
 set report=0                " Show all changes.
 set showcmd                 " show partial command on last line of screen.
@@ -112,6 +113,7 @@ set scrolloff=5             " Start scrolling n lines before horizontal
 set sidescrolloff=7         " Start scrolling n chars before end of screen.
 set sidescroll=1            " The minimal number of columns to scroll
                             "   horizontally.
+
 
 " add useful stuff to title bar (file name, flags, cwd)
 " based on @factorylabs
