@@ -222,8 +222,11 @@ export LM_LICENSE_FILE=$HOME/flexlm/altera.dat:9800@localhost
 export ALTERAOCLSDKROOT=$INTELFPGAOCLSDKROOT
 
 # Xilinx settings
-export PATH=$PATH:/opt/Xilinx/Vivado/2018.2/bin
+export XILINX_VIVADO=/opt/Xilinx/Vivado/2018.2
+export PATH=$PATH:$XILINX_VIVADO/bin
 export PATH=$PATH:/opt/Xilinx/SDK/2018.2/bin
+export XILINX_SDX=/opt/Xilinx/SDx/2018.2
+export PATH=$PATH:$XILINX_SDX/bin
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/Xilinx.lic
 
 # Bitware tools
