@@ -226,9 +226,10 @@ export XILINX_VIVADO=/opt/Xilinx/Vivado/2018.2
 export PATH=$PATH:$XILINX_VIVADO/bin
 export PATH=$PATH:/opt/Xilinx/SDK/2018.2/bin
 export XILINX_SDX=/opt/Xilinx/SDx/2018.2
-export XILINX_XRT=$XILINX_SDX/runtime/driver
 export PATH=$PATH:$XILINX_SDX/bin
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/Xilinx.lic
+export XILINX_XRT=~/workspace_remote/XRT/build/Release/opt/xilinx/xrt
+export LD_LIBRARY_PATH=$XILINX_XRT/lib
 
 # Bitware tools
 export PATH=$PATH:/opt/bwtk/2018.6L/bin
