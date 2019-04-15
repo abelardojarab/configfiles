@@ -1,3 +1,8 @@
+" --- Start with Windows
+source $HOME/.vimrc.win
+behave mswin
+
+
 " --- general settings
 set nocompatible   " Disable vi-compatibility
 set t_Co=256
@@ -143,5 +148,4 @@ set foldmethod=manual       " manual fold
 set foldnestmax=3           " deepest fold is 3 levels
 set nofoldenable            " don't fold by default
 
-source $HOME/.vimrc.win
-behave mswin
+
