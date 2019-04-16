@@ -218,7 +218,7 @@ export INTELFPGAOCLSDKROOT=$QUARTUS_ROOT/hld
 export PATH=$PATH:$INTELFPGAOCLSDKROOT/bin
 export PATH=$INTELFPGAOCLSDKROOT/host/linux64/bin:$PATH
 export QSYS_ROOTDIR=$QUARTUS_ROOT/qsys/bin
-export LM_LICENSE_FILE=$HOME/flexlm/altera.dat:9800@localhost
+export LM_LICENSE_FILE=$HOME/flexlm/altera.dat:$HOME/flexlm/altera_extra
 export ALTERAOCLSDKROOT=$INTELFPGAOCLSDKROOT
 
 # Xilinx settings
@@ -228,7 +228,8 @@ export PATH=$PATH:/opt/Xilinx/SDK/2018.2/bin
 export XILINX_SDX=/opt/Xilinx/SDx/2018.2
 export PATH=$PATH:$XILINX_SDX/bin
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/Xilinx.lic
-export XILINX_XRT=~/workspace_remote/XRT/build/Release/opt/xilinx/xrt
+export XILINX_XRT=/opt/xilinx/xrt
+export PATH=$XILINX_XRT/bin:$PATH
 export LD_LIBRARY_PATH=$XILINX_XRT/lib
 
 # Bitware tools
