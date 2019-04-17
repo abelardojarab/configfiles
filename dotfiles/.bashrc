@@ -232,6 +232,9 @@ export XILINX_XRT=/opt/xilinx/xrt
 export PATH=$XILINX_XRT/bin:$PATH
 export LD_LIBRARY_PATH=$XILINX_XRT/lib
 
+# AWS FPGA directory
+export AWS_FPGA_REPO_DIR=/opt/aws-fpga
+
 # Bitware tools
 export PATH=$PATH:/opt/bwtk/2018.6L/bin
 
