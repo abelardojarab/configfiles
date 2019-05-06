@@ -223,15 +223,16 @@ export LM_LICENSE_FILE=$HOME/flexlm/altera.dat
 export ALTERAOCLSDKROOT=$INTELFPGAOCLSDKROOT
 
 # Xilinx settings
-export XILINX_VIVADO=/opt/Xilinx/Vivado/2018.2
+export XILINX_VIVADO=/opt/Xilinx/Vivado/2018.3
 export PATH=$PATH:$XILINX_VIVADO/bin
-export PATH=$PATH:/opt/Xilinx/SDK/2018.2/bin
-export XILINX_SDX=/opt/Xilinx/SDx/2018.2
+export PATH=$PATH:/opt/Xilinx/SDK/2018.3/bin
+export XILINX_SDX=/opt/Xilinx/SDx/2018.3
 export PATH=$PATH:$XILINX_SDX/bin
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/Xilinx.lic
 export XILINX_XRT=/opt/xilinx/xrt
 export PATH=$XILINX_XRT/bin:$PATH
 export LD_LIBRARY_PATH=$XILINX_XRT/lib
+export CPATH=/usr/include/x86_64-linux-gnu
 
 # AWS FPGA directory
 export AWS_FPGA_REPO_DIR=/opt/aws-fpga
