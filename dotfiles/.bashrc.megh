@@ -131,11 +131,17 @@ export MTI_VCO_MODE=64
 export COMP64=1
 
 # Altera options
-export QUARTUS_HOME=/opt/inteldevstack/intelFPGA_pro/quartus
+export QUARTUS_ROOT=/opt/inteldevstack/intelFPGA_pro
+export QUARTUS_HOME=$QUARTUS_ROOT/quartus
 export QUARTUS_ROOTDIR=$QUARTUS_HOME
 export QUARTUS_64BIT=1
-export QUARTUS_ROOTDIR_OVERRIDE=$QUARTUS_HOME
-export PATH="${QUARTUS_HOME}/bin:${QUARTUS_HOME}/sopc_builder/bin:${QUARTUS_HOME}/../hld/bin${PATH}"
+export PATH=$QUARTUS_ROOT/quartus/bin:$QUARTUS_ROOT/qsys/bin:$PATH
+export INTELFPGAOCLSDKROOT=$QUARTUS_ROOT/hld
+export PATH=$PATH:$INTELFPGAOCLSDKROOT/bin
+export PATH=$INTELFPGAOCLSDKROOT/host/linux64/bin:$PATH
+export QSYS_ROOTDIR=$QUARTUS_ROOT/qsys/bin
+export LM_LICENSE_FILE=$HOME/flexlm/altera.dat
+export ALTERAOCLSDKROOT=$INTELFPGAOCLSDKROOT
 
 # Altera Quartus
 export LM_LICENSE_FILE="${LM_LICENSE_FILE}:1800@ldap.meghcomputing"
@@ -144,8 +150,13 @@ export LM_LICENSE_FILE="${LM_LICENSE_FILE}:1800@ldap.meghcomputing"
 export OPAE_PLATFORM_ROOT=/home/aberroc/workspace/pac_a10_1.2_pv
 export OPAE_PLATFORM_FPGA_FAMILY=A10
 export AOCL_BOARD_PACKAGE_ROOT=$OPAE_PLATFORM_ROOT/opencl/opencl_bsp
-export LD_LIBRARY_PATH=$INTELFPGAOCLSDKROOT/host/linux64/lib:$AOCL_BOARD_PACKAGE_ROOT/linux64/lib
-source $QUARTUS_HOME/../hld/init_opencl.sh
+export LD_LIBRARY_PATH=$INTELFPGAOCLSDKROOT/host/linux64/lib:$AOCL_BOARD_PACKAGE_ROOT/linux64/lib:$LD_LIBRARY_PATH
+
+# Xilinx XRT
+export XILINX_XRT=/opt/xilinx/xrt
+export PATH=$XILINX_XRT/bin:$PATH
+export LD_LIBRARY_PATH=$XILINX_XRT/lib:$LD_LIBRARY_PATH
+export CPATH=/usr/include/x86_64-linux-gnu
 
 # Set up general GTAGS location
 export GTAGSLIBPATH=$HOME/.gtags/
@@ -213,3 +224,4 @@ $White\$SEP\
 $NO_COLOR "
 
 unset color_prompt force_color_prompt
+
