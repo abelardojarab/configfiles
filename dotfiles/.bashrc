@@ -117,9 +117,10 @@ export GPU_USE_SYNC_OBJECTS=1
 export GPU_MAX_ALLOC_PERCENT=95
 export GPU_SINGLE_ALLOC_PERCENT=100
 
-# CUDA 9.2
-export PATH=/usr/local/cuda-9.2/bin${PATH:+:${PATH}}
-export LD_LIBRARY_PATH=/usr/local/cuda-9.2/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+# CUDA 10.1
+export PATH=/usr/local/cuda-10.1/bin:$PATH
+export CUDADIR=/usr/local/cuda-10.1
+export LD_LIBRARY_PATH=/usr/local/cuda-10.1/lib64:$LD_LIBRARY_PATH
 
 # Editor setup
 export VISUAL=vim
@@ -207,6 +208,10 @@ export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/matlab.dat
 # Altera settings
 export QUARTUS_64BIT=1
 export QUARTUS_ROOT=/opt/intelFPGA_pro/17.1
+
+# alternative
+# export QUARTUS_ROOT=/media/btrfsdrive4/Installers/inteldevstack/intelFPGA_pro
+
 export QUARTUS_HOME=$QUARTUS_ROOT/quartus
 export QUARTUS_ROOTDIR=$QUARTUS_HOME
 export PATH=$QUARTUS_ROOT/quartus/bin:$QUARTUS_ROOT/qsys/bin:$PATH
@@ -218,8 +223,19 @@ export LM_LICENSE_FILE=$HOME/flexlm/altera.dat
 export ALTERAOCLSDKROOT=$INTELFPGAOCLSDKROOT
 
 # Xilinx settings
-export PATH=$PATH:/opt/Xilinx/14.7/ISE_DS/ISE/bin/lin64
+export XILINX_VIVADO=/opt/Xilinx/Vivado/2018.3
+export PATH=$PATH:$XILINX_VIVADO/bin
+export PATH=$PATH:/opt/Xilinx/SDK/2018.3/bin
+export XILINX_SDX=/opt/Xilinx/SDx/2018.3
+export PATH=$PATH:$XILINX_SDX/bin
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/Xilinx.lic
+export XILINX_XRT=/opt/xilinx/xrt
+export PATH=$XILINX_XRT/bin:$PATH
+export LD_LIBRARY_PATH=$XILINX_XRT/lib
+export CPATH=/usr/include/x86_64-linux-gnu
+
+# AWS FPGA directory
+export AWS_FPGA_REPO_DIR=/opt/aws-fpga
 
 # Bitware tools
 export PATH=$PATH:/opt/bwtk/2018.6L/bin
