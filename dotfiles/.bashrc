@@ -231,7 +231,7 @@ export PATH=$PATH:$XILINX_SDX/bin
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/Xilinx.lic
 export XILINX_XRT=/opt/xilinx/xrt
 export PATH=$XILINX_XRT/bin:$PATH
-export LD_LIBRARY_PATH=$XILINX_XRT/lib
+export LD_LIBRARY_PATH=$XILINX_XRT/lib:$LD_LIBRARY_PATH
 export CPATH=/usr/include/x86_64-linux-gnu
 
 # AWS FPGA directory
