@@ -5,19 +5,18 @@ behave mswin
 
 " --- general settings
 set nocompatible   " Disable vi-compatibility
-set t_Co=256
-
 set guifont=menlo\ for\ powerline:h16
 set guioptions-=T " Removes top toolbar
 set guioptions-=r " Removes right hand scroll bar
 set go-=L " Removes left hand scroll bar
 set linespace=15
 
+
+" --- editor settings
 set showmode                    " always show what mode we're currently editing in
 set nowrap                      " don't wrap lines
 set tabstop=4                   " a tab is four spaces
 set smarttab
-set tags=tags
 set softtabstop=4               " when hitting <BS>, pretend like a tab is removed, even if spaces
 set expandtab                   " expand tabs by default (overloadable per file type later)
 set shiftwidth=4                " number of spaces to use for autoindenting
@@ -28,10 +27,11 @@ set copyindent                  " copy the previous indentation on autoindenting
 set number                      " always show line numbers
 set ignorecase                  " ignore case when searching
 set smartcase                   " ignore case if search pattern is all lowercase,
-set timeout timeoutlen=200 ttimeoutlen=100
-set autowrite  "Save on buffer switch
-set mouse=a
+set mouse=a                     "enable mouse automatically entering visual mode
+set clipboard=unnamed,unnamedplus                    "Use system clipboard by default
 
+" Use the same symbols as TextMate for tabstops and EOLs
+set listchars=tab:▸\ ,eol:¬
 
 " --- spell checking
 set spelllang=en_us         " spell checking
@@ -65,24 +65,6 @@ set hlsearch                " highlight searches
 set incsearch               " show the `best match so far' astyped
 set ignorecase smartcase    " make searches case-insensitive, unless they
                             "   contain upper-case letters
-
-" --- keys ---
-set backspace=indent,eol,start  " allow backspacing over everything.
-set esckeys                     " Allow cursor keys in insert mode.
-set nostartofline               " Make j/k respect the columns
-" set virtualedit=all            " allow the cursor to go in to 'invalid' places
-set timeoutlen=500              " how long it wait for mapped commands
-set ttimeoutlen=100             " faster timeout for escape key and others
-
-
-" Use a bar-shaped cursor for insert mode, even through tmux.
-if exists('$TMUX')
-    let &t_SI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=1\x7\<Esc>\\"
-    let &t_EI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=0\x7\<Esc>\\"
-else
-    let &t_SI = "\<Esc>]50;CursorShape=1\x7"
-    let &t_EI = "\<Esc>]50;CursorShape=0\x7"
-endif
 
 " --- UI settings ---
 
@@ -149,3 +131,81 @@ set foldnestmax=3           " deepest fold is 3 levels
 set nofoldenable            " don't fold by default
 
 
+" --- keys ---
+set backspace=indent,eol,start  " allow backspacing over everything.
+set esckeys                     " Allow cursor keys in insert mode.
+set nostartofline               " Make j/k respect the columns
+set timeoutlen=500              " how long it wait for mapped commands
+set ttimeoutlen=100             " faster timeout for escape key and others
+let mapleader = ","             "remap leader to ',' which is much easier than '\'
+
+" Use leader x to remove the current line but not erase buffer
+map <Leader>x "_dd
+
+" Use leader l to rapidly toggle `set list`
+nmap <leader>l :set list!<CR>
+
+
+" Use a bar-shaped cursor for insert mode, even through tmux.
+if exists('$TMUX')
+    let &t_SI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=1\x7\<Esc>\\"
+    let &t_EI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=0\x7\<Esc>\\"
+else
+    let &t_SI = "\<Esc>]50;CursorShape=1\x7"
+    let &t_EI = "\<Esc>]50;CursorShape=0\x7"
+endif
+
+" Down is really the next line
+nnoremap j gj
+nnoremap k gk
+
+" Easy escaping to normal model
+imap jj <esc>
+
+"Auto change directory to match current file ,cd
+nnoremap ,cd :cd %:p:h<CR>:pwd<CR>
+
+" Easier window navigation
+
+nmap <C-h> <C-w>h
+nmap <C-j> <C-w>j
+nmap <C-k> <C-w>k
+nmap <C-l> <C-w>l
+map <Tab><Tab> <C-W>w
+
+" Fn key binding
+
+nnoremap <F2><F2> :vsplit<CR>
+nnoremap <F3><F3> <C-W>w
+nnoremap <F4><F4> :set invwrap wrap?<CR>  " use f4f4 to toggle wordwrap
+nnoremap <F5><F5> :set invhls hls?<CR>    " use f5f5 to toggle search hilight
+map <F7> :b#<CR>
+
+" Resize vsplit
+nmap <C-v> :vertical resize +5<cr>
+nmap 25 :vertical resize 40<cr>
+nmap 50 <c-w>=
+nmap 75 :vertical resize 120<cr>
+
+" Create split below
+nmap :sp :rightbelow sp<cr>
+
+" Quickly go forward or backward to buffer
+nmap :bp :BufSurfBack<cr>
+nmap :bn :BufSurfForward<cr>
+
+" Open splits
+nmap vs :vsplit<cr>
+nmap sp :split<cr>
+
+" Allow saving a sudo file if forgot to open as sudo
+cmap w!! w !sudo tee % >/dev/null
+
+" Toggle paste mode
+nmap <leader>o :set paste!<CR>
+
+" Toggle NERDTree drawer
+map <leader>d <plug>NERDTreeTabsToggle<CR>
+
+" Remove trailing whitespace
+nnoremap <leader>W :%s/\s\+$//<cr>:let @/=''<CR>
