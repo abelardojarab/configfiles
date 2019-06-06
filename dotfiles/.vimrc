@@ -31,8 +31,6 @@ set smartcase                   " ignore case if search pattern is all lowercase
 set mouse=a                     "enable mouse automatically entering visual mode
 set clipboard=unnamed,unnamedplus                    "Use system clipboard by default
 
-" Use the same symbols as TextMate for tabstops and EOLs
-set listchars=tab:▸\ ,eol:¬
 
 " --- spell checking
 set spelllang=en_us         " spell checking
