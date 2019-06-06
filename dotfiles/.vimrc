@@ -1,7 +1,7 @@
 " --- Start with Windows
-source $HOME/.vimrc.win
+source ~/.vim/autoload/win.vim
 behave mswin
-
+source ~/.vim/autoload/plug.vim
 
 " --- general settings
 set nocompatible   " Disable vi-compatibility
@@ -173,19 +173,8 @@ nmap <C-k> <C-w>k
 nmap <C-l> <C-w>l
 map <Tab><Tab> <C-W>w
 
-" Fn key binding
-
-nnoremap <F2><F2> :vsplit<CR>
-nnoremap <F3><F3> <C-W>w
-nnoremap <F4><F4> :set invwrap wrap?<CR>  " use f4f4 to toggle wordwrap
-nnoremap <F5><F5> :set invhls hls?<CR>    " use f5f5 to toggle search hilight
-map <F7> :b#<CR>
-
 " Resize vsplit
 nmap <C-v> :vertical resize +5<cr>
-nmap 25 :vertical resize 40<cr>
-nmap 50 <c-w>=
-nmap 75 :vertical resize 120<cr>
 
 " Create split below
 nmap :sp :rightbelow sp<cr>
@@ -201,11 +190,42 @@ nmap sp :split<cr>
 " Allow saving a sudo file if forgot to open as sudo
 cmap w!! w !sudo tee % >/dev/null
 
+" --- Leader based key bindings
+let mapleader = ","
+
 " Toggle paste mode
 nmap <leader>o :set paste!<CR>
 
-" Toggle NERDTree drawer
-map <leader>d <plug>NERDTreeTabsToggle<CR>
-
 " Remove trailing whitespace
 nnoremap <leader>W :%s/\s\+$//<cr>:let @/=''<CR>
+
+" --- Plugins
+call plug#begin('~/.vim/plugged')
+" Other plugins here.
+Plug 'ctrlpvim/ctrlp.vim'
+Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
+call plug#end()
+
+nnoremap <Leader>b :CtrlPBuffer<CR>
+
+" Toggle NERDTree drawer
+map <leader>d <plug>NERDTreeToggle<CR>
+
+" Ctrl-p plugin shortcut
+let g:ctrlp_map = '<c-p>'
+let g:ctrlp_cmd = 'CtrlPBuffer'
+
+" Move between buffers
+map <C-Left> <Esc>:bprev<CR>
+map <C-Right> <Esc>:bnext<CR>
+
+" Nerd Tree toggling
+map <C-b> :NERDTreeToggle<CR>
+
+" Move lines up and down
+nnoremap <C-j> :m .+1<CR>==
+nnoremap <C-k> :m .-2<CR>==
+inoremap <C-j> <Esc>:m .+1<CR>==gi
+inoremap <C-k> <Esc>:m .-2<CR>==gi
+vnoremap <C-j> :m '>+1<CR>gv=gv
+vnoremap <C-k> :m '<-2<CR>gv=gv
