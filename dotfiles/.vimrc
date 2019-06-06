@@ -174,7 +174,7 @@ nmap <C-l> <C-w>l
 map <Tab><Tab> <C-W>w
 
 " Resize vsplit
-nmap <C-v> :vertical resize +5<cr>
+nmap <C-w> :vertical resize +5<cr>
 
 " Create split below
 nmap :sp :rightbelow sp<cr>
