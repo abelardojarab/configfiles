@@ -32,6 +32,9 @@ set mouse=a                     "enable mouse automatically entering visual mode
 set clipboard=unnamed,unnamedplus                    "Use system clipboard by default
 
 
+map <LeftMouse> <c-o>
+
+
 " --- spell checking
 set spelllang=en_us         " spell checking
 set encoding=utf-8 nobomb   " BOM often causes trouble, UTF-8 is awsum.
