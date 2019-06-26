@@ -158,6 +158,14 @@ export PATH=$XILINX_XRT/bin:$PATH
 export LD_LIBRARY_PATH=$XILINX_XRT/lib:$LD_LIBRARY_PATH
 export CPATH=/usr/include/x86_64-linux-gnu
 
+# Xilinx settings
+export XILINX_VIVADO=/opt/xilinx/Vivado/2018.3
+export PATH=$PATH:$XILINX_VIVADO/bin
+export PATH=$PATH:/opt/xilinx/SDK/2018.3/bin
+export XILINX_SDX=/opt/xilinx/SDx/2018.3
+export PATH=$PATH:$XILINX_SDX/bin
+export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/Xilinx.lic
+
 # Set up general GTAGS location
 export GTAGSLIBPATH=$HOME/.gtags/
 
