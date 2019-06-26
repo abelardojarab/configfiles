@@ -32,9 +32,6 @@ set mouse=a                     "enable mouse automatically entering visual mode
 set clipboard=unnamed,unnamedplus                    "Use system clipboard by default
 
 
-map <LeftMouse> <c-o>
-
-
 " --- spell checking
 set spelllang=en_us         " spell checking
 set encoding=utf-8 nobomb   " BOM often causes trouble, UTF-8 is awsum.
@@ -139,10 +136,9 @@ set esckeys                     " Allow cursor keys in insert mode.
 set nostartofline               " Make j/k respect the columns
 set timeoutlen=500              " how long it wait for mapped commands
 set ttimeoutlen=100             " faster timeout for escape key and others
-let mapleader = ","             "remap leader to ',' which is much easier than '\'
 
 " Use leader x to remove the current line but not erase buffer
-map <Leader>x "_dd
+map <leader>x "_dd
 
 " Use leader l to rapidly toggle `set list`
 nmap <leader>l :set list!<CR>
@@ -192,8 +188,6 @@ cmap w!! w !sudo tee % >/dev/null
 :highlight Pmenu ctermbg=238 gui=bold
 
 " --- Leader based key bindings
-nnoremap <SPACE> <Nop>
-let mapleader=" "
 
 "Auto change directory to match current file ,cd
 nnoremap <leader>cd :cd %:p:h<CR>:pwd<CR>
@@ -221,16 +215,18 @@ call plug#begin('~/.vim/plugged')
 " Other plugins here.
 Plug 'ctrlpvim/ctrlp.vim'
 Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
-Plug 'bling/vim-airline'  " vim status bar
+Plug 'bling/vim-airline'  " Vim status bar
 Plug 'tpope/vim-fugitive' " Git integration
-Plug 'scrooloose/syntastic'  " adds syntax checking
-Plug 'tpope/vim-surround'  " quoting and parenthesizing made simple
-Plug 'tinyheero/vim-snippets'  " fork of honza/vim-snippets
-Plug 'tomtom/tcomment_vim'  " extensible & universal comment
-
+Plug 'scrooloose/syntastic'  " Adds syntax checking
+Plug 'tpope/vim-surround'  " Quoting and parenthesizing made simple
+Plug 'tinyheero/vim-snippets'  " Fork of honza/vim-snippets
+Plug 'tomtom/tcomment_vim'  " Extensible & universal comment
+Plug 'ap/vim-buftabline'  " Vim tabs
+Plug 'Nopik/vim-nerdtree-direnter'  " Fix issue with nerdtree
+Plug 'fholgado/minibufexpl.vim'  " Buffer explorer
 call plug#end()
 
-nnoremap <Leader>b :CtrlPBuffer<CR>
+nnoremap <leader>b :CtrlPBuffer<CR>
 
 " Toggle NERDTree drawer
 map <leader>d <plug>NERDTreeToggle<CR>
@@ -243,8 +239,17 @@ let g:ctrlp_cmd = 'CtrlPBuffer'
 map <C-Left> <Esc>:bprev<CR>
 map <C-Right> <Esc>:bnext<CR>
 
+map <C-PageUp> :bprevCR>
+map <C-PageDown> :bnext<CR>
+
+map <C-P> :bprevCR>
+map <C-N> :bnext<CR>
+
 " Nerd Tree toggling
 map <C-b> :NERDTreeToggle<CR>
+
+" Open files in new tabs in Nerdtree
+let NERDTreeMapOpenInTab='\r'
 
 " --- Default vim file browser :Explore
 let g:netrw_liststyle = 3

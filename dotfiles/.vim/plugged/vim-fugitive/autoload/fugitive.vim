@@ -857,15 +857,18 @@ function! s:ExpandVar(other, var, flags, esc) abort
 endfunction
 
 function! s:Expand(rev) abort
-  if a:rev =~# '^:[0-3]$'
-    let file = a:rev . s:Relative(':')
+  if a:rev =~# '^:0$'
+    call s:throw('Use ' . string(':%') . ' instead of ' . string(a:rev))
+  elseif a:rev =~# '^:[1-3]$'
+    call s:throw('Use ' . string(a:rev . ':%') . ' instead of ' . string(a:rev))
+  elseif a:rev =~# '^@{' || a:rev =~# '^\^[0-9~^{]\|^\~[0-9~^]\|^\^$'
+    call s:throw('Use ' . string('!' . a:rev . ':%') . ' instead of ' . string(a:rev))
   elseif a:rev =~# '^-'
-    let file = 'HEAD^{}' . a:rev[1:-1] . s:Relative(':')
-  elseif a:rev =~# '^@{'
-    let file = 'HEAD' . a:rev. s:Relative(':')
-  elseif a:rev =~# '^\^[0-9~^{]\|^\~[0-9~^]'
-    let commit = substitute(s:DirCommitFile(@%)[1], '^\d\=$', 'HEAD', '')
-    let file = commit . a:rev . s:Relative(':')
+    call s:throw('Use ' . string('!' . a:rev[1:-1] . ':%') . ' instead of ' . string(a:rev))
+  elseif a:rev =~# '^>[~^]\|^>@{\|^>:\d$'
+    let file = 'HEAD' . a:rev[1:-1] . s:Relative(':')
+  elseif a:rev =~# '^>[^> ]'
+    let file = a:rev[1:-1] . s:Relative(':')
   else
     let file = a:rev
   endif
@@ -942,7 +945,7 @@ function! s:PathInfo(url) abort
   let path = substitute(file[1:-1], '/*$', '', '')
   let [tree, ftime] = s:TreeInfo(dir, commit)
   let entry = empty(path) ? [ftime, '040000', 'tree', '', -1] : get(tree, path, [])
-  if empty(entry) || file =~# '/$' && entry[1] !=# 'tree'
+  if empty(entry) || file =~# '/$' && entry[2] !=# 'tree'
     return [-1, '000000', '', '', -1]
   else
     return entry
@@ -1837,7 +1840,7 @@ augroup END
 
 " Section: :Git
 
-call s:command("-bang -nargs=? -complete=customlist,fugitive#CompleteGit Git", "Git")
+call s:command("-bang -nargs=? -range=-1 -complete=customlist,fugitive#CompleteGit Git", "Git")
 
 function! s:GitCommand(line1, line2, range, count, bang, mods, reg, arg, args) abort
   if a:bang
@@ -2942,8 +2945,19 @@ function! s:Merge(cmd, bang, mods, args, ...) abort
     else
       let &l:makeprg = 'env GIT_EDITOR=false ' . substitute(&l:makeprg, '^env ', '', '')
     endif
-    silent noautocmd make!
-  catch /^Vim\%((\a\+)\)\=:E211/
+    try
+      if !has('patch-8.1.0334') && &autowrite
+        let autowrite_was_set = 1
+        set noautowrite
+        wall
+      endif
+      silent noautocmd make!
+    finally
+      if exists('autowrite_was_set')
+        set autowrite
+      endif
+    endtry
+    catch /^Vim\%((\a\+)\)\=:E211/
     let err = v:exception
   finally
     redraw!
@@ -3203,8 +3217,8 @@ function! s:Open(cmd, bang, mods, arg, args) abort
     return 'echo ' . string(':!' . git . ' ' . args)
   endif
 
-  let [file, pre] = s:OpenParse(a:args)
   try
+    let [file, pre] = s:OpenParse(a:args)
     let file = s:Generate(file)
   catch /^fugitive:/
     return 'echoerr v:errmsg'
@@ -3242,8 +3256,8 @@ function! s:ReadCommand(line1, line2, range, count, bang, mods, reg, arg, args) 
     call fugitive#ReloadStatus()
     return 'redraw|echo '.string(':!'.git.' '.args)
   endif
-  let [file, pre] = s:OpenParse(a:args)
   try
+    let [file, pre] = s:OpenParse(a:args)
     let file = s:Generate(file)
   catch /^fugitive:/
     return 'echoerr v:errmsg'
@@ -3452,7 +3466,18 @@ function! s:Dispatch(bang, args)
     if exists(':Make') == 2
       Make
     else
-      silent noautocmd make!
+      try
+        if !has('patch-8.1.0334') && &autowrite
+          let autowrite_was_set = 1
+          set noautowrite
+          wall
+        endif
+        silent noautocmd make!
+      finally
+        if exists('autowrite_was_set')
+          set autowrite
+        endif
+      endtry
       redraw!
       return 'call fugitive#Cwindow()|call fugitive#ReloadStatus()'
     endif
@@ -4306,13 +4331,13 @@ function! s:NavigateUp(count) abort
 endfunction
 
 function! fugitive#MapJumps(...) abort
-  if get(b:, 'fugitive_type', '') ==# 'blob'
-    nnoremap <buffer> <silent> <CR>    :<C-U>.Gblame<CR>
-  else
-    nnoremap <buffer> <silent> <CR>    :<C-U>exe <SID>GF("edit")<CR>
-  endif
   if !&modifiable
     let nowait = v:version >= 704 ? '<nowait>' : ''
+    if get(b:, 'fugitive_type', '') ==# 'blob'
+      nnoremap <buffer> <silent> <CR>    :<C-U>.Gblame<CR>
+    else
+      nnoremap <buffer> <silent> <CR>    :<C-U>exe <SID>GF("edit")<CR>
+    endif
     if get(b:, 'fugitive_type', '') ==# 'blob'
       nnoremap <buffer> <silent> o     :<C-U>.,.+1Gblame<CR>
       nnoremap <buffer> <silent> S     :<C-U>echoerr 'Use gO'<CR>
