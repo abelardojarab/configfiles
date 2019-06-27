@@ -224,6 +224,8 @@ Plug 'tomtom/tcomment_vim'  " Extensible & universal comment
 Plug 'ap/vim-buftabline'  " Vim tabs
 Plug 'Nopik/vim-nerdtree-direnter'  " Fix issue with nerdtree
 Plug 'fholgado/minibufexpl.vim'  " Buffer explorer
+Plug 'rhysd/vim-clang-format' " Clang-format
+Plug 'yegappan/mru' " MRU
 call plug#end()
 
 nnoremap <leader>b :CtrlPBuffer<CR>
@@ -246,7 +248,7 @@ map <C-P> :bprevCR>
 map <C-N> :bnext<CR>
 
 " Nerd Tree toggling
-map <C-b> :NERDTreeToggle<CR>
+map <C-t> :NERDTreeToggle<CR>
 
 " Open files in new tabs in Nerdtree
 let NERDTreeMapOpenInTab='\r'
