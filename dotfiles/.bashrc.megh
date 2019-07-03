@@ -120,6 +120,7 @@ fi
 export GDK_NATIVE_WINDOWS=1
 export EMACS_SERVER_FILE=$HOME/.emacs.cache/server/server
 export DICTPATH=$HOME/.emacs.d/dictionaries
+alias emacs='./build/emacs-26.2/build/src/emacs'
 
 # Modelsim options
 export MODELSIMROOT=/tools/mentor/modelsim_se_10.5a
