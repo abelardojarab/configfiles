@@ -206,8 +206,9 @@ export PATH=/opt/MATLAB/R2012b/bin:$PATH
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/matlab.dat
 
 # Altera settings
+export QUARTUS_VERSION=18.1
 export QUARTUS_64BIT=1
-export QUARTUS_ROOT=/opt/intelFPGA_pro/17.1
+export QUARTUS_ROOT=/opt/intelFPGA_pro/$QUARTUS_VERSION
 
 # alternative
 # export QUARTUS_ROOT=/media/btrfsdrive4/Installers/inteldevstack/intelFPGA_pro
@@ -223,10 +224,11 @@ export LM_LICENSE_FILE=$HOME/flexlm/altera.dat
 export ALTERAOCLSDKROOT=$INTELFPGAOCLSDKROOT
 
 # Xilinx settings
-export XILINX_VIVADO=/opt/Xilinx/Vivado/2018.3
+export XILINX_VERSION=2019.1
+export XILINX_VIVADO=/opt/Xilinx/Vivado/$XILINX_VERSION
 export PATH=$PATH:$XILINX_VIVADO/bin
-export PATH=$PATH:/opt/Xilinx/SDK/2018.3/bin
-export XILINX_SDX=/opt/Xilinx/SDx/2018.3
+export PATH=$PATH:/opt/Xilinx/SDK/$XILINX_VERSION/bin
+export XILINX_SDX=/opt/Xilinx/SDx/$XILINX_VERSION
 export PATH=$PATH:$XILINX_SDX/bin
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/Xilinx.lic
 export XILINX_XRT=/opt/xilinx/xrt
@@ -441,3 +443,7 @@ export PROMPT_COMMAND=set_prompt
 
 # After each command, append to the history file and reread it
 export PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"
+
+export QSYS_ROOTDIR="/opt/intelFPGA_pro/18.1/qsys/bin"
+
+export INTELFPGAOCLSDKROOT="/opt/intelFPGA_pro/18.1/hld"
