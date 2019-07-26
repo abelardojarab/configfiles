@@ -226,7 +226,7 @@ export LD_LIBRARY_PATH=$INTELFPGAOCLSDKROOT/host/linux64/lib:$LD_LIBRARY_PATH
 
 #
 # Xilinx settings
-export XILINX_VERSION=2019.1
+export XILINX_VERSION=2018.3
 export XILINX_VIVADO=/opt/Xilinx/Vivado/$XILINX_VERSION
 export PATH=$PATH:$XILINX_VIVADO/bin
 export PATH=$PATH:/opt/Xilinx/SDK/$XILINX_VERSION/bin
