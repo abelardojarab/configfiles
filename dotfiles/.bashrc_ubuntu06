@@ -2,5 +2,8 @@
 export OPAE_PLATFORM_ROOT=/opt/intelFPGA_pro/17.1/pac/pac_a10_1.2_pv
 export OPAE_PLATFORM_FPGA_FAMILY=A10
 export AOCL_BOARD_PACKAGE_ROOT=$OPAE_PLATFORM_ROOT/opencl/opencl_bsp
-export LD_LIBRARY_PATH=$INTELFPGAOCLSDKROOT/host/linux64/lib:$AOCL_BOARD_PACKAGE_ROOT/linux64/lib:/home/abelardojara/cmake_builds/opae-sdk/lib:$LD_LIBRARY_PATH
-export PATH=/home/abelardojara/cmake_builds/opae-sdk/bin:$PATH
+export LD_LIBRARY_PATH=$AOCL_BOARD_PACKAGE_ROOT/linux64/lib
+
+# Stratix 10 boards
+export AOCL_BOARD_PACKAGE_ROOT=$INTELFPGAOCLSDKROOT/board/de10_pro
+export LD_LIBRARY_PATH=$AOCL_BOARD_PACKAGE_ROOT/linux64/lib:$LD_LIBRARY_PATH
