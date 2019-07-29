@@ -269,10 +269,10 @@ function! s:wrap(string,char,type,removed,special)
         let before .= "\t"
       endif
     elseif keeper =~ '^\n' && before =~ '\n\s*$'
-      let keeper = strcharpart(keeper,1)
+      let keeper = strpart(keeper,1)
     endif
     if type ==# 'V' && keeper =~ '\n\s*\n$'
-      let keeper = strcharpart(keeper,0,strchars(keeper) - 1)
+      let keeper = strpart(keeper,0,strchars(keeper) - 1)
     endif
   endif
   if type ==# 'V'

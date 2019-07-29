@@ -730,9 +730,9 @@ function! s:MRU_add_files_to_menu(prefix, file_list)
         " Shorten long file names by adding only few characters from
         " the beginning and end.
         if len > 30
-            let dir_name = strcharpart(dir_name, 0, 10) .
+            let dir_name = strpart(dir_name, 0, 10) .
                         \ '...' .
-                        \ strcharpart(dir_name, len - 20)
+                        \ strpart(dir_name, len - 20)
         endif
         let esc_dir_name = escape(dir_name, ".\\" . s:esc_filename_chars)
         let esc_dir_name = substitute(esc_dir_name, '&', '&&', 'g')
