@@ -98,7 +98,7 @@ set sort_re
 set reply_regexp = "^(([Rr][Ee]?(\[[0-9]+\])?: *)?(\[[^]]+\] *)?)*"
 
 # Pager View
-set pager_index_lines = 10
+set pager_index_lines = 15
 set pager_context = 3
 set pager_stop
 set menu_scroll
@@ -129,6 +129,9 @@ bind index <tab> sync-mailbox
 bind index p recall-message
 bind editor <tab> complete-query
 bind editor ^T complete
+
+# colors
+source ~/.mutt/colors/mutt-colors-solarized-dark-256.muttrc
 
 # Gmail-style keyboard shortcuts - for IMAP GMail operations (not mbsync)
 folder-hook '+\[Gmail\]/All Mail' 'macro index d ";s+[Gmail]/Trash<enter><enter>" "Move to Gmail Trash"'
