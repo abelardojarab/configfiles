@@ -202,7 +202,7 @@ export COMP64=1
 export ALDEC_LICENSE_FILE=$HOME/flexlm/aldec.dat
 
 # Matlab settings
-export PATH=/opt/MATLAB/R2012b/bin:$PATH
+export PATH=/opt/Matlab/R2019a/bin:$PATH
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/matlab.dat
 
 # Altera settings
