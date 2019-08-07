@@ -102,6 +102,7 @@ export CTEST_OUTPUT_ON_FAILURE=1
 
 # Vagrant
 export VAGRANT_LOG=error
+export VAGRANT_DEFAULT_PROVIDER=libvirt 
 
 # Fix GTK3 scroll not working
 export GDK_CORE_DEVICE_EVENTS=1
