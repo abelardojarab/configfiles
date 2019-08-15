@@ -199,6 +199,11 @@ export MGLS_LICENSE_FILE=$HOME/flexlm/modelsim.dat:$MGLS_LICENSE_FILE
 export MTI_VCO_MODE=64
 export COMP64=1
 
+# Precision settings
+export PATH=/opt/mentor/precision/2019.1/bin:$PATH
+export LM_LICENSE_FILE=$HOME/flexlm/precision.dat:$LM_LICENSE_FILE:
+export MGLS_LICENSE_FILE=$HOME/flexlm/precision.dat:$MGLS_LICENSE_FILE
+
 # Aldec settings
 export ALDEC_LICENSE_FILE=$HOME/flexlm/aldec.dat
 
