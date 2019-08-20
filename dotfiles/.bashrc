@@ -272,6 +272,10 @@ export GTAGSLIBPATH=$HOME/.gtags/
 export GTAGSTHROUGH=true
 export GTAGSLABEL=exuberant-ctags
 
+# Node
+export NPM_CONFIG_PREFIX=$HOME/.npm-global
+export PATH=$NPM_CONFIG_PREFIX/bin:$PATH
+
 # Perl options (needed by Verilator)
 PATH="${HOME}/perl5/bin${PATH:+:${PATH}}"; export PATH;
 PERL5LIB="${HOME}/perl5/lib/perl5${PERL5LIB:+:${PERL5LIB}}"; export PERL5LIB;
