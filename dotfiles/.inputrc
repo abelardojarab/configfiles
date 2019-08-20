@@ -27,23 +27,30 @@ set output-meta on
 
 # rxvt bindings
 $if term=rxvt
-	"\e[8~": end-of-line
-	"\eOc": forward-word
-	"\eOd": backward-word
+    "\e[8~": end-of-line
+    "\eOc": forward-word
+    "\eOd": backward-word
 $endif
 
 # vi mode bindings
 $if mode=vi
-	set keymap vi-command
-	"gg": beginning-of-history
-	"G": end-of-history
-	"\e[A": history-search-backward
-	"\e[B": history-search-forward
+    set keymap vi-command
+    "gg": beginning-of-history
+    "G": end-of-history
+    "\e[A": history-search-backward
+    "\e[B": history-search-forward
 
-	set keymap vi-insert
-	"\C-l": clear-screen
-	"\C-p": dynamic-complete-history
-	"\C-n": menu-complete
-	"\e[A": history-search-backward
-	"\e[B": history-search-forward
+    set keymap vi-insert
+    "\C-l": clear-screen
+    "\C-p": dynamic-complete-history
+    "\C-n": menu-complete
+    "\e[A": history-search-backward
+    "\e[B": history-search-forward
 $endif
+
+# The following settings are interpreted by EMACS, do not remove them.
+# Local Variables:
+# mode: shell-script
+# fill-column: 80
+# coding: utf-8
+# End:

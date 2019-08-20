@@ -34,3 +34,10 @@ export GTAGSLIBPATH=$HOME/.gtags/
 export PS1='\[\e[1;33m\]\u@\h \w -> \[\e[1;36m\] \@ \d\$\[\e[m\] '
 
 cd $HOME
+
+# The following settings are interpreted by EMACS, do not remove them.
+# Local Variables:
+# mode: shell-script
+# fill-column: 80
+# coding: utf-8
+# End:

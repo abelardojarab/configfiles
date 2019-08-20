@@ -216,9 +216,6 @@ export QUARTUS_VERSION=18.1
 export QUARTUS_64BIT=1
 export QUARTUS_ROOT=/opt/intelFPGA_pro/$QUARTUS_VERSION
 
-# alternative
-# export QUARTUS_ROOT=/media/btrfsdrive4/Installers/inteldevstack/intelFPGA_pro
-
 export QUARTUS_HOME=$QUARTUS_ROOT/quartus
 export QUARTUS_ROOTDIR=$QUARTUS_HOME
 export PATH=$QUARTUS_ROOT/quartus/bin:$QUARTUS_ROOT/qsys/bin:$PATH
@@ -230,7 +227,6 @@ export LM_LICENSE_FILE=$HOME/flexlm/altera.dat
 export ALTERAOCLSDKROOT=$INTELFPGAOCLSDKROOT
 export LD_LIBRARY_PATH=$INTELFPGAOCLSDKROOT/host/linux64/lib:$LD_LIBRARY_PATH
 
-#
 # Xilinx settings
 export XILINX_VERSION=2018.3
 export XILINX_VIVADO=/opt/Xilinx/Vivado/$XILINX_VERSION
@@ -303,8 +299,6 @@ fi
 export HADOOP_HOME=/opt/hadoop/3.2.0
 export PATH=$PATH:$HADOOP_HOME/bin
 
-# export HADOOP_OPTS="-Djava.security.krb5.realm= -Djava.security.krb5.kdc="
-
 # Spark settings
 export SPARK_HOME=/opt/spark/spark-2.4.0-bin-hadoop2.7
 export PATH=$PATH:$SPARK_HOME/bin
@@ -314,12 +308,6 @@ export SPARK_MASTER_HOST='192.168.3.2'
 export SPARK_WORKER_CORES=2
 export SPARK_WORKER_INSTANCES=2
 export SPARK_WORKER_MEMORY=2g
-
-# For a ipython notebook and pyspark integration
-if which pyspark > /dev/null; then
-  export PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/build:$PYTHONPATH
-  export PYTHONPATH=$SPARK_HOME/python/lib/py4j-0.10.7-src.zip:$PYTHONPATH
-fi
 
 # Local settings
 if [ -f $HOME/.bashrc_local ]; then
@@ -444,7 +432,3 @@ export PROMPT_COMMAND=set_prompt
 
 # After each command, append to the history file and reread it
 export PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"
-
-export QSYS_ROOTDIR="/opt/intelFPGA_pro/18.1/qsys/bin"
-
-export INTELFPGAOCLSDKROOT="/opt/intelFPGA_pro/18.1/hld"

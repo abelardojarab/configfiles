@@ -7,3 +7,10 @@ export LD_LIBRARY_PATH=$AOCL_BOARD_PACKAGE_ROOT/linux64/lib:$LD_LIBRARY_PATH
 # Stratix 10 boards
 export AOCL_BOARD_PACKAGE_ROOT=$INTELFPGAOCLSDKROOT/board/de10_pro
 export LD_LIBRARY_PATH=$AOCL_BOARD_PACKAGE_ROOT/linux64/lib:$LD_LIBRARY_PATH
+
+# The following settings are interpreted by EMACS, do not remove them.
+# Local Variables:
+# mode: shell-script
+# fill-column: 80
+# coding: utf-8
+# End:

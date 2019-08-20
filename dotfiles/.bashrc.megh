@@ -234,3 +234,9 @@ $NO_COLOR "
 
 unset color_prompt force_color_prompt
 
+# The following settings are interpreted by EMACS, do not remove them.
+# Local Variables:
+# mode: shell-script
+# fill-column: 80
+# coding: utf-8
+# End:
