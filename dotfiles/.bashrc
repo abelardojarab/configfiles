@@ -438,3 +438,7 @@ export PROMPT_COMMAND=set_prompt
 # After each command, append to the history file and reread it
 export PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"
 
+
+export INTELFPGAOCLSDKROOT="/opt/intelFPGA_pro/19.2/hld"
+
+export QSYS_ROOTDIR="/opt/intelFPGA_pro/19.2/qsys/bin"
