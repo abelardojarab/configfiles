@@ -212,7 +212,7 @@ export PATH=/opt/Matlab/R2019a/bin:$PATH
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/matlab.dat
 
 # Altera settings
-export QUARTUS_VERSION=17.1
+export QUARTUS_VERSION=19.2
 export QUARTUS_64BIT=1
 export QUARTUS_ROOT=/opt/intelFPGA_pro/$QUARTUS_VERSION
 
@@ -439,6 +439,4 @@ export PROMPT_COMMAND=set_prompt
 export PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"
 
 
-export INTELFPGAOCLSDKROOT="/opt/intelFPGA_pro/19.2/hld"
 
-export QSYS_ROOTDIR="/opt/intelFPGA_pro/19.2/qsys/bin"
