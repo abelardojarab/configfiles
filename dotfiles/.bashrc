@@ -111,18 +111,6 @@ export GDK_CORE_DEVICE_EVENTS=1
 export QT_USE_NATIVE_WINDOWS=1
 export QT_X11_NO_MITSHM=1
 
-# NVIDIA settings
-export GPU_FORCE_64BIT_PTR=0
-export GPU_MAX_HEAP_SIZE=100
-export GPU_USE_SYNC_OBJECTS=1
-export GPU_MAX_ALLOC_PERCENT=95
-export GPU_SINGLE_ALLOC_PERCENT=100
-
-# CUDA 10.1
-export PATH=/usr/local/cuda-10.1/bin:$PATH
-export CUDADIR=/usr/local/cuda-10.1
-export LD_LIBRARY_PATH=/usr/local/cuda-10.1/lib64:$LD_LIBRARY_PATH
-
 # Editor setup
 export VISUAL=vim
 export EDITOR="$VISUAL"
@@ -137,6 +125,24 @@ alias lmlicense='/opt/mentor/calibre/2013.3_28.19/bin/lmgrd -c'
 
 # Java options
 export JAVA_HOME=/usr/lib/jvm/java-9-oracle
+
+# Intel performance tools
+export INTELPARALLELSTUDIO=/opt/intel/parallel_studio_xe_2018
+if [ -f $INTELPARALLELSTUDIO/psxevars.sh ]; then
+  source $INTELPARALLELSTUDIO/psxevars.sh
+fi
+
+# NVIDIA settings
+export GPU_FORCE_64BIT_PTR=0
+export GPU_MAX_HEAP_SIZE=100
+export GPU_USE_SYNC_OBJECTS=1
+export GPU_MAX_ALLOC_PERCENT=95
+export GPU_SINGLE_ALLOC_PERCENT=100
+
+# CUDA 10.1
+export PATH=/usr/local/cuda-10.1/bin:$PATH
+export CUDADIR=/usr/local/cuda-10.1
+export LD_LIBRARY_PATH=/usr/local/cuda-10.1/lib64:$LD_LIBRARY_PATH
 
 # OpenAccess
 export OA_UNSUPPORTED_PLAT=linux_rhel50_gcc44x
@@ -235,6 +241,7 @@ export PATH=$PATH:$XILINX_VIVADO/bin
 export PATH=$PATH:/opt/Xilinx/SDK/$XILINX_VERSION/bin
 export XILINX_SDX=/opt/Xilinx/SDx/$XILINX_VERSION
 export PATH=$PATH:$XILINX_SDX/bin
+export LD_LIBRARY_PATH=$XILINX_SDX/lib/lnx64.o/Ubuntu:$XILINX_SDX/lib/lnx64.o:$XILINX_SDX/runtime/lib/x86_64:$LD_LIBRARY_PATH
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/Xilinx.lic
 export XILINX_XRT=/opt/xilinx/xrt
 export PATH=$XILINX_XRT/bin:$PATH
@@ -261,12 +268,6 @@ export PATH=/opt/sublime_text:$PATH
 # Master PDF 3 and PDF Studio
 export PATH=/opt/master-pdf-editor-3:$PATH
 export PATH=/opt/PDFStudio:$PATH
-
-# Intel performance tools
-export INTELPARALLELSTUDIO=/opt/intel/parallel_studio_xe_2018
-if [ -f $INTELPARALLELSTUDIO/psxevars.sh ]; then
-  source $INTELPARALLELSTUDIO/psxevars.sh
-fi
 
 # Set up general GTAGS location
 export GTAGSLIBPATH=$HOME/.gtags/
