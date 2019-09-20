@@ -221,7 +221,6 @@ export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/matlab.dat
 export QUARTUS_VERSION=19.2
 export QUARTUS_64BIT=1
 export QUARTUS_ROOT=/opt/intelFPGA_pro/$QUARTUS_VERSION
-
 export QUARTUS_HOME=$QUARTUS_ROOT/quartus
 export QUARTUS_ROOTDIR=$QUARTUS_HOME
 export PATH=$QUARTUS_ROOT/quartus/bin:$QUARTUS_ROOT/qsys/bin:$PATH
@@ -438,6 +437,3 @@ export PROMPT_COMMAND=set_prompt
 
 # After each command, append to the history file and reread it
 export PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"
-
-
-
