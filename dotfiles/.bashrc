@@ -132,6 +132,9 @@ if [ -f $INTELPARALLELSTUDIO/psxevars.sh ]; then
   source $INTELPARALLELSTUDIO/psxevars.sh
 fi
 
+# Intel OpenCL compiler for x86
+export PATH=/opt/intel/system_studio_2019/opencl/SDK/bin:$PATH
+
 # NVIDIA settings
 export GPU_FORCE_64BIT_PTR=0
 export GPU_MAX_HEAP_SIZE=100
