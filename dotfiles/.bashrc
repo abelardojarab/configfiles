@@ -240,7 +240,6 @@ export PATH=$PATH:$XILINX_VIVADO/bin
 export PATH=$PATH:/opt/Xilinx/SDK/$XILINX_VERSION/bin
 export XILINX_SDX=/opt/Xilinx/SDx/$XILINX_VERSION
 export PATH=$PATH:$XILINX_SDX/bin
-export LD_LIBRARY_PATH=$XILINX_SDX/lib/lnx64.o/Ubuntu:$XILINX_SDX/lib/lnx64.o:$XILINX_SDX/runtime/lib/x86_64:$LD_LIBRARY_PATH
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/Xilinx.lic
 export XILINX_XRT=/opt/xilinx/xrt
 export PATH=$XILINX_XRT/bin:$PATH
