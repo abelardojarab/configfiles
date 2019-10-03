@@ -270,6 +270,10 @@ export PATH=/opt/sublime_text:$PATH
 export PATH=/opt/master-pdf-editor-3:$PATH
 export PATH=/opt/PDFStudio:$PATH
 
+# Intel OpenCL compiler for x86
+export INTEL_OCL_SDK=/opt/intel/system_studio_2019/opencl-sdk
+export PATH=${PATH}:${INTEL_OCL_SDK}/bin
+
 # Set up general GTAGS location
 export GTAGSLIBPATH=$HOME/.gtags/
 export GTAGSTHROUGH=true
