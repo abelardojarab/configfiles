@@ -116,59 +116,19 @@ if ! shopt -oq posix; then
   fi
 fi
 
-# Emacs settings
+# General settings
 export GDK_NATIVE_WINDOWS=1
-export EMACS_SERVER_FILE=$HOME/.emacs.cache/server/server
 export DICTPATH=$HOME/.emacs.d/dictionaries
-alias emacs='$HOME/build/emacs-26.2/build/src/emacs'
-
-# Modelsim options
-export MODELSIMROOT=/tools/mentor/modelsim_se_10.5a
-export MTI_HOME=$MODELSIMROOT/modeltech
-export PATH=$MODELSIMROOT/modeltech/bin:$PATH
-export PATH=$PATH:$MODELSIMROOT/modeltech/linux_x86_64
-export LM_LICENSE_FILE=1800@ldap.meghcomputing
-export MTI_VCO_MODE=64
-export COMP64=1
-
-# Altera options
-export QUARTUS_ROOT=/opt/inteldevstack/intelFPGA_pro
-export QUARTUS_HOME=$QUARTUS_ROOT/quartus
-export QUARTUS_ROOTDIR=$QUARTUS_HOME
-export QUARTUS_64BIT=1
-export PATH=$QUARTUS_ROOT/quartus/bin:$QUARTUS_ROOT/qsys/bin:$PATH
-export INTELFPGAOCLSDKROOT=$QUARTUS_ROOT/hld
-export PATH=$PATH:$INTELFPGAOCLSDKROOT/bin
-export PATH=$INTELFPGAOCLSDKROOT/host/linux64/bin:$PATH
-export QSYS_ROOTDIR=$QUARTUS_ROOT/qsys/bin
-export LM_LICENSE_FILE=$HOME/flexlm/altera.dat
-export ALTERAOCLSDKROOT=$INTELFPGAOCLSDKROOT
-
-# Altera Quartus
-export LM_LICENSE_FILE="${LM_LICENSE_FILE}:1800@ldap.meghcomputing"
-
-# Altera board
-export OPAE_PLATFORM_ROOT=/home/aberroc/workspace/pac_a10_1.2_pv
-export OPAE_PLATFORM_FPGA_FAMILY=A10
-export AOCL_BOARD_PACKAGE_ROOT=$OPAE_PLATFORM_ROOT/opencl/opencl_bsp
-export LD_LIBRARY_PATH=$INTELFPGAOCLSDKROOT/host/linux64/lib:$AOCL_BOARD_PACKAGE_ROOT/linux64/lib:$LD_LIBRARY_PATH
-
-# Xilinx XRT
-export XILINX_XRT=/opt/xilinx/xrt
-export PATH=$XILINX_XRT/bin:$PATH
-export LD_LIBRARY_PATH=$XILINX_XRT/lib:$LD_LIBRARY_PATH
 export CPATH=/usr/include/x86_64-linux-gnu
 
-# Xilinx settings
-export XILINX_VIVADO=/opt/xilinx/Vivado/2019.1
-export PATH=$PATH:$XILINX_VIVADO/bin
-export PATH=$PATH:/opt/xilinx/SDK/2019.1/bin
-export XILINX_SDX=/opt/xilinx/SDx/2019.1
-export PATH=$PATH:$XILINX_SDX/bin
-export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/Xilinx.lic
+# Emacs settings
+export EMACS_SERVER_FILE=$HOME/.emacs.cache/server/server
 
 # Set up general GTAGS location
 export GTAGSLIBPATH=$HOME/.gtags/
+
+# Understand tool
+export PATH=$PATH:/opt/scitools/bin/linux64
 
 # Regular Colors
 Black="\[\033[0;30m\]"        # Black
