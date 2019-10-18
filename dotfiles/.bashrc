@@ -320,6 +320,10 @@ export SPARK_WORKER_CORES=2
 export SPARK_WORKER_INSTANCES=2
 export SPARK_WORKER_MEMORY=2g
 
+# Pycharm
+export PYCHARM_HOME=/opt/JetBrains/pycharm/2019.2.3
+export PATH=$PATH:$PYCHARM_HOME/bin
+
 # Local settings
 if [ -f $HOME/.bashrc_local ]; then
   source ~/.bashrc_local
