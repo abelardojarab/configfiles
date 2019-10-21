@@ -55,42 +55,9 @@ defscrollback 15000
 
 # default windows
 screen -t Shell1  1 bash
-screen -t Shell2  2 bash
-screen -t Shell3  3 bash
-screen -t Python  4 python
-screen -t Email   5 mutt
-screen -t Chat    6 finch
-screen -t News    7 newsbeuter
 
 # window numbering starts at 1 not 0
 bind c screen 1
-
-# layouts
-layout autosave on
-layout new one
-select 1
-layout new two
-select 1
-split
-resize -v +8
-focus down
-select 4
-focus up
-layout new three
-select 1
-split -v
-resize -h +7
-focus right
-select 2
-split
-resize -h +10
-focus down
-select 3
-focus up
-focus left
-
-layout attach one
-layout select one
 
 # so it won't seem like there is a delay when entering copy mode
 msgminwait 0
@@ -107,13 +74,13 @@ bind ^g fit
 # C-g and other keys quit copy mode.
 markkeys \033=\015=^G
 
-# Ctrl + Alt + Left from gnome-terminal
+# Ctrl+Alt+Left from gnome-terminal
 bindkey ^[[1;7C next
 
 # Ctrl+Alt+Left from putty
 bindkey ^[^[[D next
 
-# Ctrl + Alt + Right from gnome-terminal
+# Ctrl+Alt+Right from gnome-terminal
 bindkey ^[[1;7D prev
 
 # Ctrl+Alt+Right from putty
