@@ -128,7 +128,7 @@ export EMACS_SERVER_FILE=$HOME/.emacs.cache/server/server
 export GTAGSLIBPATH=$HOME/.gtags/
 
 # Understand tool
-export PATH=$PATH:/opt/scitools/bin/linux64
+export PATH=$PATH:/opt/scitools/Understand/5.0/bin/linux64
 
 # Pycharm
 export PYCHARM_HOME=/opt/JetBrains/pycharm/2019.2.3
