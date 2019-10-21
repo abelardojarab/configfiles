@@ -325,7 +325,7 @@ export PYCHARM_HOME=/opt/JetBrains/pycharm/2019.2.3
 export PATH=$PATH:$PYCHARM_HOME/bin
 
 # Understand tool
-export PATH=$PATH:/opt/scitools/bin/linux64
+export PATH=$PATH:/opt/scitools/Understand/5.0/bin/linux64
 
 # Local settings
 if [ -f $HOME/.bashrc_local ]; then
