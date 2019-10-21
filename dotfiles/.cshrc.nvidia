@@ -18,16 +18,13 @@ bindkey ^[[3~ delete-char
 # already bound to beginnning-of-line, but the keycode thing was different.
 bindkey ^[[H beginning-of-line
 
-
 # END : go to the end of the line.
 # same as above.
 bindkey ^[[F end-of-line
 
-
 # PAGE UP : search in history backwards for line beginning as current.
 bindkey ^[[I history-search-backward
 bindkey ^[[5~ history-search-backward   # for x
-
 
 # PAGE DOWN : search in history forwards for line beginning as current.
 bindkey ^[[G history-search-forward
@@ -36,8 +33,8 @@ bindkey ^[[6~ history-search-forward    # for x
 if ($?prompt) then
 	set promptchars = "%#"
 	set filec
-	set history = 1000
-	set savehist = (1000 merge)
+	set history = 8000
+	set savehist = (8000 merge)
 	set autolist = ambiguous
 
 	# Use history to aid expansion
@@ -46,5 +43,5 @@ if ($?prompt) then
 	set mail = (/var/mail/$USER)
 endif
 
-alias precmd "source ~/bin/gitprompt.csh"
+alias precmd "history -S; history -M; source ~/bin/gitprompt.csh"
 
