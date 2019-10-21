@@ -130,6 +130,10 @@ export GTAGSLIBPATH=$HOME/.gtags/
 # Understand tool
 export PATH=$PATH:/opt/scitools/bin/linux64
 
+# Pycharm
+export PYCHARM_HOME=/opt/JetBrains/pycharm/2019.2.3
+export PATH=$PATH:$PYCHARM_HOME/bin
+ 
 # Regular Colors
 Black="\[\033[0;30m\]"        # Black
 Red="\[\033[0;31m\]"          # Red
