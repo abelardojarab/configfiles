@@ -7,6 +7,10 @@ setenv	EDITOR	vim
 setenv	PAGER	less
 setenv	BLOCKSIZE	K
 
+# OpenBLAS issues
+setenv OMP_NUM_THREADS 1
+setenv USE_SIMPLE_THREADED_LEVEL3 1
+
 # trun on Home End key
 bindkey ^[[1~ beginning-of-line
 bindkey ^[[4~ end-of-line
