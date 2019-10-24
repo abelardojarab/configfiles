@@ -133,7 +133,14 @@ export PATH=$PATH:/opt/scitools/Understand/5.0/bin/linux64
 # Pycharm
 export PYCHARM_HOME=/opt/JetBrains/pycharm/2019.2.3
 export PATH=$PATH:$PYCHARM_HOME/bin
- 
+
+# Java
+export JAVA_HOME=/usr/lib/jvm/java-13-oracle
+
+# OpenBlas issues
+export OMP_NUM_THREADS=1
+export USE_SIMPLE_THREADED_LEVEL3=1
+
 # Regular Colors
 Black="\[\033[0;30m\]"        # Black
 Red="\[\033[0;31m\]"          # Red
