@@ -1,0 +1,51 @@
+# A righteous umask
+umask 22
+
+set path = (/sbin /bin /usr/sbin /usr/bin /usr/games /usr/local/sbin /usr/local/bin $HOME/bin)
+
+setenv	EDITOR	vim
+setenv	PAGER	less
+setenv	BLOCKSIZE	K
+
+# OpenBLAS issues
+setenv OMP_NUM_THREADS 1
+setenv USE_SIMPLE_THREADED_LEVEL3 1
+
+# trun on Home End key
+bindkey ^[[1~ beginning-of-line
+bindkey ^[[4~ end-of-line
+
+# DEL:
+bindkey ^[[3~ delete-char
+
+# HOME : go to the beginning of the line.
+# already bound to beginnning-of-line, but the keycode thing was different.
+bindkey ^[[H beginning-of-line
+
+# END : go to the end of the line.
+# same as above.
+bindkey ^[[F end-of-line
+
+# PAGE UP : search in history backwards for line beginning as current.
+bindkey ^[[I history-search-backward
+bindkey ^[[5~ history-search-backward   # for x
+
+# PAGE DOWN : search in history forwards for line beginning as current.
+bindkey ^[[G history-search-forward
+bindkey ^[[6~ history-search-forward    # for x
+
+if ($?prompt) then
+	set promptchars = "%#"
+	set filec
+	set history = 8000
+	set savehist = (8000 merge)
+	set autolist = ambiguous
+
+	# Use history to aid expansion
+	set autoexpand
+	set autorehash
+	set mail = (/var/mail/$USER)
+endif
+
+alias precmd "history -S; history -M; source ~/bin/gitprompt.csh"
+
