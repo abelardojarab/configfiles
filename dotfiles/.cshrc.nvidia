@@ -1,11 +1,14 @@
 # A righteous umask
 umask 22
 
-set path = (/sbin /bin /usr/sbin /usr/bin /usr/games /usr/local/sbin /usr/local/bin $HOME/bin)
+set path = ($HOME/local/bin /sbin /bin /usr/sbin /usr/bin /usr/games /usr/local/sbin /usr/local/bin $HOME/bin $HOME/local/bin)
 
 setenv	EDITOR	vim
 setenv	PAGER	less
 setenv	BLOCKSIZE	K
+
+# Issue with RedhatOS
+setenv  GIT_ASKPASS
 
 # OpenBLAS issues
 setenv OMP_NUM_THREADS 1
