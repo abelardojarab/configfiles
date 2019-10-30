@@ -1,7 +1,8 @@
 # A righteous umask
 umask 22
 
-set path = ($HOME/local/bin /sbin /bin /usr/sbin /usr/bin /usr/games /usr/local/sbin /usr/local/bin $HOME/bin $HOME/local/bin)
+setenv path_utils '/home/utils/flex-2.6.4/bin /home/utils/bison-2.7.1/bin /home/denver/release/sw/tools/gcc-x86/5.4.0/current/CentOS-6.8/bin /home/denver/release/sw/tools/texinfo-4.9/bin /home/denver/release/sw/tools/doxygen/bin /home/utils/perl-5.12/5.12.1-nothreads-64/bin /home/utils/make-4.2.1/bin /home/utils/gdb-8.2.1/bin /home/nv/bin /home/utils/bin /usr/X11R6/bin /usr/kerberos/bin /usr/local/lsf/bin'
+set path = ($HOME/local/bin $path_utils $PATH /sbin /bin /usr/sbin /usr/bin /usr/games /usr/local/sbin /usr/local/bin $HOME/bin)
 
 setenv	EDITOR	vim
 setenv	PAGER	less
