@@ -37,18 +37,36 @@ bindkey ^[[5~ history-search-backward   # for x
 bindkey ^[[G history-search-forward
 bindkey ^[[6~ history-search-forward    # for x
 
+# Search history using keys
+bindkey -k up history-search-backward
+bindkey -k down history-search-forward
+
 if ($?prompt) then
 	set promptchars = "%#"
 	set filec
 	set history = 8000
 	set savehist = (8000 merge)
-	set autolist = ambiguous
-
-	# Use history to aid expansion
-	set autoexpand
-	set autorehash
+    set histfile = "$HOME/.csh_history"
+    set histdup = erase              # save only unique history events
+    set notify                       # notification when jobs change state
+    #set recexact                    # completion always completes on a first exact match
+    set autocorrect                  # spell-word editor command is invoked automatically
+    set autoexpand                   # run expand-history before each completion attempt
+    set implicitcd                   # change directory without cd
+    set correct = cmd                # commands are automatically spelling-corrected
+    set symlinks = chase             # symbolic link is expanded to the real name of the directory
+    set complete = enhance           # completion ignores case and considers hyphens and underscores
+    set autolist = ambiguous         # choices are listed only when completion fails
+    set matchbeep = ambiguous        # beeps only when there is no match
+    set color = ls-F                 # enables colors for the builtin autolist (TAB)set histfile = "$HOME/.csh_history"
 	set mail = (/var/mail/$USER)
 endif
 
+complete make           'n@*@`make -pn | sed -n -E "/^[#_.\/[:blank:]]+/d; /=/d; s/[[:blank:]]*:.*//gp;"`@'
+
+complete pkill          'c/-/(1 2 3 6 9 14 15 HUP INT QUIT ABRT KILL ALRM TERM)/'\
+                            'n@*@`ps -a -x -c -o command="" | sort | uniq`@'
+
 alias precmd "history -S; history -M; source ~/bin/gitprompt.csh"
+alias postcmd    'history -S'     # update and save history after each command
 
