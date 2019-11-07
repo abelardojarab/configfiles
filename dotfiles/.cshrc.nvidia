@@ -2,15 +2,16 @@
 umask 22
 setenv gcc_root /home/denver/release/sw/tools/gcc-x86/5.4.0/cl45807481/CentOS-6.8
 
-setenv path_utils '/home/denver/release/sw/tools/cmake/current/bin /home/denver/release/sw/tools/python-3.7.2/bin /home/denver/release/sw/tools/gcc-x86/5.4.0/cl45807481/CentOS-6.8/bin /home/utils/flex-2.6.4/bin /home/utils/bison-2.7.1/bin /home/denver/release/sw/tools/gcc-x86/5.4.0/current/CentOS-6.8/bin /home/denver/release/sw/tools/texinfo-4.9/bin /home/denver/release/sw/tools/doxygen/bin /home/utils/perl-5.12/5.12.1-nothreads-64/bin /home/utils/make-4.2.1/bin /home/utils/gdb-8.2.1/bin /home/nv/bin /home/utils/bin /usr/X11R6/bin /usr/kerberos/bin /usr/local/lsf/bin'
+setenv path_utils '/home/denver/release/sw/tools/cmake/current/bin /home/denver/release/sw/tools/python-3.7.2/bin /home/denver/release/sw/tools/gcc-x86/5.4.0/cl45807481/CentOS-6.8/bin /home/scratch.abelardoj_denver-info/builds/llvm/build/bin /home/utils/flex-2.6.4/bin /home/utils/bison-2.7.1/bin /home/denver/release/sw/tools/gcc-x86/5.4.0/current/CentOS-6.8/bin /home/denver/release/sw/tools/texinfo-4.9/bin /home/denver/release/sw/tools/doxygen/bin /home/utils/perl-5.12/5.12.1-nothreads-64/bin /home/utils/make-4.2.1/bin /home/utils/gdb-8.2.1/bin /home/nv/bin /home/utils/bin /usr/X11R6/bin /usr/kerberos/bin /usr/local/lsf/bin'
+
 set path = ($HOME/.local/bin $HOME/local/bin $HOME/local/cmake-3.15.5-Linux-x86_64/bin $path_utils $PATH /sbin /bin /usr/sbin /usr/bin /usr/games /usr/local/sbin /usr/local/bin $HOME/bin)
 
 # alias python /home/denver/release/sw/tools/python-3.7.2/bin/python
-alias emacs /home/scratch.abelardoj_denver-info/builds/emacs-26.3/src/emacs
- 
-setenv	EDITOR	vim
-setenv	PAGER	less
-setenv	BLOCKSIZE	K
+alias emacs /home/scratch.abelardoj_denver-info/builds/emacs/build/src/emacs
+
+setenv  EDITOR  vim
+setenv  PAGER   less
+setenv  BLOCKSIZE   K
 
 # Issue with RedhatOS
 setenv  GIT_ASKPASS
@@ -51,10 +52,10 @@ bindkey -k up history-search-backward
 bindkey -k down history-search-forward
 
 if ($?prompt) then
-	set promptchars = "%#"
-	set filec
-	set history = 8000
-	set savehist = (8000 merge)
+    set promptchars = "%#"
+    set filec
+    set history = 8000
+    set savehist = (8000 merge)
     set histfile = "$HOME/.csh_history"
     set histdup = erase              # save only unique history events
     set notify                       # notification when jobs change state
@@ -68,7 +69,7 @@ if ($?prompt) then
     set autolist = ambiguous         # choices are listed only when completion fails
     set matchbeep = ambiguous        # beeps only when there is no match
     set color = ls-F                 # enables colors for the builtin autolist (TAB)set histfile = "$HOME/.csh_history"
-	set mail = (/var/mail/$USER)
+    set mail = (/var/mail/$USER)
 endif
 
 complete make           'n@*@`make -pn | sed -n -E "/^[#_.\/[:blank:]]+/d; /=/d; s/[[:blank:]]*:.*//gp;"`@'
@@ -78,4 +79,3 @@ complete pkill          'c/-/(1 2 3 6 9 14 15 HUP INT QUIT ABRT KILL ALRM TERM)/
 
 alias precmd "history -S; history -M; source ~/bin/gitprompt.csh"
 alias postcmd    'history -S'     # update and save history after each command
-
