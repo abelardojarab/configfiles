@@ -6,9 +6,10 @@ setenv path_utils '/home/denver/release/sw/tools/cmake/current/bin /home/denver/
 
 set path = ($HOME/.local/bin $HOME/local/bin $HOME/local/cmake-3.15.5-Linux-x86_64/bin $path_utils $PATH /sbin /bin /usr/sbin /usr/bin /usr/games /usr/local/sbin /usr/local/bin $HOME/bin)
 
-# alias python /home/denver/release/sw/tools/python-3.7.2/bin/python
+# Aliases
 alias emacs /home/scratch.abelardoj_denver-info/builds/emacs/build/src/emacs
 
+# Defaults
 setenv  EDITOR  vim
 setenv  PAGER   less
 setenv  BLOCKSIZE   K
@@ -20,9 +21,16 @@ setenv  GIT_ASKPASS
 setenv OMP_NUM_THREADS 1
 setenv USE_SIMPLE_THREADED_LEVEL3 1
 setenv GENIE_BRANCH_DEFAULT nvcpu
-set ld_library_path = '/home/denver/release/sw/tools/gcc-x86/5.4.0/cl45807481/CentOS-6.8/lib64:/home/denver/release/sw/tools/gcc-x86/5.4.0/cl45807481/CentOS-6.8/lib:$HOME/local/lib:$HOME/.local/lib:/lib:/usr/lib:/usr/local/lib'
+
+# Library path
+set ld_library_path = '/home/denver/release/sw/tools/gcc-x86/5.4.0/cl45807481/CentOS-6.8/lib64:/home/denver/release/sw/tools/gcc-x86/5.4.0/cl45807481/CentOS-6.8/lib:$HOME/local/lib:$HOME/.local/lib:/lib64:/lib:/usr/lib64:/usr/lib:/usr/local/lib64:/usr/local/lib'
 setenv LD_LIBRARY_PATH $ld_library_path
 unalias gcc
+
+# GTAGS
+setenv GTAGSLABEL exuberant-ctags
+setenv GTAGSLIBPATH $HOME/.gtags
+setenv GTAGSTHROUGH true
 
 # trun on Home End key
 bindkey ^[[1~ beginning-of-line
