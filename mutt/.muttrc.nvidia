@@ -1,0 +1,51 @@
+# -*-conf-*-
+#
+# -*- Mode: muttrc -*-
+
+set my_username "abelardoj"
+set my_domain "nvidia.com"
+set my_realname "Abelardo Jara-Berrocal"
+
+# IMAP setup
+unset mbox_type
+set imap_user="$my_username@$my_domain"
+set imap_check_subscribed="yes"
+set imap_list_subscribed="yes"
+set timeout=15
+set mail_check=90
+set imap_keepalive=180
+set imap_idle
+unset mark_old
+set ssl_use_sslv3=yes
+
+# Folers
+set folder="imaps://outlook.office365.com"
+set spoolfile = "+INBOX"
+set postponed = "+Drafts"
+
+# SMTP config
+set from = "abelardoj@nvidia.com"
+set envelope_from_address = "abelardoj@nvidia.com"
+set realname = $my_realname
+set from = "$my_username@$my_domain"
+set hostname = nvidia.com
+set smtp_url = "smtp://$my_username@$my_domain@outlook.office365.com:587/"
+set ssl_force_tls = yes
+set smtp_authenticators = "login"
+
+# Certificates
+set certificate_file=~/.mutt/nvidia.com/certificates
+
+# Signature file
+set signature  = ~/.mutt/nvidia.com/signature
+
+# Caches
+set header_cache     = ~/.mutt/nvidia.com/cache/header
+set message_cachedir = ~/.mutt/nvidia.com/cache/bodies
+
+# The following settings are interpreted by EMACS, do not remove them.
+# Local Variables:
+# mode: shell-script
+# fill-column: 80
+# coding: utf-8
+# End:

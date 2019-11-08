@@ -5,7 +5,7 @@ setenv LC_TYPE en_US.utf-8
 umask 22
 
 # Defaults
-setenv  EDITOR      emacsclient -t
+setenv  EDITOR      vim
 setenv  PAGER       less
 setenv  BLOCKSIZE   K
 setenv  VISUAL      $EDITOR
@@ -116,8 +116,8 @@ Times of minor page faults              : %R")
       # set who="%n has %a %l from %M."
 endif
 
-if ( -d ~/Mail/inbox/new/ ) then
-    set mail = ~/Mail/inbox/new/
+if ( -d ~/Mail/ ) then
+    set mail = ~/Mail/
 endif
 
 complete make           'n@*@`make -pn | sed -n -E "/^[#_.\/[:blank:]]+/d; /=/d; s/[[:blank:]]*:.*//gp;"`@'

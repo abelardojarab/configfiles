@@ -34,7 +34,7 @@ set ignore_linear_white_space = yes
 set rfc2047_parameters = yes
 
 # Emacs as external editor for mutt
-set editor='vim + -c "set textwidth=72" -c "set wrap" -c "set nocp" -c "redraw" -c "set spell" -c "?^$"'
+set editor='emacsclient -t %s'
 
 # Security stuff
 set ssl_starttls = yes
@@ -60,8 +60,9 @@ set smtp_pass=$my_gmail_pw
 account-hook . 'unset imap_user imap_pass mbox_type' # unset first!
 folder-hook 'INBOX' 'source ~/.mutt/.muttrc.gmail'
 # folder-hook 'imaps://ajaraber@imapmail.intel.com/*' 'source ~/.mutt/.muttrc.intel'
+folder-hook 'imaps://outlook.office365.com/*' 'source ~/.mutt/.muttrc.nvidia'
 macro index <f2> '<enter-command>source ~/.mutt/.muttrc.gmail<enter><change-folder> =INBOX<enter><sync-mailbox>'
-# macro index <f3> '<enter-command>source ~/.mutt/.muttrc.intel<enter><change-folder>imaps://ajaraber@imapmail.intel.com/<enter><sync-mailbox>'
+macro index <f3> '<enter-command>source ~/.mutt/.muttrc.nvidia<enter><change-folder>imaps://outlook.office365.com/<enter><sync-mailbox>'
 
 # folder-hook 'Mail'
 macro index 1 "<change-folder> =INBOX<enter>"
@@ -70,7 +71,7 @@ macro index 1 "<change-folder> =INBOX<enter>"
 macro index 2 "!mbsync gmail^M" "Update through mbsync"
 
 # folder-hook 'Work'
-# macro index 3 "<enter-command>source ~/.mutt/.muttrc.intel<enter><change-folder>imaps://ajaraber@imapmail.intel.com/<enter><sync-mailbox>"
+macro index 3 "<enter-command>source ~/.mutt/.muttrc.nvidia<enter><change-folder>imaps://outlook.office365.com/<enter><sync-mailbox>"
 
 # Sanely handle multi-part messages (prefer text part, but yield to
 # mailcap-configured rendering for html-only)
@@ -131,7 +132,7 @@ bind editor <tab> complete-query
 bind editor ^T complete
 
 # colors
-source ~/.mutt/colors/mutt-colors-solarized-dark-256.muttrc
+# source ~/.mutt/colors/mutt-colors-solarized-dark-256.muttrc
 
 # Gmail-style keyboard shortcuts - for IMAP GMail operations (not mbsync)
 folder-hook '+\[Gmail\]/All Mail' 'macro index d ";s+[Gmail]/Trash<enter><enter>" "Move to Gmail Trash"'
@@ -168,10 +169,10 @@ macro index <F9> \
       "notmuch: reconstruct thread"
 
 # Encryption
-source ~/.mutt/gpg.rc
-set pgp_timeout = 3600
-set crypt_autosign = yes
-set crypt_replyencrypt = yes
+#source ~/.mutt/gpg.rc
+#set pgp_timeout = 3600
+#set crypt_autosign = yes
+#set crypt_replyencrypt = yes
 
 # The following settings are interpreted by EMACS, do not remove them.
 # Local Variables:
