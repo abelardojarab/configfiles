@@ -15,7 +15,6 @@ set path = ($HOME/.local/bin $HOME/local/bin $HOME/local/cmake-3.15.5-Linux-x86_
 set ld_library_path = '/home/denver/release/sw/tools/gcc-x86/5.4.0/cl45807481/CentOS-6.8/lib64:/home/denver/release/sw/tools/gcc-x86/5.4.0/cl45807481/CentOS-6.8/lib:$HOME/local/lib:$HOME/.local/lib:/lib64:/lib:/usr/lib64:/usr/lib:/usr/local/lib64:/usr/local/lib'
 setenv LD_LIBRARY_PATH $ld_library_path
 
-
 # Aliases
 alias emacs /home/scratch.abelardoj_denver-info/builds/emacs/build/src/emacs
 alias cppcheck /home/scratch.abelardoj_denver-info/builds/cppcheck/cppcheck
