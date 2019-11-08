@@ -5,12 +5,13 @@ setenv LC_TYPE en_US.utf-8
 umask 22
 
 # Defaults
-setenv  EDITOR      vim
+setenv  EDITOR      emacsclient -t
 setenv  PAGER       less
 setenv  BLOCKSIZE   K
 setenv  VISUAL      $EDITOR
 setenv  NCURSES_NO_UTF8_ACS 1
 setenv  TERM        xterm-color
+setenv  EMACS_SERVER_FILE $HOME/.emacs.cache/server/server
 
 # Binary path
 setenv gcc_root /home/denver/release/sw/tools/gcc-x86/5.4.0/cl45807481/CentOS-6.8
@@ -28,7 +29,7 @@ unset newpath
 
 # Library path
 if ( ! $?newpath ) set newpath
-foreach d ($gcc_root/lib64 $gcc_root/lib $HOME/local/lib $HOME/.local/lib /lib64 /lib /usr/lib64 /usr/lib /usr/local/lib64 /usr/local/lib)
+foreach d ($gcc_root/lib64 $gcc_root/lib $HOME/local/lib64 $HOME/local/lib $HOME/.local/lib64 $HOME/.local/lib /lib64 /lib /usr/lib64 /usr/lib /usr/local/lib64 /usr/local/lib)
         if ( -d $d ) then
            set -f newpath = ( $newpath $d )
         endif
