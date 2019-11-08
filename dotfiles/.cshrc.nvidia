@@ -1,19 +1,62 @@
+# UTF-8 or go home.
+setenv LC_TYPE en_US.utf-8
+
 # A righteous umask
 umask 22
 
-setenv path_utils '/home/utils/flex-2.6.4/bin /home/utils/bison-2.7.1/bin /home/denver/release/sw/tools/gcc-x86/5.4.0/current/CentOS-6.8/bin /home/denver/release/sw/tools/texinfo-4.9/bin /home/denver/release/sw/tools/doxygen/bin /home/utils/perl-5.12/5.12.1-nothreads-64/bin /home/utils/make-4.2.1/bin /home/utils/gdb-8.2.1/bin /home/nv/bin /home/utils/bin /usr/X11R6/bin /usr/kerberos/bin /usr/local/lsf/bin'
-set path = ($HOME/local/bin $path_utils $PATH /sbin /bin /usr/sbin /usr/bin /usr/games /usr/local/sbin /usr/local/bin $HOME/bin)
+# Defaults
+setenv  EDITOR      emacsclient -t
+setenv  PAGER       less
+setenv  BLOCKSIZE   K
+setenv  VISUAL      $EDITOR
+setenv  NCURSES_NO_UTF8_ACS 1
+setenv  TERM        xterm-color
+setenv  EMACS_SERVER_FILE $HOME/.emacs.cache/server/server
 
-setenv	EDITOR	vim
-setenv	PAGER	less
-setenv	BLOCKSIZE	K
+# Binary path
+setenv gcc_root /home/denver/release/sw/tools/gcc-x86/5.4.0/cl45807481/CentOS-6.8
+setenv path_utils '/home/denver/release/sw/tools/cmake/current/bin /home/denver/release/sw/tools/python-3.7.2/bin /home/utils/flex-2.6.4/bin /home/utils/bison-2.7.1/bin /home/denver/release/sw/tools/gcc-x86/5.4.0/current/CentOS-6.8/bin /home/denver/release/sw/tools/texinfo-4.9/bin /home/denver/release/sw/tools/doxygen/bin /home/utils/perl-5.12/5.12.1-nothreads-64/bin /home/utils/make-4.2.1/bin /home/utils/gdb-8.2.1/bin /home/denver/release/sw/tools/binutils-2.28/bin /home/nv/bin /home/utils/bin /usr/X11R6/bin /usr/kerberos/bin /usr/local/lsf/bin'
+
+if ( ! $?newpath ) set newpath
+foreach d ($HOME/.local/bin $HOME/local/bin $HOME/bin $gcc_root/bin $HOME/builds/llvm/build/bin $HOME/local/cmake-3.15.5-Linux-x86_64/bin $path_utils $PATH /sbin /bin /usr/sbin /usr/bin /usr/games /usr/local/sbin /usr/local/bin)
+        if ( -d $d ) then
+           set -f newpath = ( $newpath $d )
+        endif
+end
+set path = ( $newpath )
+unset d
+unset newpath
+
+# Library path
+if ( ! $?newpath ) set newpath
+foreach d ($gcc_root/lib64 $gcc_root/lib $HOME/local/lib64 $HOME/local/lib $HOME/.local/lib64 $HOME/.local/lib /lib64 /lib /usr/lib64 /usr/lib /usr/local/lib64 /usr/local/lib)
+        if ( -d $d ) then
+           set -f newpath = ( $newpath $d )
+        endif
+end
+set ld_library_path = ( $newpath )
+unset d
+unset newpath
+
+# Aliases
+alias emacs /home/scratch.abelardoj_denver-info/builds/emacs/build/src/emacs
+alias cppcheck /home/scratch.abelardoj_denver-info/builds/cppcheck/cppcheck
+unalias gcc
 
 # Issue with RedhatOS
 setenv  GIT_ASKPASS
 
+# P4 defaults
+setenv GENIE_BRANCH_DEFAULT nvcpu
+
 # OpenBLAS issues
 setenv OMP_NUM_THREADS 1
 setenv USE_SIMPLE_THREADED_LEVEL3 1
+
+# GTAGS
+setenv GTAGSLABEL exuberant-ctags
+setenv GTAGSLIBPATH $HOME/.gtags
+setenv GTAGSTHROUGH true
 
 # trun on Home End key
 bindkey ^[[1~ beginning-of-line
@@ -43,10 +86,10 @@ bindkey -k up history-search-backward
 bindkey -k down history-search-forward
 
 if ($?prompt) then
-	set promptchars = "%#"
-	set filec
-	set history = 8000
-	set savehist = (8000 merge)
+    set promptchars = "%#"
+    set filec
+    set history = 8000
+    set savehist = (8000 merge)
     set histfile = "$HOME/.csh_history"
     set histdup = erase              # save only unique history events
     set notify                       # notification when jobs change state
@@ -60,7 +103,21 @@ if ($?prompt) then
     set autolist = ambiguous         # choices are listed only when completion fails
     set matchbeep = ambiguous        # beeps only when there is no match
     set color = ls-F                 # enables colors for the builtin autolist (TAB)set histfile = "$HOME/.csh_history"
-	set mail = (/var/mail/$USER)
+
+    set time=(8 "\
+Time spent in user mode   (CPU seconds) : %Us\
+Time spent in kernel mode (CPU seconds) : %Ss\
+Total time                              : %Es\
+CPU utilization (percentage)            : %P\
+Times the process was swapped           : %W\
+Times of major page faults              : %F\
+Times of minor page faults              : %R")
+      # set watch=(0 any any)
+      # set who="%n has %a %l from %M."
+endif
+
+if ( -d ~/Mail/inbox/new/ ) then
+    set mail = ~/Mail/inbox/new/
 endif
 
 complete make           'n@*@`make -pn | sed -n -E "/^[#_.\/[:blank:]]+/d; /=/d; s/[[:blank:]]*:.*//gp;"`@'
@@ -68,6 +125,7 @@ complete make           'n@*@`make -pn | sed -n -E "/^[#_.\/[:blank:]]+/d; /=/d;
 complete pkill          'c/-/(1 2 3 6 9 14 15 HUP INT QUIT ABRT KILL ALRM TERM)/'\
                             'n@*@`ps -a -x -c -o command="" | sort | uniq`@'
 
-alias precmd "history -S; history -M; source ~/bin/gitprompt.csh"
-alias postcmd    'history -S'     # update and save history after each command
+complete git            'p@1@`git help | & awk '"'"'{print $1}'"'"' | tail -n +8 | head -n -2`@'
 
+alias precmd  "history -S; history -M; source ~/bin/gitprompt.csh"
+alias postcmd 'history -S'     # update and save history after each command
