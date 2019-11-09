@@ -29,7 +29,7 @@ unset newpath
 
 # Library path
 if ( ! $?newpath ) set newpath
-foreach d ($gcc_root/lib64 $gcc_root/lib $HOME/local/lib64 $HOME/local/lib $HOME/.local/lib64 $HOME/.local/lib /lib64 /lib /usr/lib64 /usr/lib /usr/local/lib64 /usr/local/lib)
+foreach d ($HOME/local/lib64 $HOME/local/lib $HOME/.local/lib64 $HOME/.local/lib $gcc_root/lib64 $gcc_root/lib /lib64 /lib /usr/lib64 /usr/lib /usr/local/lib64 /usr/local/lib)
         if ( -d $d ) then
            set -f newpath = ( $newpath $d )
         endif
@@ -57,6 +57,14 @@ setenv USE_SIMPLE_THREADED_LEVEL3 1
 setenv GTAGSLABEL exuberant-ctags
 setenv GTAGSLIBPATH $HOME/.gtags
 setenv GTAGSTHROUGH true
+
+# Missing compiler flags
+setenv CFLAGS '-D__STDC_FORMAT_MACROS'
+setenv CXXFLAGS '-D__STDC_FORMAT_MACROS'
+
+# Missing linker flags
+# https://github.com/tmux/tmux/issues/747
+setenv LD_FLAGS '-lrt -Wl,--copy-dt-needed-entries'
 
 # trun on Home End key
 bindkey ^[[1~ beginning-of-line
