@@ -31,10 +31,11 @@ unset newpath
 if ( ! $?newpath ) set newpath
 foreach d ($HOME/local/lib64 $HOME/local/lib $HOME/.local/lib64 $HOME/.local/lib $gcc_root/lib64 $gcc_root/lib /lib64 /lib /usr/lib64 /usr/lib /usr/local/lib64 /usr/local/lib)
         if ( -d $d ) then
-           set -f newpath = ( $newpath $d )
+           set -f newpath = "${newpath}:${d}"
         endif
 end
 set ld_library_path = ( $newpath )
+setenv LD_LIBRARY_PATH $ld_library_path
 unset d
 unset newpath
 
