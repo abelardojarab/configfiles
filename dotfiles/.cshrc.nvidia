@@ -60,8 +60,8 @@ setenv GTAGSLIBPATH $HOME/.gtags
 setenv GTAGSTHROUGH true
 
 # Missing compiler flags
-setenv CFLAGS '-D__STDC_FORMAT_MACROS'
-setenv CXXFLAGS '-D__STDC_FORMAT_MACROS'
+setenv CFLAGS '-D__STDC_FORMAT_MACROS -fPIC'
+setenv CXXFLAGS '-D__STDC_FORMAT_MACROS -fPIC'
 
 # Missing linker flags
 # https://github.com/tmux/tmux/issues/747
