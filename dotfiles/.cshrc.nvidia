@@ -18,7 +18,7 @@ setenv gcc_root /home/denver/release/sw/tools/gcc-x86/5.4.0/cl45807481/CentOS-6.
 setenv path_utils '/home/denver/release/sw/tools/cmake/current/bin /home/denver/release/sw/tools/python-3.7.2/bin /home/utils/flex-2.6.4/bin /home/utils/bison-2.7.1/bin /home/denver/release/sw/tools/gcc-x86/5.4.0/current/CentOS-6.8/bin /home/denver/release/sw/tools/texinfo-4.9/bin /home/denver/release/sw/tools/doxygen/bin /home/utils/perl-5.12/5.12.1-nothreads-64/bin /home/utils/make-4.2.1/bin /home/utils/gdb-8.2.1/bin /home/denver/release/sw/tools/binutils-2.28/bin /home/nv/bin /home/utils/bin /usr/X11R6/bin /usr/kerberos/bin /usr/local/lsf/bin'
 
 if ( ! $?newpath ) set newpath
-foreach d ($HOME/.local/bin $HOME/local/bin $HOME/bin $gcc_root/bin $HOME/builds/llvm/build/bin $HOME/anaconda3/bin $HOME/local/cmake-3.15.5-Linux-x86_64/bin $path_utils $PATH /sbin /bin /usr/sbin /usr/bin /usr/games /usr/local/sbin /usr/local/bin)
+foreach d ($HOME/.local/bin $HOME/local/bin $HOME/bin $gcc_root/bin $HOME/anaconda3/bin $HOME/builds/llvm/build/bin $HOME/local/cmake-3.15.5-Linux-x86_64/bin $path_utils $PATH /sbin /bin /usr/sbin /usr/bin /usr/games /usr/local/sbin /usr/local/bin)
         if ( -d $d ) then
            set -f newpath = ( $newpath $d )
         endif
@@ -144,26 +144,27 @@ alias precmd  "history -S; history -M; source ~/bin/gitprompt.csh"
 alias postcmd 'history -S'     # update and save history after each command
 
 # gpg-agent
-if ( -f ~/.gpg-agent-info ) then
-  # Set GPG_TTY for curses pinentry
-  if ( -o /dev/$tty && -c /dev/$tty ) setenv GPG_TTY /dev/$tty
+# Set GPG_TTY for curses pinentry
+# if ( -o /dev/$tty && -c /dev/$tty ) setenv GPG_TTY /dev/$tty
 
-  set TPID = `pgrep -nU $USER gpg-agent`
-  if ($TPID == "") then
-    gpg-agent -q --daemon -c >! ~/.gpg-agent-info
-    echo "setenv GPG_AGENT_PID `pgrep -U $USER gpg-agent`" >> ~/.gpg-agent-info
-  else
-    source ~/.gpg-agent-info
-    if ($?GPG_AGENT_PID) then
-      if ($GPG_AGENT_PID != $TPID) then
-        gpg-agent -q --daemon -c >! ~/.gpg-agent-info
-        echo "setenv GPG_AGENT_PID `pgrep -U $USER gpg-agent`" >> ~/.gpg-agent-info
-      endif
-    else
-      gpg-agent -q --daemon -c >! ~/.gpg-agent-info
-      echo "setenv GPG_AGENT_PID `pgrep -U $USER gpg-agent`" >> ~/.gpg-agent-info
-    endif
-  endif
-  source ~/.gpg-agent-info
-  unset TPID
-endif
+# if ( -f ~/.gpg-agent-info ) then
+
+#   set TPID = `pgrep -nU $USER gpg-agent`
+#   if ($TPID == "") then
+#     gpg-agent -q --daemon -c >! ~/.gpg-agent-info
+#     echo "setenv GPG_AGENT_PID `pgrep -U $USER gpg-agent`" >> ~/.gpg-agent-info
+#   else
+#     source ~/.gpg-agent-info
+#     if ($?GPG_AGENT_PID) then
+#       if ($GPG_AGENT_PID != $TPID) then
+#         gpg-agent -q --daemon -c >! ~/.gpg-agent-info
+#         echo "setenv GPG_AGENT_PID `pgrep -U $USER gpg-agent`" >> ~/.gpg-agent-info
+#       endif
+#     else
+#       gpg-agent -q --daemon -c >! ~/.gpg-agent-info
+#       echo "setenv GPG_AGENT_PID `pgrep -U $USER gpg-agent`" >> ~/.gpg-agent-info
+#     endif
+#   endif
+#   source ~/.gpg-agent-info
+#   unset TPID
+# endif
