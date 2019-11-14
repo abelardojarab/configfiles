@@ -148,7 +148,6 @@ alias postcmd 'history -S'     # update and save history after each command
 # if ( -o /dev/$tty && -c /dev/$tty ) setenv GPG_TTY /dev/$tty
 
 # if ( -f ~/.gpg-agent-info ) then
-
 #   set TPID = `pgrep -nU $USER gpg-agent`
 #   if ($TPID == "") then
 #     gpg-agent -q --daemon -c >! ~/.gpg-agent-info
