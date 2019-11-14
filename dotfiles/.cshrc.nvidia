@@ -64,12 +64,20 @@ setenv GTAGSLIBPATH $HOME/.gtags
 setenv GTAGSTHROUGH true
 
 # Missing compiler flags
-setenv CFLAGS '-D__STDC_FORMAT_MACROS -fPIC'
-setenv CXXFLAGS '-D__STDC_FORMAT_MACROS -fPIC'
+# https://github.com/zdevito/ATen/issues/183
+setenv CFLAGS "-D__STDC_FORMAT_MACROS"
+setenv CFLAGS "${CFLAGS} -fPIC"
+setenv CXXFLAGS "${CFLAGS}"
+# https://github.com/rust-lang/rust/issues/37786
+setenv ASFLAGS "-mrelax-relocations=no"
 
 # Missing linker flags
 # https://github.com/tmux/tmux/issues/747
-setenv LD_FLAGS '-lrt -Wl,--copy-dt-needed-entries'
+setenv LDFLAGS "-lrt -Wl,--copy-dt-needed-entries"
+# https://github.com/rust-lang/rust/issues/37786
+setenv LDFLAGS "${LDFLAGS} --compress-debug-sections=none"
+# https://github.com/rust-lang/rust/issues/37786
+setenv LDFLAGS "${LDFLAGS} --no-relax"
 
 # trun on Home End key
 bindkey ^[[1~ beginning-of-line
