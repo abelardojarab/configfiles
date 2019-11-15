@@ -73,11 +73,11 @@ setenv ASFLAGS "-mrelax-relocations=no"
 
 # Missing linker flags
 # https://github.com/tmux/tmux/issues/747
-setenv LDFLAGS "-lrt -Wl,--copy-dt-needed-entries"
+setenv LD_FLAGS "-lrt -Wl,--copy-dt-needed-entries"
 # https://github.com/rust-lang/rust/issues/37786
-setenv LDFLAGS "${LDFLAGS} --compress-debug-sections=none"
+setenv LD_FLAGS "${LD_FLAGS} --compress-debug-sections=none"
 # https://github.com/rust-lang/rust/issues/37786
-setenv LDFLAGS "${LDFLAGS} --no-relax"
+setenv LD_FLAGS "${LD_FLAGS} --no-relax"
 
 # trun on Home End key
 bindkey ^[[1~ beginning-of-line
