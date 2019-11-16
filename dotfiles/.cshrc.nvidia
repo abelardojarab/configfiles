@@ -139,6 +139,7 @@ endif
 
 if ( -d ~/Mail/ ) then
     set mail = ~/Mail/
+    setenv MAIL $HOME/Mail
 endif
 
 complete make           'n@*@`make -pn | sed -n -E "/^[#_.\/[:blank:]]+/d; /=/d; s/[[:blank:]]*:.*//gp;"`@'
