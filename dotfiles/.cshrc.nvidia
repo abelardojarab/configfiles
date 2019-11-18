@@ -5,13 +5,13 @@ setenv LC_TYPE en_US.utf-8
 umask 22
 
 # Defaults
-setenv  EDITOR      vim
+setenv  EDITOR      "vim"
+setenv  VISUAL      "${EDITOR}"
 setenv  PAGER       less
 setenv  BLOCKSIZE   K
-setenv  VISUAL      $EDITOR
-setenv  NCURSES_NO_UTF8_ACS 1
 setenv  TERM        xterm-color
 setenv  EMACS_SERVER_FILE $HOME/.emacs.cache/server/server
+setenv  NCURSES_NO_UTF8_ACS 1
 
 # Binary path
 setenv gcc_root /home/denver/release/sw/tools/gcc-x86/5.4.0/cl45807481/CentOS-6.8
@@ -62,6 +62,10 @@ setenv USE_SIMPLE_THREADED_LEVEL3 1
 setenv GTAGSLABEL exuberant-ctags
 setenv GTAGSLIBPATH $HOME/.gtags
 setenv GTAGSTHROUGH true
+
+# NNN settings
+setenv NNN_USE_EDITOR 1
+setenv NNN_TRASH 1
 
 # Missing compiler flags
 # https://github.com/zdevito/ATen/issues/183
