@@ -19,9 +19,9 @@ setenv path_utils '/home/denver/release/sw/tools/cmake/current/bin /home/denver/
 
 if ( ! $?newpath ) set newpath
 foreach d ($HOME/.local/bin $HOME/local/bin $HOME/local/usr/bin $HOME/bin $gcc_root/bin $HOME/anaconda3/bin $HOME/builds/llvm/build/bin $HOME/local/cmake-3.15.5-Linux-x86_64/bin $path_utils $PATH /sbin /bin /usr/sbin /usr/bin /usr/games /usr/local/sbin /usr/local/bin)
-        if ( -d $d ) then
-           set -f newpath = ( $newpath $d )
-        endif
+    if ( -d $d ) then
+        set -f newpath = ( $newpath $d )
+    endif
 end
 set path = ( $newpath )
 unset d
@@ -30,9 +30,9 @@ unset newpath
 # Library path
 if ( ! $?newpath ) set newpath
 foreach d ($HOME/local/lib64 $HOME/local/lib $HOME/local/usr/lib $HOME/.local/lib64 $HOME/.local/lib $gcc_root/lib64 $gcc_root/lib /lib64 /lib /usr/lib64 /usr/lib /usr/local/lib64 /usr/local/lib)
-        if ( -d $d ) then
-           set -f newpath = "${newpath}:${d}"
-        endif
+    if ( -d $d ) then
+        set -f newpath = "${newpath}:${d}"
+    endif
 end
 set ld_library_path = ( $newpath )
 setenv LD_LIBRARY_PATH $ld_library_path
@@ -131,15 +131,15 @@ if ($?prompt) then
     set color = ls-F                 # enables colors for the builtin autolist (TAB)set histfile = "$HOME/.csh_history"
 
     set time=(8 "\
-Time spent in user mode   (CPU seconds) : %Us\
-Time spent in kernel mode (CPU seconds) : %Ss\
-Total time                              : %Es\
-CPU utilization (percentage)            : %P\
-Times the process was swapped           : %W\
-Times of major page faults              : %F\
-Times of minor page faults              : %R")
-      # set watch=(0 any any)
-      # set who="%n has %a %l from %M."
+                Time spent in user mode   (CPU seconds) : %Us\
+                Time spent in kernel mode (CPU seconds) : %Ss\
+                Total time                              : %Es\
+                CPU utilization (percentage)            : %P\
+                Times the process was swapped           : %W\
+                Times of major page faults              : %F\
+                Times of minor page faults              : %R")
+    # set watch=(0 any any)
+    # set who="%n has %a %l from %M."
 endif
 
 if ( -d ~/Mail/ ) then
@@ -147,37 +147,49 @@ if ( -d ~/Mail/ ) then
     setenv MAIL $HOME/Mail
 endif
 
-complete make           'n@*@`make -pn | sed -n -E "/^[#_.\/[:blank:]]+/d; /=/d; s/[[:blank:]]*:.*//gp;"`@'
+complete make  'n@*@`make -pn | sed -n -E "/^[#_.\/[:blank:]]+/d; /=/d; s/[[:blank:]]*:.*//gp;"`@'
 
-complete pkill          'c/-/(1 2 3 6 9 14 15 HUP INT QUIT ABRT KILL ALRM TERM)/'\
-                            'n@*@`ps -a -x -c -o command="" | sort | uniq`@'
+complete pkill 'c/-/(1 2 3 6 9 14 15 HUP INT QUIT ABRT KILL ALRM TERM)/'\
+               'n@*@`ps -a -x -c -o command="" | sort | uniq`@'
 
 complete git 'p@1@`/bin/ls -1 /usr/libexec/git-core/ | grep "git-" | sed "s/git-//"`@' 'n/checkout/`git branch | tr -d "*"`/'
+
+complete *p4     'c/-/(c d p u x)/' \
+         'p/1/(add branch branches change changes \
+         client clients delete depot depots \
+         describe diff diff2 edit files filelog \
+         fix fixes get have help info integ \
+         integed job jobs label labels labelsync \
+         lock open opened print protect refresh \
+         reopen reresolve resolve resolved revert \
+         review reviews submit unlock user users \
+         where)/' \
+'n/*/f:*/'
 
 alias precmd  "history -S; history -M; source ~/bin/gitprompt.csh"
 alias postcmd 'history -S'     # update and save history after each command
 
 # gpg-agent
 # Set GPG_TTY for curses pinentry
-# if ( -o /dev/$tty && -c /dev/$tty ) setenv GPG_TTY /dev/$tty
+if ( -o /dev/$tty && -c /dev/$tty ) setenv GPG_TTY /dev/$tty
 
-# if ( -f ~/.gpg-agent-info ) then
-#   set TPID = `pgrep -nU $USER gpg-agent`
-#   if ($TPID == "") then
-#     gpg-agent -q --daemon -c >! ~/.gpg-agent-info
-#     echo "setenv GPG_AGENT_PID `pgrep -U $USER gpg-agent`" >> ~/.gpg-agent-info
-#   else
-#     source ~/.gpg-agent-info
-#     if ($?GPG_AGENT_PID) then
-#       if ($GPG_AGENT_PID != $TPID) then
-#         gpg-agent -q --daemon -c >! ~/.gpg-agent-info
-#         echo "setenv GPG_AGENT_PID `pgrep -U $USER gpg-agent`" >> ~/.gpg-agent-info
-#       endif
-#     else
-#       gpg-agent -q --daemon -c >! ~/.gpg-agent-info
-#       echo "setenv GPG_AGENT_PID `pgrep -U $USER gpg-agent`" >> ~/.gpg-agent-info
-#     endif
-#   endif
-#   source ~/.gpg-agent-info
-#   unset TPID
-# endif
+if ( -f ~/.gpg-agent-info ) then
+    set TPID = `pgrep -nU $USER gpg-agent`
+    if ($TPID == "") then
+        gpg-agent -q --daemon -c >! ~/.gpg-agent-info
+        echo "setenv GPG_AGENT_PID `pgrep -U $USER gpg-agent`" >> ~/.gpg-agent-info
+    else
+        source ~/.gpg-agent-info
+        if ($?GPG_AGENT_PID) then
+            if ($GPG_AGENT_PID != $TPID) then
+                gpg-agent -q --daemon -c >! ~/.gpg-agent-info
+                echo "setenv GPG_AGENT_PID `pgrep -U $USER gpg-agent`" >> ~/.gpg-agent-info
+            endif
+        else
+            gpg-agent -q --daemon -c >! ~/.gpg-agent-info
+            echo "setenv GPG_AGENT_PID `pgrep -U $USER gpg-agent`" >> ~/.gpg-agent-info
+        endif
+    endif
+    source ~/.gpg-agent-info
+    unset TPID
+endif
