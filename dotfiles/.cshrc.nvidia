@@ -53,6 +53,7 @@ setenv GENIE_BRANCH_DEFAULT nvcpu
 # P4 client (this is host specific)
 setenv P4CLIENT abelardojara-nvcpu
 setenv P4CLIENTHOME /home/scratch.abelardoj_denver-info/jfubar-nvcpu
+setenv P4EDITOR vim
 
 # OpenBLAS issues
 setenv OMP_NUM_THREADS 1
