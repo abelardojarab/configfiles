@@ -70,7 +70,7 @@ setenv NNN_TRASH 1
 
 # Use locate on $HOME directory (locate from GNU findutils)
 setenv LOCATE_PATH "$HOME/.home.mlocate.db"
-alias lupdatedb "updatedb --localpaths='/home/abelardoj /home/abelardoj/workspace /home/abelardoj/cmake_builds' --output=/home/abelardoj/.home.mlocate.db --netpaths='/home/abelardoj/workspace /home/abelardoj/workspace/nvcpu/dev /home/abelardoj/cmake_builds' --prunepaths='/home/abelardoj/.snapshot /home/abelardoj/builds'"
+alias lupdatedb "updatedb --localpaths='/home/abelardoj /home/abelardoj/workspace /home/abelardoj/cmake_builds /home/scratch.abelardoj_denver-info_1' --output=/home/abelardoj/.home.mlocate.db --netpaths='/home/abelardoj/workspace /home/abelardoj/workspace/nvcpu/dev /home/abelardoj/cmake_builds /home/scratch.abelardoj_denver-info_1' --prunepaths='/home/abelardoj/.snapshot /home/abelardoj/builds'"
 
 # Missing compiler flags
 # https://github.com/zdevito/ATen/issues/183
