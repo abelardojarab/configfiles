@@ -1,5 +1,5 @@
 ## show line numbers
-set linenumbers
+# set linenumbers
 
 ## use smooth scrolling
 set smooth
@@ -31,7 +31,7 @@ set autoindent
 set morespace
 
 ## Allow multiple file buffers (inserting a file will put it into a
-## separate buffer). 
+## separate buffer).
 set multibuffer
 
 ## Modern key-bindings
@@ -53,18 +53,18 @@ bind ^J gotoline main
 
 bind ^Space mark main
 bind ^X cut main
-bind ^C copytext main
-bind ^V uncut main
+# bind ^C copytext main
+# bind ^V uncut main
 
 bind ^F whereis main
-bind ^G searchagain main
+# bind ^G searchagain main
 bind ^H replace main
 
 bind ^Z undo main
 bind ^Y redo main
 
 bind M-A nohelp main
-bind M-L constupdate main
+# bind M-L constupdate main
 
 bind M-Z suspend main
 
@@ -146,4 +146,3 @@ color magenta "[0-9]"
 # strings
 color green ""(\\.|[^\"])*""
 # comments
-
