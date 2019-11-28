@@ -15,10 +15,10 @@ setenv  NCURSES_NO_UTF8_ACS 1
 
 # Binary path
 setenv gcc_root /home/denver/release/sw/tools/gcc-x86/5.4.0/cl45807481/CentOS-6.8
-setenv path_utils '/home/denver/release/sw/tools/cmake/current/bin /home/denver/release/sw/tools/python-3.7.2/bin /home/utils/flex-2.6.4/bin /home/utils/bison-2.7.1/bin /home/denver/release/sw/tools/gcc-x86/5.4.0/current/CentOS-6.8/bin /home/denver/release/sw/tools/texinfo-4.9/bin /home/denver/release/sw/tools/doxygen/bin /home/utils/perl-5.12/5.12.1-nothreads-64/bin /home/utils/make-4.2.1/bin /home/utils/gdb-8.2.1/bin /home/denver/release/sw/tools/binutils-2.28/bin /home/nv/bin /home/utils/bin /usr/X11R6/bin /usr/kerberos/bin /usr/local/lsf/bin'
+setenv path_utils '/home/denver/release/sw/tools/cmake/current/bin /home/denver/release/sw/tools/python-3.7.2/bin /home/utils/flex-2.6.4/bin /home/utils/bison-2.7.1/bin /home/denver/release/sw/tools/gcc-x86/5.4.0/current/CentOS-6.8/bin /home/denver/release/sw/tools/texinfo-4.9/bin /home/denver/release/sw/tools/doxygen/bin /home/utils/make-4.2.1/bin /home/utils/gdb-8.2.1/bin /home/denver/release/sw/tools/binutils-2.28/bin /home/nv/bin /home/utils/bin /usr/X11R6/bin /usr/kerberos/bin /usr/local/lsf/bin'
 
 if ( ! $?newpath ) set newpath
-foreach d ($HOME/.local/bin $HOME/local/bin $HOME/local/usr/bin $HOME/bin $gcc_root/bin $HOME/anaconda3/bin $HOME/builds/llvm/build/bin $HOME/local/cmake-3.15.5-Linux-x86_64/bin $path_utils $PATH /sbin /bin /usr/sbin /usr/bin /usr/games /usr/local/sbin /usr/local/bin)
+foreach d (/home/utils/perl-5.26/5.26.2-028/bin $HOME/.local/bin $HOME/local/bin $HOME/local/usr/bin $HOME/bin $gcc_root/bin $HOME/anaconda3/bin $HOME/builds/llvm/build/bin $HOME/local/cmake-3.15.5-Linux-x86_64/bin $path_utils $PATH /sbin /bin /usr/sbin /usr/bin /usr/games /usr/local/sbin /usr/local/bin)
     if ( -d $d ) then
         set -f newpath = ( $newpath $d )
     endif
