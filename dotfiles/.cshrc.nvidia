@@ -18,7 +18,7 @@ setenv gcc_root /home/denver/release/sw/tools/gcc-x86/5.4.0/cl45807481/CentOS-6.
 setenv path_utils '/home/denver/release/sw/tools/cmake/current/bin /home/denver/release/sw/tools/python-3.7.2/bin /home/utils/flex-2.6.4/bin /home/utils/bison-2.7.1/bin /home/denver/release/sw/tools/gcc-x86/5.4.0/current/CentOS-6.8/bin /home/denver/release/sw/tools/texinfo-4.9/bin /home/denver/release/sw/tools/doxygen/bin /home/utils/make-4.2.1/bin /home/utils/gdb-8.2.1/bin /home/denver/release/sw/tools/binutils-2.28/bin /home/nv/bin /home/utils/bin /usr/X11R6/bin /usr/kerberos/bin /usr/local/lsf/bin'
 
 if ( ! $?newpath ) set newpath
-foreach d (/home/utils/perl-5.26/5.26.2-028/bin $HOME/.local/bin $HOME/local/bin $HOME/local/usr/bin $HOME/bin $gcc_root/bin$HOME/builds/llvm/build/bin $HOME/local/cmake-3.15.5-Linux-x86_64/bin $path_utils $PATH /sbin /bin /usr/sbin /usr/bin /usr/games /usr/local/sbin /usr/local/bin)
+foreach d (/home/utils/perl-5.26/5.26.2-028/bin $HOME/.local/bin $HOME/local/bin $HOME/local/usr/bin $HOME/bin $gcc_root/bin $HOME/builds/llvm/build/bin $HOME/local/cmake-3.15.5-Linux-x86_64/bin $path_utils $PATH /sbin /bin /usr/sbin /usr/bin /usr/games /usr/local/sbin /usr/local/bin)
     if ( -d $d ) then
         set -f newpath = ( $newpath $d )
     endif
@@ -85,7 +85,7 @@ setenv ASFLAGS "-mrelax-relocations=no"
 # https://github.com/tmux/tmux/issues/747
 setenv LD_FLAGS "-lrt -Wl,--copy-dt-needed-entries"
 # Prefer local libraries
-setenv LD_FLAGS "${LD_FLAGS} -L${HOME}/local/lib -Wl,-rpath,${HOME}/local/lib"
+setenv LD_FLAGS "${LD_FLAGS} -L${HOME}/local/lib -L${HOME}/local/lib64 -Wl,-rpath,${HOME}/local/lib  -Wl,-rpath,${HOME}/local/lib64"
 
 # trun on Home End key
 bindkey ^[[1~ beginning-of-line
