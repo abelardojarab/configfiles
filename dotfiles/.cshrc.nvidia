@@ -40,7 +40,7 @@ unset d
 unset newpath
 
 # Aliases
-alias emacs /home/scratch.abelardoj_denver-info/builds/emacs/build/src/emacs
+#alias emacs /home/scratch.abelardoj_denver-info/builds/emacs/build/src/emacs
 alias pbcopy "xclip -selection clipboard"
 alias pbpaste "xclip -selection clipboard -o"
 unalias gcc
@@ -64,6 +64,9 @@ setenv USE_SIMPLE_THREADED_LEVEL3 1
 setenv GTAGSLABEL exuberant-ctags
 setenv GTAGSLIBPATH $HOME/.gtags
 setenv GTAGSTHROUGH true
+
+# Pkgconfig
+setenv PKG_CONFIG_PATH "${HOME}/local/lib64/pkgconfig:${HOME}/local/lib/pkgconfig:/usr/lib64/pkgconfig"
 
 # NNN settings
 setenv NNN_USE_EDITOR 1
