@@ -11,7 +11,10 @@ setenv  PAGER       less
 setenv  BLOCKSIZE   K
 setenv  TERM        xterm-256color
 setenv  EMACS_SERVER_FILE $HOME/.emacs.cache/server/server
-setenv  NCURSES_NO_UTF8_ACS 1
+
+# Locale
+setenv LANG en_US.UTF-8
+setenv NCURSES_NO_UTF8_ACS 1
 
 # Binary path
 setenv gcc_root /home/denver/release/sw/tools/gcc-x86/5.4.0/cl45807481/CentOS-6.8
