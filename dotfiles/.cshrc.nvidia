@@ -202,3 +202,10 @@ if ( -f ~/.gpg-agent-info ) then
     source ~/.gpg-agent-info
     unset TPID
 endif
+
+# The following settings are interpreted by EMACS, do not remove them.
+# Local Variables:
+# mode: csh
+# fill-column: 80
+# coding: utf-8
+# End:
