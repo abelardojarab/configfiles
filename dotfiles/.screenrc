@@ -27,6 +27,9 @@ terminfo rxvt-unicode 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm'
 # Tell screen how to set colors. AB = background, AF=foreground
 termcapinfo xterm 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm'
 
+# allow bold colors - necessary for some reason
+attrcolor b ".I"
+
 # Enables use of shift-PgUp and shift-PgDn
 termcapinfo xterm|xterms|xs|rxvt ti@:te@
 
@@ -38,7 +41,7 @@ defhstatus "screen ^E (^Et) | $USER@^EH"
 attrcolor b ".I"
 
 # nicer shell title
-shelltitle "$ |bash"
+shelltitle "$ |Console"
 
 # erase background with current bg color
 defbce "on"
@@ -54,7 +57,7 @@ utf8 on
 defscrollback 15000
 
 # default windows
-screen -t Shell1  1 bash
+screen -t Shell1  1 $SHELL
 
 # window numbering starts at 1 not 0
 bind c screen 1
