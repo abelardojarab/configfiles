@@ -43,7 +43,6 @@ unset d
 unset newpath
 
 # Aliases
-#alias emacs /home/scratch.abelardoj_denver-info/builds/emacs/build/src/emacs
 alias pbcopy "xclip -selection clipboard"
 alias pbpaste "xclip -selection clipboard -o"
 unalias gcc
@@ -175,8 +174,9 @@ complete *p4     'c/-/(c d p u x)/' \
          where)/' \
 'n/*/f:*/'
 
-alias precmd  "history -S; history -M; source ~/bin/gitprompt.csh"
-alias postcmd 'history -S'     # update and save history after each command
+# Do not enable history, becomes super slow
+#alias precmd  "history -S; history -M; source ~/bin/gitprompt.csh"
+#alias postcmd 'history -S'     # update and save history after each command
 
 # gpg-agent
 # Set GPG_TTY for curses pinentry
