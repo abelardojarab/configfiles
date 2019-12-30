@@ -175,8 +175,12 @@ complete *p4     'c/-/(c d p u x)/' \
 'n/*/f:*/'
 
 # Do not enable history, becomes super slow
-#alias precmd  "history -S; history -M; source ~/bin/gitprompt.csh"
-#alias postcmd 'history -S'     # update and save history after each command
+set history = 2000
+set savehist = (2000 merge)
+set histfile = ~/.csh_history
+
+alias precmd  "history -S; history -M; source ~/bin/gitprompt.csh"
+alias postcmd 'history -S' # update and save history after each command
 
 # gpg-agent
 # Set GPG_TTY for curses pinentry

@@ -1,8 +1,8 @@
 # improve history, only show matching history
 # When pressing up or down arrows,
 # show only history entries that match what was already typed
-"\e[A":history-search-backward
-"\e[B":history-search-forward
+"\e[A": history-search-backward
+"\e[B": history-search-forward
 
 # allow the use of the Home/End keys
 "\e[1~": beginning-of-line
