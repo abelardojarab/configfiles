@@ -66,6 +66,7 @@ setenv USE_SIMPLE_THREADED_LEVEL3 1
 setenv GTAGSLABEL exuberant-ctags
 setenv GTAGSLIBPATH $HOME/.gtags
 setenv GTAGSTHROUGH true
+setenv GTAGSFORCECPP 1
 
 # Pkgconfig
 setenv PKG_CONFIG_PATH "${HOME}/local/lib64/pkgconfig:${HOME}/local/lib/pkgconfig:/usr/lib64/pkgconfig"
