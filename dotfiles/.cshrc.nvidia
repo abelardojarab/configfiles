@@ -68,6 +68,9 @@ setenv GTAGSLIBPATH $HOME/.gtags
 setenv GTAGSTHROUGH true
 setenv GTAGSFORCECPP 1
 
+# Verbose CTEST on failure
+setenv CTEST_OUTPUT_ON_FAILURE 1
+
 # Pkgconfig
 setenv PKG_CONFIG_PATH "${HOME}/local/lib64/pkgconfig:${HOME}/local/lib/pkgconfig:/usr/lib64/pkgconfig"
 
