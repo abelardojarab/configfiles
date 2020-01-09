@@ -57,6 +57,7 @@ setenv GENIE_BRANCH_DEFAULT nvcpu
 setenv P4CLIENT abelardojara-nvcpu
 setenv P4CLIENTHOME /home/scratch.abelardoj_denver-info/nvcpu
 setenv P4EDITOR vim
+setenv P4DIFF
 
 # OpenBLAS issues
 setenv OMP_NUM_THREADS 1
@@ -126,8 +127,8 @@ bindkey -k down history-search-forward
 if ($?prompt) then
     set promptchars = "%#"
     set filec
-    set history = 8000
-    set savehist = (8000 merge)
+    set history = 3000
+    set savehist = (3000 merge)
     set histfile = "$HOME/.csh_history"
     set histdup = erase              # save only unique history events
     set notify                       # notification when jobs change state
@@ -178,9 +179,9 @@ complete *p4     'c/-/(c d p u x)/' \
          where)/' \
 'n/*/f:*/'
 
-# Do not enable history, becomes super slow
-set history = 2000
-set savehist = (2000 merge)
+# Do not enable large history, becomes super slow
+set history = 3000
+set savehist = (3000 merge)
 set histfile = ~/.csh_history
 
 alias precmd  "history -S; history -M; source ~/bin/gitprompt.csh"
