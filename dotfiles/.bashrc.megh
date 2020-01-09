@@ -194,7 +194,7 @@ NO_COLOR="\[\033[0m\]"
 SEP=""
 
 export PS1="\
-$Gray[\t] \
+$Blue[\t] \
 $Green\u@\h \
 $Yellow\W \
 \$(\

@@ -406,7 +406,7 @@ function set_prompt {
 
   # Prompt variable:
   export PS1="\
-$Gray[\t] \
+$Blue[\t] \
 $Green\u@\h \
 $Yellow[\w] \
 \$(\
