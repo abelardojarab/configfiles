@@ -274,10 +274,16 @@ export PATH=/opt/PDFStudio:$PATH
 export INTEL_OCL_SDK=/opt/intel/system_studio_2019/opencl-sdk
 export PATH=${PATH}:${INTEL_OCL_SDK}/bin
 
+# Perforce
+export PATH=$PATH:/opt/perforce/bin
+export P4EDITOR=vim
+export P4DIFF
+
 # Set up general GTAGS location
 export GTAGSLIBPATH=$HOME/.gtags/
 export GTAGSTHROUGH=true
 export GTAGSLABEL=exuberant-ctags
+export GTAGSFORCECPP=1
 
 # Node
 export NPM_CONFIG_PREFIX=$HOME/.npm-global
