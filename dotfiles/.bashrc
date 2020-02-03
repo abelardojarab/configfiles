@@ -277,6 +277,8 @@ export PATH=${PATH}:${INTEL_OCL_SDK}/bin
 # Perforce
 export PATH=$PATH:/opt/perforce/bin
 export P4EDITOR=vim
+export P4PORT=p4hw:2001
+export P4USER=abelardoj
 export P4DIFF
 
 # Set up general GTAGS location
