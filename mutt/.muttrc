@@ -5,7 +5,7 @@
 set realname = "Abelardo Jara-Berrocal"
 set use_from = yes          # answer from the address we got the mail to
 set envelope_from = yes
-alternates "(abelardojarab@gmail\.com)|(abelardo.jara-b@meghcomputing\.com)"
+alternates "(abelardojarab@gmail\.com)|(abelardoj@nvidia\.com)"
 
 # Configuration options
 set charset = "utf-8"
@@ -59,7 +59,6 @@ set smtp_pass=$my_gmail_pw
 # .mutt/muttrc
 account-hook . 'unset imap_user imap_pass mbox_type' # unset first!
 folder-hook 'INBOX' 'source ~/.mutt/.muttrc.gmail'
-# folder-hook 'imaps://ajaraber@imapmail.intel.com/*' 'source ~/.mutt/.muttrc.intel'
 folder-hook 'imaps://outlook.office365.com/*' 'source ~/.mutt/.muttrc.nvidia'
 macro index <f2> '<enter-command>source ~/.mutt/.muttrc.gmail<enter><change-folder> =INBOX<enter><sync-mailbox>'
 macro index <f3> '<enter-command>source ~/.mutt/.muttrc.nvidia<enter><change-folder>imaps://outlook.office365.com/<enter><sync-mailbox>'
