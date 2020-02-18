@@ -308,8 +308,13 @@ if [[ -s ${HOME}/.nvm/nvm.sh ]] ; then
 fi
 
 # Hadoop dev
-export HADOOP_HOME=/opt/hadoop/3.2.0
+export HADOOP_HOME=/opt/hadoop/hadoop-2.7.7
 export PATH=$PATH:$HADOOP_HOME/bin
+export HADOOP_MAPRED_HOME=$HADOOP_HOME
+export HADOOP_COMMON_HOME=$HADOOP_HOME
+export YARN_HOME=$HADOOP_HOME
+export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native
+export HADOOP_OPTS="-Djava.library.path=$HADOOP_HOME/lib"
 
 # Spark settings
 export SPARK_HOME=/opt/spark/spark-2.4.0-bin-hadoop2.7
@@ -320,6 +325,11 @@ export SPARK_MASTER_HOST='192.168.3.2'
 export SPARK_WORKER_CORES=2
 export SPARK_WORKER_INSTANCES=2
 export SPARK_WORKER_MEMORY=2g
+
+# PySpark
+export PYSPARK_DRIVER_PYTHON="jupyter"
+export PYSPARK_DRIVER_PYTHON_OPTS="notebook"
+export PYSPARK_PYTHON=python3
 
 # Pycharm
 export PYCHARM_HOME=/opt/JetBrains/pycharm/2019.2.3
