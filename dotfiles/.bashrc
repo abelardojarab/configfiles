@@ -111,6 +111,11 @@ export GDK_CORE_DEVICE_EVENTS=1
 export QT_USE_NATIVE_WINDOWS=1
 export QT_X11_NO_MITSHM=1
 
+# Qt5 sesttings
+# available platforms: eglfs, linuxfb, minimal, vnc, xcb
+export QT_QPA_PLATFORM=xcb
+export QT_DEBUG_PLUGINS=0
+
 # Editor setup
 export VISUAL=vim
 export EDITOR="$VISUAL"
