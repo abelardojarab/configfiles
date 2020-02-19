@@ -405,7 +405,6 @@ RECYCLE="♺"
 MIDDOT="•"
 PLUSMINUS="±"
 
-
 # Prompt separator
 SEP=""
 
