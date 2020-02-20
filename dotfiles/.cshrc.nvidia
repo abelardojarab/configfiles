@@ -185,33 +185,7 @@ set history = 3000
 set savehist = (3000 merge)
 set histfile = ~/.csh_history
 
-alias precmd  "history -S; history -M; source ~/bin/gitprompt.csh"
-alias postcmd 'history -S' # update and save history after each command
-
-# gpg-agent
-# Set GPG_TTY for curses pinentry
-if ( -o /dev/$tty && -c /dev/$tty ) setenv GPG_TTY /dev/$tty
-
-if ( -f ~/.gpg-agent-info ) then
-    set TPID = `pgrep -nU $USER gpg-agent`
-    if ($TPID == "") then
-        gpg-agent -q --daemon -c >! ~/.gpg-agent-info
-        echo "setenv GPG_AGENT_PID `pgrep -U $USER gpg-agent`" >> ~/.gpg-agent-info
-    else
-        source ~/.gpg-agent-info
-        if ($?GPG_AGENT_PID) then
-            if ($GPG_AGENT_PID != $TPID) then
-                gpg-agent -q --daemon -c >! ~/.gpg-agent-info
-                echo "setenv GPG_AGENT_PID `pgrep -U $USER gpg-agent`" >> ~/.gpg-agent-info
-            endif
-        else
-            gpg-agent -q --daemon -c >! ~/.gpg-agent-info
-            echo "setenv GPG_AGENT_PID `pgrep -U $USER gpg-agent`" >> ~/.gpg-agent-info
-        endif
-    endif
-    source ~/.gpg-agent-info
-    unset TPID
-endif
+bash
 
 # The following settings are interpreted by EMACS, do not remove them.
 # Local Variables:
