@@ -17,11 +17,11 @@ setenv LANG en_US.UTF-8
 setenv NCURSES_NO_UTF8_ACS 1
 
 # Binary path
-setenv gcc_root /home/denver/release/sw/tools/gcc-x86/5.4.0/cl45807481/CentOS-6.8
-setenv path_utils '/home/denver/release/sw/tools/cmake/current/bin /home/denver/release/sw/tools/python-3.7.2/bin /home/utils/flex-2.6.4/bin /home/utils/bison-2.7.1/bin /home/denver/release/sw/tools/gcc-x86/5.4.0/current/CentOS-6.8/bin /home/denver/release/sw/tools/texinfo-4.9/bin /home/denver/release/sw/tools/doxygen/bin /home/utils/make-4.2.1/bin /home/utils/gdb-8.2.1/bin /home/denver/release/sw/tools/binutils-2.28/bin /home/nv/bin /home/utils/bin /usr/X11R6/bin /usr/kerberos/bin /usr/local/lsf/bin'
+setenv gcc_root /home/utils/gcc-8.3.0-binutils-2.30-goldld/bin
+setenv path_utils '/home/utils/Python-3.7.3/bin /home/utils/flex-2.6.4/bin /home/utils/bison-3.4.1/bin /home/utils/texinfo-6.1/bin /home/utils/doxygen-1.8.8/bin /home/utils/make-4.2.1/bin /home/utils/gdb-8.2.1/bin /home/utils/binutils-2.30/bin /home/utils/docker-1.9.1/bin /home/utils/cmake-3.16.3/bin /home/nv/bin /home/utils/bin /usr/X11R6/bin /usr/kerberos/bin /usr/local/lsf/bin'
 
 if ( ! $?newpath ) set newpath
-foreach d (/home/utils/perl-5.26/5.26.2-028/bin $HOME/anaconda3/bin $HOME/.local/bin $HOME/local/bin $HOME/local/usr/bin $HOME/bin $HOME/.cask/bin $gcc_root/bin $HOME/builds/llvm/build/bin $HOME/local/cmake-3.15.5-Linux-x86_64/bin $path_utils $PATH /sbin /bin /usr/sbin /usr/bin /usr/games /usr/local/sbin /usr/local/bin)
+foreach d (/home/utils/perl-5.26/5.26.2-028/bin /home/utils/git-2.21.0/bin $gcc_root/bin $HOME/anaconda3/bin $HOME/.local/bin $HOME/local/bin $HOME/local/usr/bin $HOME/bin $HOME/.cask/bin $HOME/builds/llvm/build/bin $path_utils $PATH /sbin /bin /usr/sbin /usr/bin /usr/games /usr/local/sbin /usr/local/bin)
     if ( -d $d ) then
         set -f newpath = ( $newpath $d )
     endif
@@ -57,6 +57,7 @@ setenv GENIE_BRANCH_DEFAULT nvcpu
 setenv P4CLIENT abelardojara-nvcpu
 setenv P4CLIENTHOME /home/scratch.abelardoj_denver-info/nvcpu
 setenv P4EDITOR vim
+setenv P4USER abelardoj
 setenv P4DIFF
 
 # OpenBLAS issues
