@@ -147,9 +147,6 @@ export GPU_USE_SYNC_OBJECTS=1
 export GPU_MAX_ALLOC_PERCENT=95
 export GPU_SINGLE_ALLOC_PERCENT=100
 
-# Calibre (books)
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/calibre/4.10.1/lib
-
 # CUDA 10.1
 export PATH=/usr/local/cuda-10.1/bin:$PATH
 export CUDADIR=/usr/local/cuda-10.1
