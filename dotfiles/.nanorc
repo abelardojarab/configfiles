@@ -24,9 +24,6 @@ set regexp
 ## Make the Home key smarter.
 set smarthome
 
-## Use auto-indentation.
-set autoindent
-
 ## Use the blank line below the titlebar as extra editing space.
 set morespace
 
