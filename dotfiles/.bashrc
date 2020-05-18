@@ -120,6 +120,9 @@ export QT_DEBUG_PLUGINS=0
 export VISUAL=vim
 export EDITOR="$VISUAL"
 
+# Local paths
+export PATH=$HOME/.local/bin:$PATH
+
 # Emacs settings
 export EMACS_SERVER_FILE=$HOME/.emacs.cache/server/server
 export PATH=$HOME/.cask/bin:$PATH

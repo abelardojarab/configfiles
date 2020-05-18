@@ -48,7 +48,7 @@ set pgp_auto_decode = yes
 set imap_keepalive = 900
 
 # Passwords
-set my_gmail_pw=`gpg2 --batch -q --decrypt ~/.gpg_auth/.google`
+set my_gmail_pw=`gpg2 --batch -q --decrypt ~/.gpg_auth/google.gpg`
 
 # Sendmail
 set sendmail="/usr/sbin/sendmail -oi -oem"
