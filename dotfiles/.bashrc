@@ -283,7 +283,7 @@ export INTEL_OCL_SDK=/opt/intel/system_studio_2019/opencl-sdk
 export PATH=${PATH}:${INTEL_OCL_SDK}/bin
 
 # Perforce
-export PATH=$PATH:/opt/perforce/bin
+export PATH=$PATH:/opt/perforce/p4-2018.1/bin
 export P4CLIENT=abelardojara-nvcpu
 export P4EDITOR=vim
 export P4PORT=p4hw:2001
