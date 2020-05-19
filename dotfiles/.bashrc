@@ -290,6 +290,12 @@ export P4PORT=p4hw:2001
 export P4USER=abelardoj
 export P4DIFF
 
+# ccollab
+export PATH=$PATH:/opt/perforce/ccollab-cmdline.12.3.12304
+
+# as2
+export PATH=$PATH:/opt/nv/utils/as2/beta_0.4/bin
+
 # Set up general GTAGS location
 export GTAGSLIBPATH=$HOME/.gtags/
 export GTAGSTHROUGH=true
