@@ -150,10 +150,10 @@ export GPU_USE_SYNC_OBJECTS=1
 export GPU_MAX_ALLOC_PERCENT=95
 export GPU_SINGLE_ALLOC_PERCENT=100
 
-# CUDA 10.1
-export PATH=/usr/local/cuda-10.1/bin:$PATH
-export CUDADIR=/usr/local/cuda-10.1
-export LD_LIBRARY_PATH=/usr/local/cuda-10.1/lib64:$LD_LIBRARY_PATH
+# CUDA 10.2
+export PATH=/usr/local/cuda-10.2/bin:$PATH
+export CUDADIR=/usr/local/cuda-10.2
+export LD_LIBRARY_PATH=/usr/local/cuda-10.2/lib64:$LD_LIBRARY_PATH
 
 # OpenAccess
 export OA_UNSUPPORTED_PLAT=linux_rhel50_gcc44x
