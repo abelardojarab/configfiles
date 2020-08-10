@@ -133,6 +133,7 @@ alias lmlicense='/opt/mentor/calibre/2013.3_28.19/bin/lmgrd -c'
 
 # Java options
 export JAVA_HOME=/usr/lib/jvm/java-9-oracle
+export FILEBOT_OPTS="-Dnet.filebot.UserFiles.fileChooser=Swing"
 
 # Intel performance tools
 export INTELPARALLELSTUDIO=/opt/intel/parallel_studio_xe_2018
