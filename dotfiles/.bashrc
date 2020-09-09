@@ -132,7 +132,9 @@ export theHost=`hostname`
 alias lmlicense='/opt/mentor/calibre/2013.3_28.19/bin/lmgrd -c'
 
 # Java options
-export JAVA_HOME=/usr/lib/jvm/java-9-oracle
+if [ -d /usr/lib/jvm/java-9-oracle ]; then
+  export JAVA_HOME=/usr/lib/jvm/java-9-oracle
+fi
 export FILEBOT_OPTS="-Dnet.filebot.UserFiles.fileChooser=Swing"
 
 # Intel performance tools
@@ -152,9 +154,11 @@ export GPU_MAX_ALLOC_PERCENT=95
 export GPU_SINGLE_ALLOC_PERCENT=100
 
 # CUDA 10.2
-export PATH=/usr/local/cuda-10.2/bin:$PATH
-export CUDADIR=/usr/local/cuda-10.2
-export LD_LIBRARY_PATH=/usr/local/cuda-10.2/lib64:$LD_LIBRARY_PATH
+if [ -d /usr/local/cuda-10.2 ]; then
+  export PATH=/usr/local/cuda-10.2/bin:$PATH
+  export CUDADIR=/usr/local/cuda-10.2
+  export LD_LIBRARY_PATH=/usr/local/cuda-10.2/lib64:$LD_LIBRARY_PATH
+fi
 
 # OpenAccess
 export OA_UNSUPPORTED_PLAT=linux_rhel50_gcc44x
@@ -295,7 +299,10 @@ export P4DIFF
 export PATH=$PATH:/opt/perforce/ccollab-cmdline.12.3.12304
 
 # as2
-export PATH=$PATH:/opt/nv/utils/as2/beta_0.4/bin
+if [ -d /opt/nv/utils/as2 ] ; then
+  export PATH=$PATH:/opt/nv/utils/as2/beta_0.4/bin
+fi
+export PATH=$PATH:/home/nv/bin
 
 # Set up general GTAGS location
 export GTAGSLIBPATH=$HOME/.gtags/
