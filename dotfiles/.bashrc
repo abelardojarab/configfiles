@@ -169,7 +169,6 @@ if [ -d /usr/local/cuda-11.0 ]; then
   export LD_LIBRARY_PATH=$CUDADIR/lib64:$LD_LIBRARY_PATH
 fi
 
-
 # OpenAccess
 export OA_UNSUPPORTED_PLAT=linux_rhel50_gcc44x
 export OA_HOME=/opt/cadence/installs/IC616/oa_v22.43.018
@@ -374,6 +373,8 @@ export PATH=$PATH:/opt/scitools/Understand/5.0/bin/linux64
 # Guix
 export PATH="$HOME/.config/guix/current/bin:$PATH"
 export INFOPATH="$HOME/.config/guix/current/share/info:$INFOPATH"
+GUIX_PROFILE="/home/abelardojara/.guix-profile"
+. "$GUIX_PROFILE/etc/profile"
 
 # Local settings
 if [ -f $HOME/.bashrc_local ]; then
