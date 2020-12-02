@@ -373,10 +373,9 @@ export PATH=$PATH:/opt/scitools/Understand/5.0/bin/linux64
 # Guix
 export PATH="$HOME/.config/guix/current/bin:$PATH"
 export INFOPATH="$HOME/.config/guix/current/share/info:$INFOPATH"
-
-if [ -d $HOME/.guix-profile ]; then
-export GUIX_PROFILE="$HOME/.guix-profile"
-. "$GUIX_PROFILE/etc/profile"
+if [[ -d $HOME/.guix-profile ]]; then
+  export GUIX_PROFILE="$HOME/.guix-profile"
+  . "$GUIX_PROFILE/etc/profile"
 fi
 
 # Local settings
