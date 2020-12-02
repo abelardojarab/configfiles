@@ -157,8 +157,18 @@ export GPU_SINGLE_ALLOC_PERCENT=100
 if [ -d /usr/local/cuda-10.2 ]; then
   export PATH=/usr/local/cuda-10.2/bin:$PATH
   export CUDADIR=/usr/local/cuda-10.2
-  export LD_LIBRARY_PATH=/usr/local/cuda-10.2/lib64:$LD_LIBRARY_PATH
+  export CUDA_HOME=$CUDADIR
+  export LD_LIBRARY_PATH=$CUDADIR/lib64:$LD_LIBRARY_PATH
 fi
+
+# CUDA 11.0
+if [ -d /usr/local/cuda-11.0 ]; then
+  export PATH=/usr/local/cuda-11.0/bin:$PATH
+  export CUDADIR=/usr/local/cuda-11.0
+  export CUDA_HOME=$CUDADIR
+  export LD_LIBRARY_PATH=$CUDADIR/lib64:$LD_LIBRARY_PATH
+fi
+
 
 # OpenAccess
 export OA_UNSUPPORTED_PLAT=linux_rhel50_gcc44x
@@ -360,6 +370,10 @@ export PATH=$PATH:$PYCHARM_HOME/bin
 
 # Understand tool
 export PATH=$PATH:/opt/scitools/Understand/5.0/bin/linux64
+
+# Guix
+export PATH="$HOME/.config/guix/current/bin:$PATH"
+export INFOPATH="$HOME/.config/guix/current/share/info:$INFOPATH"
 
 # Local settings
 if [ -f $HOME/.bashrc_local ]; then
