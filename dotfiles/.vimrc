@@ -71,7 +71,6 @@ set ignorecase smartcase    " make searches case-insensitive, unless they
 if has('gui_running')
     "set guifont=Menlo:h13
     set gfn:Monaco:h14
-    set transp=0
 
     " toolbar and scrollbars
     set guioptions-=T       " remove toolbar
