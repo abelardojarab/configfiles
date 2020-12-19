@@ -168,6 +168,7 @@ if [ -d /usr/local/cuda-11.0 ]; then
   export CUDA_HOME=$CUDADIR
   export LD_LIBRARY_PATH=$CUDADIR/lib64:$LD_LIBRARY_PATH
 fi
+export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
 
 # OpenAccess
 export OA_UNSUPPORTED_PLAT=linux_rhel50_gcc44x
