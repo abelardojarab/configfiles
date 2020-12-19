@@ -247,31 +247,6 @@ function set_prompt {
 $Blue[\t] \
 $Green\u@\h \
 $Yellow[\w] \
-\$(\
-    # get the reference description
-    if refname=\$(git name-rev --name-only HEAD 2> /dev/null); then\
-        # on a branch
-        if curbranch=\$(git symbolic-ref HEAD 2> /dev/null); then\
-            echo -n '$Cyan('\${curbranch##refs/heads/}')';\
-        # detached head
-        else\
-            # unreachable
-            if [ \$refname = 'undefined' ]; then\
-                echo -n '$BRed(Unreachable detached HEAD: '\$(git rev-parse HEAD | head -c7)')';\
-            # reachable
-            else\
-                echo -n '$White('\$(git rev-parse HEAD | head -c7)': '\$refname')';\
-            fi;\
-        fi;\
-        git diff --quiet --cached &> /dev/null \
-            || echo -n '$BGreen*';\
-        git diff --quiet &> /dev/null \
-            || echo -n '$BRed*';\
-        git status --porcelain 2> /dev/null | grep -q ^?? \
-        && echo -n '$Gray*';\
-        echo -n ' ';\
-    fi\
-)\
 $White\$SEP\
 \$(\
     if [ \$USER = 'root' ]; then\
@@ -288,3 +263,4 @@ export PROMPT_COMMAND=set_prompt
 
 # After each command, append to the history file and reread it
 export PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"
+source "$HOME/.cargo/env"
