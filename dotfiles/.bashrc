@@ -162,9 +162,9 @@ if [ -d /usr/local/cuda-10.2 ]; then
 fi
 
 # CUDA 11.0
-if [ -d /usr/local/cuda-11.0 ]; then
-  export PATH=/usr/local/cuda-11.0/bin:$PATH
-  export CUDADIR=/usr/local/cuda-11.0
+if [ -d /usr/local/cuda-11.2 ]; then
+  export PATH=/usr/local/cuda-11.2/bin:$PATH
+  export CUDADIR=/usr/local/cuda-11.2
   export CUDA_HOME=$CUDADIR
   export LD_LIBRARY_PATH=$CUDADIR/lib64:$LD_LIBRARY_PATH
 fi
