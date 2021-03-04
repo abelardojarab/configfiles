@@ -19,7 +19,11 @@ map $http_upgrade $connection_upgrade {
     ''   '';
 }
 
-upstream php {
+upstream php8 {
+    server unix:/run/php/php8.0-fpm.sock;
+}
+
+upstream php7 {
     server unix:/run/php/php7.4-fpm.sock;
 }
 
@@ -58,6 +62,7 @@ server {
 server {
     root /var/www/html;
     autoindex off;
+    index index.php;
 
     listen 443 ssl default_server;
     listen [::]:443 ssl default_server;
@@ -112,9 +117,6 @@ server {
         root   /usr/share/nginx/html;
     }
 
-    # Add trailing slash to */wp-admin requests.
-    # rewrite /wp-admin$ $scheme://$host$uri/ permanent;
-
     # add global x-content-type-options header
     add_header X-Content-Type-Options nosniff;
 
@@ -129,32 +131,17 @@ server {
         include fastcgi_params;
         fastcgi_index index.php;
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-        fastcgi_pass php;
+        fastcgi_pass php8;
     }
 
     location / {
-        # try_files $uri $uri/ /index.php?$args;
+        try_files $uri $uri/ /index.php?$args;
         # time out settings
         fastcgi_read_timeout 120;
     }
 
-    # caching of files
-    location ~* \.(ico|pdf|flv)$ {
-        expires 1y;
-    }
-
-    location ~* \.(js|css|png|jpg|jpeg|gif|swf|xml|txt)$ {
-        expires 14d;
-    }
-
     location = /favicon.ico { log_not_found off; access_log off; }
     location = /robots.txt { log_not_found off; access_log off; allow all; }
-
-    # deny running scripts inside writable directories
-    # location ~* /(images|cache|media|logs|tmp)/.*\.(php|pl|py|jsp|asp|sh|cgi)$ {
-    #     return 403;
-    #     error_page 403 /403_error.html;
-    # }
 
     # Deny all attempts to access hidden files such as .htaccess, .htpasswd, .DS_Store (Mac).
     location ~ /\.ht {
@@ -164,12 +151,9 @@ server {
     }
 
     location /zabbix {
-        # if ($scheme ~ ^http:){
-        #     rewrite ^(.*)$  https://$host$1 permanent;
-        # }
-        alias                       /usr/share/zabbix/;
+        alias       /usr/share/zabbix/;
         index       index.php;
-        error_page          403 404 502 503 504  /zabbix/index.php;
+        error_page  403 404 502 503 504  /zabbix/index.php;
     }
 
     # Webdav
@@ -189,6 +173,18 @@ server {
 
     location /webdav {
         alias /var/www/webdav;
+        autoindex on;
+        autoindex_exact_size off;
+        dav_methods PUT DELETE MKCOL COPY MOVE;
+        # dav_ext_methods PROPFIND OPTIONS LOCK UNLOCK;
+        # dav_ext_lock zone=foo;
+        create_full_put_path on;
+        # auth_basic "Restricted Content";
+        # auth_basic_user_file /var/www/.htpasswd;
+    }
+
+    location /TpT {
+        alias /var/www/TpT;
         autoindex on;
         autoindex_exact_size off;
         dav_methods PUT DELETE MKCOL COPY MOVE;
