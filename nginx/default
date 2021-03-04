@@ -197,6 +197,8 @@ server {
         autoindex on;
         autoindex_exact_size off;
         dav_methods PUT DELETE MKCOL COPY MOVE;
+        dav_ext_methods PROPFIND OPTIONS;
+        dav_access      user:rw group:rw all:r;
         create_full_put_path on;
         auth_basic "Restricted Content";
         auth_basic_user_file /var/www/.htpasswd;
