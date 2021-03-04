@@ -1,0 +1,351 @@
+##
+# You should look at the following URL's in order to grasp a solid understanding
+# of Nginx configuration files in order to fully unleash the power of Nginx.
+# http://wiki.nginx.org/Pitfalls
+# http://wiki.nginx.org/QuickStart
+# http://wiki.nginx.org/Configuration
+#
+# Generally, you will want to move this file somewhere, and start with a clean
+# file but keep this around for reference. Or just disable in sites-enabled.
+#
+# Please see /usr/share/doc/nginx-doc/examples/ for more detailed examples.
+##
+# Default server configuration
+#
+
+# We need to support websockets from TC 9.x onwards
+map $http_upgrade $connection_upgrade {
+    default upgrade;
+    ''   '';
+}
+
+upstream php {
+    server unix:/run/php/php7.4-fpm.sock;
+}
+
+upstream teamcity {
+    server       127.0.0.1:8081 fail_timeout=0;
+    keepalive    32;
+}
+
+upstream jira {
+    server       127.0.0.1:8081 fail_timeout=0;
+    keepalive    32;
+}
+
+upstream notebook {
+    server       127.0.0.1:8888 fail_timeout=0;
+    keepalive    32;
+}
+
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    root /var/www/html;
+
+    # Add index.php to the list if you are using PHP
+    index index.html index.htm index.nginx-debian.html index.php;
+
+    server_name jaraberrocal.readmyblog.org;
+
+    location / {
+        proxy_pass http://localhost:8000;
+        include /etc/nginx/proxy_params;
+    }
+}
+
+server {
+    root /var/www/html;
+    autoindex off;
+
+    listen 443 ssl default_server;
+    listen [::]:443 ssl default_server;
+
+    server_name jaraberrocal.readmyblog.org;
+
+    access_log /var/log/nginx/ssl_access.log;
+    error_log  /var/log/nginx/ssl_error.log;
+
+    # Add index.php to the list if you are using PHP
+    index index.html index.htm index.nginx-debian.html index.php;
+
+    # Some players don't reopen a socket and playback stops totally instead of resuming after an extended pause (e.g. Chrome)
+    send_timeout 100m;
+
+    # Faster resolving, improves stapling time. Timeout and nameservers may need to be adjusted for your location Google's have been used here.
+    resolver 8.8.4.4 8.8.8.8 valid=300s;
+    resolver_timeout 10s;
+
+    # SSL settings
+    # listen 443 ssl;
+    ssl_certificate      /etc/letsencrypt/live/jaraberrocal.readmyblog.org/fullchain.pem;
+    ssl_certificate_key  /etc/letsencrypt/live/jaraberrocal.readmyblog.org/privkey.pem;
+    ssl_session_timeout  5m;
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+    add_header X-Frame-Options SAMEORIGIN;
+    add_header X-Content-Type-Options nosniff;
+    add_header X-XSS-Protection "1; mode=block";
+
+    # Why this is important: https://blog.cloudflare.com/ocsp-stapling-how-cloudflare-just-made-ssl-30/
+    ssl_stapling on;
+    ssl_stapling_verify on;
+
+    # SSLLabs.com suggestion
+    ssl_ciphers EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:ECDH+AES256:DH+AES256:EECDH+ECDSA+SHA384:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA384:EECDH+aRSA+SHA256:EECDH:EDH+aRSA:!RC4:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS;
+    ssl_prefer_server_ciphers on;
+
+    # Reuse ssl sessions, avoids unnecessary handshakes
+    # Turning this on will increase performance, but at the cost of security. Read below before making a choice.
+    # https://github.com/mozilla/server-side-tls/issues/135
+    # https://wiki.mozilla.org/Security/Server_Side_TLS#TLS_tickets_.28RFC_5077.29
+    ssl_session_tickets on;
+
+    # Redirect server error pages to the static page /50x.html
+    error_page 500 502 503 504  /50x.html;
+
+    # If they come here using HTTP, bounce them to the correct scheme
+    error_page 497 https://$server_name:$server_port$request_uri;
+
+    # Location of 50x.html
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+
+    # Add trailing slash to */wp-admin requests.
+    # rewrite /wp-admin$ $scheme://$host$uri/ permanent;
+
+    # add global x-content-type-options header
+    add_header X-Content-Type-Options nosniff;
+
+    # Sessions
+    proxy_cache_key "$host$request_uri$cookie_sessioncookie";
+
+    # Pass all .php files onto a php-fpm/php-fcgi server.
+    location ~ \.php$ {
+        # Comment the 'try_files' line out if you set up php-fpm/php-fcgi on another machine.  And then cross your fingers that you won't get hacked.
+        # try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        include fastcgi_params;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_pass php;
+    }
+
+    location / {
+        # try_files $uri $uri/ /index.php?$args;
+        # time out settings
+        fastcgi_read_timeout 120;
+    }
+
+    # caching of files
+    location ~* \.(ico|pdf|flv)$ {
+        expires 1y;
+    }
+
+    location ~* \.(js|css|png|jpg|jpeg|gif|swf|xml|txt)$ {
+        expires 14d;
+    }
+
+    location = /favicon.ico { log_not_found off; access_log off; }
+    location = /robots.txt { log_not_found off; access_log off; allow all; }
+
+    # deny running scripts inside writable directories
+    # location ~* /(images|cache|media|logs|tmp)/.*\.(php|pl|py|jsp|asp|sh|cgi)$ {
+    #     return 403;
+    #     error_page 403 /403_error.html;
+    # }
+
+    # Deny all attempts to access hidden files such as .htaccess, .htpasswd, .DS_Store (Mac).
+    location ~ /\.ht {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+
+    location /zabbix {
+        # if ($scheme ~ ^http:){
+        #     rewrite ^(.*)$  https://$host$1 permanent;
+        # }
+        alias                       /usr/share/zabbix/;
+        index       index.php;
+        error_page          403 404 502 503 504  /zabbix/index.php;
+    }
+
+    # Webdav
+    location ~ \.(_.*|DS_Store|Spotlight-V100|TemporaryItems|Trashes|hidden|localized)$ {
+        access_log  off;
+        error_log   off;
+
+        if ($request_method = PUT) {
+            return 403;
+        }
+        return 404;
+    }
+
+    location ~ \.metadata_never_index$ {
+        return 200 "Don't index this drive, Finder!";
+    }
+
+    location /webdav {
+        alias /var/www/webdav;
+        autoindex on;
+        autoindex_exact_size off;
+        dav_methods PUT DELETE MKCOL COPY MOVE;
+        # dav_ext_methods PROPFIND OPTIONS LOCK UNLOCK;
+        # dav_ext_lock zone=foo;
+        create_full_put_path on;
+        # auth_basic "Restricted Content";
+        # auth_basic_user_file /var/www/.htpasswd;
+    }
+
+    location /webdavext {
+        alias /var/www/webdavext;
+        autoindex on;
+        autoindex_exact_size off;
+        dav_methods PUT DELETE MKCOL COPY MOVE;
+        # dav_ext_methods PROPFIND OPTIONS LOCK UNLOCK;
+        # dav_ext_lock zone=foo;
+        create_full_put_path on;
+        auth_basic "Restricted Content";
+        auth_basic_user_file /var/www/.htpasswd;
+    }
+
+    # Cockpit
+    location /cockpit/ {
+        # Required to proxy the connection to Cockpit
+        proxy_pass https://localhost:9000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Required for web sockets to function
+        proxy_http_version 1.1;
+        proxy_buffering off;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+
+        # Pass ETag header from Cockpit to clients.
+        # See: https://github.com/cockpit-project/cockpit/issues/5239
+        gzip off;
+        auth_basic "Restricted Content";
+        auth_basic_user_file /var/www/.htpasswd;
+    }
+
+    location /jira/ {
+        proxy_pass http://localhost:8081;
+        proxy_set_header  Host $host:$server_port;
+        proxy_set_header  X-Real-IP $remote_addr;
+        proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header  X-Forwarded-Proto $scheme;
+        client_max_body_size 10M;
+        proxy_buffers 4 256k;
+        proxy_buffer_size 128k;
+        proxy_busy_buffers_size 256k;
+    }
+
+    location /teamcity/ {
+        proxy_pass http://localhost:8112;
+        proxy_set_header  Host $host:$server_port;
+        proxy_set_header  X-Real-IP $remote_addr;
+        proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header  X-Forwarded-Proto $scheme;
+        client_max_body_size 10M;
+        proxy_buffers 4 256k;
+        proxy_buffer_size 128k;
+        proxy_busy_buffers_size 256k;
+    }
+
+    location /grafana/ {
+        proxy_pass http://localhost:3000;
+        rewrite  ^/grafana/(.*)  /$1 break;
+        proxy_set_header Host $host;
+        proxy_buffers 4 256k;
+        proxy_buffer_size 128k;
+        proxy_busy_buffers_size 256k;
+    }
+
+    location /kibana {
+        rewrite ^/kibana/(.*) /$1 break;
+        proxy_set_header        Host $host;
+        proxy_set_header        X-Real-IP $remote_addr;
+        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header        X-Forwarded-Proto $scheme;
+        proxy_set_header        Connection "Keep-Alive";
+        proxy_set_header        Proxy-Connection "Keep-Alive";
+        proxy_pass              http://jaraberrocal.readmyblog.org:5601/;
+        proxy_read_timeout      90;
+        proxy_buffering         off;
+        auth_basic             "Restricted Content";
+        auth_basic_user_file   /var/www/.htpasswd;
+    }
+
+    location /webmin/ {
+        proxy_pass http://localhost:10000/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $http_x_forwarded_for;
+        proxy_redirect http://$host:10000/ http://$host/webmin;
+        auth_basic "Restricted Content";
+        auth_basic_user_file /var/www/.htpasswd;
+    }
+
+    location ~ ^/es(.*) {
+        rewrite /es/(.*) /$1  break;
+
+        # Deny Nodes Shutdown API
+        if ($request_filename ~ "_shutdown") {
+            return 403;
+            break;
+        }
+
+        if ($request_method !~ ^(GET|POST|HEAD)$ ) {
+            return 405;
+            break;
+        }
+
+        #auth_basic "Restricted";
+        #auth_basic_user_file  /etc/nginx/passwd/.htpasswd_magento_elasticsearch;
+        proxy_pass http://127.0.0.1:9200;
+        proxy_redirect off;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    location = /notebook {
+        rewrite ^/(.*)$ $1/ permanent;
+    }
+    location /notebook {
+        error_page 403 = @proxy_notebook;
+        deny 127.0.0.1;
+        allow all;
+        # set a webroot, if there is one
+        root /some-webroot;
+        try_files $uri @proxy_notebook;
+    }
+    location @proxy_notebook {
+        #rewrite /notebook(.*) $1  break;
+        proxy_read_timeout 300s;
+        proxy_pass https://notebook;
+        # pass some extra stuff to the backend
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-Ip $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+    location ~ /notebook/api/kernels/ {
+        proxy_pass            https://notebook;
+        proxy_set_header      Host $host;
+        # websocket support
+        proxy_http_version    1.1;
+        proxy_set_header      Upgrade "websocket";
+        proxy_set_header      Connection "Upgrade";
+        proxy_read_timeout    86400;
+    }
+    location ~ /notebook/terminals/ {
+        proxy_pass            https://notebook;
+        proxy_set_header      Host $host;
+        # websocket support
+        proxy_http_version    1.1;
+        proxy_set_header      Upgrade "websocket";
+        proxy_set_header      Connection "Upgrade";
+        proxy_read_timeout    86400;
+    }
+}
