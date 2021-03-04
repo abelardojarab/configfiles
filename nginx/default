@@ -140,6 +140,11 @@ server {
         fastcgi_read_timeout 120;
     }
 
+    # Cache images
+    location ~* \.(jpg|jpeg|png|gif)$ {
+        expires 14d;
+    }
+
     location = /favicon.ico { log_not_found off; access_log off; }
     location = /robots.txt { log_not_found off; access_log off; allow all; }
 
@@ -176,11 +181,7 @@ server {
         autoindex on;
         autoindex_exact_size off;
         dav_methods PUT DELETE MKCOL COPY MOVE;
-        # dav_ext_methods PROPFIND OPTIONS LOCK UNLOCK;
-        # dav_ext_lock zone=foo;
         create_full_put_path on;
-        # auth_basic "Restricted Content";
-        # auth_basic_user_file /var/www/.htpasswd;
     }
 
     location /TpT {
@@ -188,11 +189,7 @@ server {
         autoindex on;
         autoindex_exact_size off;
         dav_methods PUT DELETE MKCOL COPY MOVE;
-        # dav_ext_methods PROPFIND OPTIONS LOCK UNLOCK;
-        # dav_ext_lock zone=foo;
         create_full_put_path on;
-        # auth_basic "Restricted Content";
-        # auth_basic_user_file /var/www/.htpasswd;
     }
 
     location /webdavext {
@@ -200,8 +197,6 @@ server {
         autoindex on;
         autoindex_exact_size off;
         dav_methods PUT DELETE MKCOL COPY MOVE;
-        # dav_ext_methods PROPFIND OPTIONS LOCK UNLOCK;
-        # dav_ext_lock zone=foo;
         create_full_put_path on;
         auth_basic "Restricted Content";
         auth_basic_user_file /var/www/.htpasswd;
