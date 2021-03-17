@@ -47,12 +47,12 @@ esac
 
 if [ -n "$force_color_prompt" ]; then
     if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
-	# We have color support; assume it's compliant with Ecma-48
-	# (ISO/IEC-6429). (Lack of such support is extremely rare, and such
-	# a case would tend to support setf rather than setaf.)
-	color_prompt=yes
+    # We have color support; assume it's compliant with Ecma-48
+    # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+    # a case would tend to support setf rather than setaf.)
+    color_prompt=yes
     else
-	color_prompt=
+    color_prompt=
     fi
 fi
 
@@ -131,6 +131,14 @@ if [ -d /usr/local/cuda-10.2 ]; then
   export LD_LIBRARY_PATH=/usr/local/cuda-10.2/lib64:$LD_LIBRARY_PATH
 fi
 
+# CUDA 11.2
+if [ -d /usr/local/cuda-11.2 ]; then
+  export PATH=/usr/local/cuda-11.2/bin:$PATH
+  export CUDADIR=/usr/local/cuda-11.2
+  export CUDA_HOME=$CUDADIR
+  export LD_LIBRARY_PATH=$CUDADIR/lib64:$LD_LIBRARY_PATH
+fi
+
 # NVCC
 export NVCC_ROOT=/opt/hpc_sdk/Linux_aarch64/dev/compilers
 export PATH=$NVCC_ROOT/bin:$PATH
@@ -142,3 +150,23 @@ ulimit -s unlimited
 
 # Go
 export PATH=$HOME/go/bin:$PATH
+
+# Set up general GTAGS location
+export GTAGSLIBPATH=$HOME/.gtags/
+export GTAGSTHROUGH=true
+export GTAGSLABEL=exuberant-ctags
+export GTAGSFORCECPP=1
+
+# Spark cluster settings
+export SPARK_MASTER_HOST='192.168.3.2'
+export SPARK_WORKER_CORES=2
+export SPARK_WORKER_INSTANCES=2
+export SPARK_WORKER_MEMORY=2g
+
+# PySpark
+export PYSPARK_DRIVER_PYTHON="jupyter"
+export PYSPARK_DRIVER_PYTHON_OPTS="notebook"
+export PYSPARK_PYTHON=python3
+
+# After each command, append to the history file and reread it
+export PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"
