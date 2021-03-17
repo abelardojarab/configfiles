@@ -326,20 +326,11 @@ export GTAGSFORCECPP=1
 export NPM_CONFIG_PREFIX=$HOME/.npm-global
 export PATH=$NPM_CONFIG_PREFIX/bin:$PATH
 
-# added by Anaconda3 installer
-# export PATH=/opt/anaconda3/bin:$PATH
-
 # Python env
 if [[ -d ${HOME}/.pyenv ]] ; then
   export PYENV_ROOT="${HOME}/.pyenv"
   export PATH="${PYENV_ROOT}/bin:${PATH}"
   eval "$(pyenv init -)"
-fi
-
-# Node env
-if [[ -s ${HOME}/.nvm/nvm.sh ]] ; then
-  export NVM_DIR="${HOME}/.nvm"
-  [ -s "${NVM_DIR}/nvm.sh" ] && . "${NVM_DIR}/nvm.sh"  # This loads nvm
 fi
 
 # Hadoop dev
@@ -504,6 +495,3 @@ export PROMPT_COMMAND=set_prompt
 # After each command, append to the history file and reread it
 export PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"
 
-export INTELFPGAOCLSDKROOT="/opt/intelFPGA_pro/20.3/hld"
-
-export QSYS_ROOTDIR="/opt/intelFPGA_pro/20.3/qsys/bin"
