@@ -125,17 +125,19 @@ export GPU_SINGLE_ALLOC_PERCENT=100
 
 # CUDA 10.2
 if [ -d /usr/local/cuda-10.2 ]; then
-  export PATH=/usr/local/cuda-10.2/bin:$PATH
   export CUDADIR=/usr/local/cuda-10.2
-  export CUDA_HOME=/usr/local/cuda-10.2
-  export LD_LIBRARY_PATH=/usr/local/cuda-10.2/lib64:$LD_LIBRARY_PATH
+  export CUDA_HOME=$CUDADIR
+  export CUDA_TOOLKIT_ROOT_DIR=$CUDADIR
+  export PATH=$CUDADIR/bin:$PATH
+  export LD_LIBRARY_PATH=$CUDADIR/lib64:$LD_LIBRARY_PATH
 fi
 
 # CUDA 11.2
 if [ -d /usr/local/cuda-11.2 ]; then
-  export PATH=/usr/local/cuda-11.2/bin:$PATH
   export CUDADIR=/usr/local/cuda-11.2
   export CUDA_HOME=$CUDADIR
+  export CUDA_TOOLKIT_ROOT_DIR=$CUDADIR
+  export PATH=$CUDADIR/bin:$PATH
   export LD_LIBRARY_PATH=$CUDADIR/lib64:$LD_LIBRARY_PATH
 fi
 
