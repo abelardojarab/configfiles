@@ -158,6 +158,7 @@ if [ -d /usr/local/cuda-10.2 ]; then
   export PATH=/usr/local/cuda-10.2/bin:$PATH
   export CUDADIR=/usr/local/cuda-10.2
   export CUDA_HOME=$CUDADIR
+  export CUDA_TOOLKIT_ROOT_DIR=$CUDADIR
   export LD_LIBRARY_PATH=$CUDADIR/lib64:$LD_LIBRARY_PATH
 fi
 
@@ -166,6 +167,7 @@ if [ -d /usr/local/cuda-11.2 ]; then
   export PATH=/usr/local/cuda-11.2/bin:$PATH
   export CUDADIR=/usr/local/cuda-11.2
   export CUDA_HOME=$CUDADIR
+  export CUDA_TOOLKIT_ROOT_DIR=$CUDADIR
   export LD_LIBRARY_PATH=$CUDADIR/lib64:$LD_LIBRARY_PATH
 fi
 export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
