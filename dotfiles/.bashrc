@@ -168,9 +168,9 @@ if [ -d /usr/local/cuda-11.2 ]; then
   export CUDA_HOME=$CUDADIR
   export LD_LIBRARY_PATH=$CUDADIR/lib64:$LD_LIBRARY_PATH
 fi
-export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+# export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
 
-# OpenAccess
+OpenAccess
 export OA_UNSUPPORTED_PLAT=linux_rhel50_gcc44x
 export OA_HOME=/opt/cadence/installs/IC616/oa_v22.43.018
 
@@ -494,4 +494,3 @@ export PROMPT_COMMAND=set_prompt
 
 # After each command, append to the history file and reread it
 export PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"
-
