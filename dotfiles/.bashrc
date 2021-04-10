@@ -172,7 +172,7 @@ if [ -d /usr/local/cuda-11.2 ]; then
 fi
 # export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
 
-OpenAccess
+# OpenAccess
 export OA_UNSUPPORTED_PLAT=linux_rhel50_gcc44x
 export OA_HOME=/opt/cadence/installs/IC616/oa_v22.43.018
 
