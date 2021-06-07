@@ -310,7 +310,7 @@ export P4USER=abelardoj
 export P4DIFF
 
 # ccollab
-export PATH=$PATH:/opt/perforce/ccollab-cmdline.12.3.12304
+export PATH=$PATH:/opt/perforce/ccollab-cmdline.13.1.13400
 
 # as2
 if [ -d /opt/nv/utils/as2 ] ; then
