@@ -10,8 +10,8 @@ IMAPAccount gmail
 Host imap.gmail.com
 User abelardotomasjb@gmail.com
 Port 993
-#PassCmd "pass abelardotomasjb@gmail.com"
-PassCmd "gpg2 --batch --decrypt ~/.gpg_auth/google.gpg"
+PassCmd "pass abelardotomasjb@gmail.com"
+# PassCmd "gpg2 --batch --decrypt ~/.gpg_auth/google.gpg"
 AuthMechs LOGIN
 #UseIMAPS yes
 # Use SSL

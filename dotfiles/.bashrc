@@ -158,17 +158,19 @@ if [ -d /usr/local/cuda-10.2 ]; then
   export PATH=/usr/local/cuda-10.2/bin:$PATH
   export CUDADIR=/usr/local/cuda-10.2
   export CUDA_HOME=$CUDADIR
+  export CUDA_TOOLKIT_ROOT_DIR=$CUDADIR
   export LD_LIBRARY_PATH=$CUDADIR/lib64:$LD_LIBRARY_PATH
 fi
 
 # CUDA 11.0
-if [ -d /usr/local/cuda-11.0 ]; then
-  export PATH=/usr/local/cuda-11.0/bin:$PATH
-  export CUDADIR=/usr/local/cuda-11.0
+if [ -d /usr/local/cuda-11.2 ]; then
+  export PATH=/usr/local/cuda-11.2/bin:$PATH
+  export CUDADIR=/usr/local/cuda-11.2
   export CUDA_HOME=$CUDADIR
+  export CUDA_TOOLKIT_ROOT_DIR=$CUDADIR
   export LD_LIBRARY_PATH=$CUDADIR/lib64:$LD_LIBRARY_PATH
 fi
-export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+# export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
 
 # OpenAccess
 export OA_UNSUPPORTED_PLAT=linux_rhel50_gcc44x
@@ -308,7 +310,7 @@ export P4USER=abelardoj
 export P4DIFF
 
 # ccollab
-export PATH=$PATH:/opt/perforce/ccollab-cmdline.12.3.12304
+export PATH=$PATH:/opt/perforce/ccollab-cmdline.13.1.13400
 
 # as2
 if [ -d /opt/nv/utils/as2 ] ; then
@@ -326,20 +328,11 @@ export GTAGSFORCECPP=1
 export NPM_CONFIG_PREFIX=$HOME/.npm-global
 export PATH=$NPM_CONFIG_PREFIX/bin:$PATH
 
-# added by Anaconda3 installer
-# export PATH=/opt/anaconda3/bin:$PATH
-
 # Python env
 if [[ -d ${HOME}/.pyenv ]] ; then
   export PYENV_ROOT="${HOME}/.pyenv"
   export PATH="${PYENV_ROOT}/bin:${PATH}"
   eval "$(pyenv init -)"
-fi
-
-# Node env
-if [[ -s ${HOME}/.nvm/nvm.sh ]] ; then
-  export NVM_DIR="${HOME}/.nvm"
-  [ -s "${NVM_DIR}/nvm.sh" ] && . "${NVM_DIR}/nvm.sh"  # This loads nvm
 fi
 
 # Hadoop dev
@@ -503,7 +496,3 @@ export PROMPT_COMMAND=set_prompt
 
 # After each command, append to the history file and reread it
 export PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"
-
-export INTELFPGAOCLSDKROOT="/opt/intelFPGA_pro/20.3/hld"
-
-export QSYS_ROOTDIR="/opt/intelFPGA_pro/20.3/qsys/bin"

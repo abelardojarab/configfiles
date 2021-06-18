@@ -34,7 +34,8 @@ set ignore_linear_white_space = yes
 set rfc2047_parameters = yes
 
 # Emacs as external editor for mutt
-set editor='emacsclient -t %s'
+# set editor='emacsclient -t %s'
+set editor='vim'
 
 # Security stuff
 set ssl_starttls = yes
