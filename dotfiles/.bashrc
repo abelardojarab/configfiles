@@ -336,7 +336,10 @@ if [[ -d ${HOME}/.pyenv ]] ; then
 fi
 
 # Kubernetes
-export KUBECONFIG=.kube/abelardoj_kubeconfig.yaml
+export KUBECONFIG=$HOME/.kube/config
+if  [[ -f ${HOME}/.kube/nvidia ]] ; then
+  export KUBECONFIG=$HOME/.kube/nvidia:$KUBECONFIG
+fi
 
 # Hadoop dev
 export HADOOP_HOME=/opt/hadoop/hadoop-2.7.7
