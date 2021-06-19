@@ -335,6 +335,9 @@ if [[ -d ${HOME}/.pyenv ]] ; then
   eval "$(pyenv init -)"
 fi
 
+# Kubernetes
+export KUBECONFIG=.kube/abelardoj_kubeconfig.yaml
+
 # Hadoop dev
 export HADOOP_HOME=/opt/hadoop/hadoop-2.7.7
 export PATH=$PATH:$HADOOP_HOME/bin
