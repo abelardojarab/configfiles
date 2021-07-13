@@ -12,7 +12,6 @@ set go-=L " Removes left hand scroll bar
 set linespace=15
 set t_Co=256
 
-
 " --- editor settings
 set showmode                    " always show what mode we're currently editing in
 set nowrap                      " don't wrap lines
@@ -30,7 +29,6 @@ set ignorecase                  " ignore case when searching
 set smartcase                   " ignore case if search pattern is all lowercase,
 set mouse=a                     "enable mouse automatically entering visual mode
 set clipboard=unnamed,unnamedplus                    "Use system clipboard by default
-
 
 " --- spell checking
 set spelllang=en_us         " spell checking
@@ -66,8 +64,6 @@ set ignorecase smartcase    " make searches case-insensitive, unless they
                             "   contain upper-case letters
 
 " --- UI settings ---
-
-
 if has('gui_running')
     "set guifont=Menlo:h13
     set gfn:Monaco:h14
@@ -99,7 +95,6 @@ set sidescrolloff=7         " Start scrolling n chars before end of screen.
 set sidescroll=1            " The minimal number of columns to scroll
                             "   horizontally.
 
-
 " add useful stuff to title bar (file name, flags, cwd)
 " based on @factorylabs
 if has('title') && (has('gui_running') || &title)
@@ -116,18 +111,15 @@ set wildchar=<TAB>          "   show possible completions.
 set wildmode=list:longest
 set wildignore+=*.DS_STORE,*.db,node_modules/**,*.jpg,*.png,*.gif
 
-
 " --- diff ---
 set diffopt=filler          " Add vertical spaces to keep right
                             "   and left aligned.
 set diffopt+=iwhite         " Ignore whitespace changes.
 
-
 " --- folding---
 set foldmethod=manual       " manual fold
 set foldnestmax=3           " deepest fold is 3 levels
 set nofoldenable            " don't fold by default
-
 
 " --- keys ---
 set backspace=indent,eol,start  " allow backspacing over everything.
@@ -141,7 +133,6 @@ map <leader>x "_dd
 
 " Use leader l to rapidly toggle `set list`
 nmap <leader>l :set list!<CR>
-
 
 " Use a bar-shaped cursor for insert mode, even through tmux.
 if exists('$TMUX')
@@ -186,8 +177,7 @@ cmap w!! w !sudo tee % >/dev/null
 " turns on nice popup menu for omni completion
 :highlight Pmenu ctermbg=238 gui=bold
 
-" --- Leader based key bindings
-
+" --- Leader based key bindings ---
 "Auto change directory to match current file ,cd
 nnoremap <leader>cd :cd %:p:h<CR>:pwd<CR>
 
@@ -209,7 +199,7 @@ nmap <leader>o :set paste!<CR>
 " Remove trailing whitespace
 nnoremap <leader>w :%s/\s\+$//<cr>:let @/=''<CR>
 
-" --- Plugins
+" --- Plugins ---
 call plug#begin('~/.vim/plugged')
 " Other plugins here.
 Plug 'ctrlpvim/ctrlp.vim'
@@ -225,16 +215,80 @@ Plug 'Nopik/vim-nerdtree-direnter'  " Fix issue with nerdtree
 Plug 'fholgado/minibufexpl.vim'  " Buffer explorer
 Plug 'rhysd/vim-clang-format' " Clang-format
 Plug 'yegappan/mru' " MRU
+Plug 'prabirshrestha/asyncomplete.vim'
+Plug 'prabirshrestha/vim-lsp'
+Plug 'mattn/vim-lsp-settings'
+Plug 'prabirshrestha/asyncomplete-lsp.vim'
+Plug 'airblade/vim-gitgutter'
+Plug 'tpope/vim-fugitive'
+Plug 'junegunn/gv.vim'
+Plug 'ctrlpvim/ctrlp.vim'
+Plug 'Shougo/deoplete.nvim',
+Plug 'lighttiger2505/deoplete-vim-lsp'
+Plug 'Shougo/context_filetype.vim'
+Plug 'christoomey/vim-tmux-navigator'
+Plug 'dense-analysis/ale'
+Plug 'junegunn/fzf'
+Plug 'junegunn/fzf.vim'
+Plug 'mbbill/undotree'
+Plug 'scrooloose/nerdcommenter'
+Plug 'deoplete-plugins/deoplete-jedi',
+Plug 'junegunn/vim-easy-align'
+Plug 'godlygeek/tabular'
+Plug 'jiangmiao/auto-pairs'
+Plug 'alvan/vim-closetag'
+Plug 'tpope/vim-surround'
+Plug 'tpope/vim-repeat'
+Plug 'tpope/vim-capslock'
+Plug 'wellle/targets.vim'
+Plug 'christoomey/vim-sort-motion'
+Plug 'terryma/vim-expand-region'
+Plug 'Valloric/MatchTagAlways'
+Plug 'FooSoft/vim-argwrap'
+Plug 'gerardbm/vim-md-headings'
+Plug 'matze/vim-move'
+Plug 'gerardbm/vim-atomic'
+Plug 'vim-airline/vim-airline-themes'
+Plug 'liuchengxu/vista.vim'
 call plug#end()
 
-nnoremap <leader>b :CtrlPBuffer<CR>
+" --- LSP support ---
+imap <c-space> <Plug>(asyncomplete_force_refresh)
+inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+inoremap <expr> <cr> pumvisible() ? "\<C-y>\<cr>" : "\<cr>"
+autocmd! CompleteDone * if pumvisible() == 0 | pclose | endif
+
+if executable('pyls')
+    " pip install python-language-server
+    au User lsp_setup call lsp#register_server({
+        \ 'name': 'pyls',
+        \ 'cmd': {server_info->['pyls']},
+        \ 'allowlist': ['python'],
+        \ })
+endif
+
+let g:vista_executive_for = {
+        \ 'cpp': 'vim_lsp',
+        \ 'python': 'vim_lsp',
+        \ }
+let g:vista_ignore_kinds = ['Variable']
+
+" --- Tabbar ---
+try
+set showtabline=2
+set switchbuf=useopen,usetab,newtab
+catch
+endtry
+
+" --- Nerd Tree ---
+map <C-t> :NERDTreeToggle<CR>
+
+" Open files in new tabs in Nerdtree
+let NERDTreeMapOpenInTab='\r'
 
 " Toggle NERDTree drawer
 map <leader>d <plug>NERDTreeToggle<CR>
-
-" Ctrl-p plugin shortcut
-let g:ctrlp_map = '<c-p>'
-let g:ctrlp_cmd = 'CtrlPBuffer'
 
 " Move between buffers
 map <C-Left> <Esc>:bprev<CR>
@@ -246,11 +300,11 @@ map <C-PageDown> :bnext<CR>
 map <C-P> :bprevCR>
 map <C-N> :bnext<CR>
 
-" Nerd Tree toggling
-map <C-t> :NERDTreeToggle<CR>
-
-" Open files in new tabs in Nerdtree
-let NERDTreeMapOpenInTab='\r'
+" --- Statusbar ---
+let g:airline_theme                       = 'atomic'
+let g:airline_powerline_fonts             = 0
+let g:airline#extensions#tabline#enabled  = 1
+let g:airline#extensions#tabline#fnamemod = ':t'
 
 " --- Default vim file browser :Explore
 let g:netrw_liststyle = 3
@@ -259,3 +313,136 @@ let g:netrw_browse_split = 1
 let g:netrw_altv = 1
 let g:netrw_winsize = 25
 
+" --- Git tools ---
+let g:gitgutter_max_signs             = 5000
+let g:gitgutter_sign_added            = '+'
+let g:gitgutter_sign_modified         = '»'
+let g:gitgutter_sign_removed          = '_'
+let g:gitgutter_sign_modified_removed = '»╌'
+let g:gitgutter_map_keys              = 0
+let g:gitgutter_diff_args             = '--ignore-space-at-eol'
+
+nmap <Leader>j <Plug>(GitGutterNextHunk)zz
+nmap <Leader>k <Plug>(GitGutterPrevHunk)zz
+nnoremap <silent> <C-g> :call <SID>ToggleGGPrev()<CR>zz
+nnoremap <Leader>ga :GitGutterStageHunk<CR>
+nnoremap <Leader>gu :GitGutterUndoHunk<CR>
+
+" --- Sessions ---
+let g:session_autosave  = 'yes'
+let g:session_autoload  = 'yes'
+let g:session_directory = '~/.vim.cache/sessions'
+
+nnoremap <C-b> :OpenSession<CR>
+
+function! MakeSession(overwrite)
+  let b:sessiondir = $HOME . "/.vim.cache/sessions" . getcwd()
+  if (filewritable(b:sessiondir) != 2)
+    exe 'silent !mkdir -p ' b:sessiondir
+    redraw!
+  endif
+  let b:filename = b:sessiondir . '/session.vim'
+  if a:overwrite == 0 && !empty(glob(b:filename))
+    return
+  endif
+  exe "mksession! " . b:filename
+endfunction
+
+function! LoadSession()
+  let b:sessiondir = $HOME . "/.vim.cache/sessions" . getcwd()
+  let b:sessionfile = b:sessiondir . "/session.vim"
+  if (filereadable(b:sessionfile))
+    exe 'source ' b:sessionfile
+  else
+    echo "No session loaded."
+  endif
+endfunction
+
+" Adding automatons for when entering or leaving Vim
+if(argc() == 0)
+  au VimEnter * nested :call LoadSession()
+  au VimLeave * :call MakeSession(1)
+else
+  au VimLeave * :call MakeSession(0)
+endif
+
+" --- CtrlP settings ---
+nnoremap <leader>b :CtrlPBuffer<CR>
+let g:ctrlp_map                 = '<C-p>'
+let g:ctrlp_cmd                 = 'CtrlPBuffer'
+let g:ctrlp_working_path_mode   = 'rc'
+let g:ctrlp_custom_ignore       = '\v[\/]\.(git|hg|svn)$'
+let g:ctrlp_match_window        = 'bottom,order:btt,min:1,max:10,results:85'
+let g:ctrlp_show_hidden         = 1
+let g:ctrlp_follow_symlinks     = 1
+let g:ctrlp_open_multiple_files = '0i'
+let g:ctrlp_prompt_mappings     = {
+    \ 'PrtHistory(1)'        : [''],
+    \ 'PrtHistory(-1)'       : [''],
+    \ 'ToggleType(1)'        : ['<C-l>', '<C-up>'],
+    \ 'ToggleType(-1)'       : ['<C-h>', '<C-down>'],
+    \ 'PrtCurLeft()'         : ['<C-b>', '<Left>'],
+    \ 'PrtCurRight()'        : ['<C-f>', '<Right>'],
+    \ 'PrtBS()'              : ['<C-s>', '<BS>'],
+    \ 'PrtDelete()'          : ['<C-d>', '<DEL>'],
+    \ 'PrtDeleteWord()'      : ['<C-w>'],
+    \ 'PrtClear()'           : ['<C-u>'],
+    \ 'ToggleByFname()'      : ['<C-g>'],
+    \ 'AcceptSelection("e")' : ['<C-m>', '<CR>'],
+    \ 'AcceptSelection("h")' : ['<C-x>'],
+    \ 'AcceptSelection("t")' : ['<C-t>'],
+    \ 'AcceptSelection("v")' : ['<C-v>'],
+    \ 'OpenMulti()'          : ['<C-o>'],
+    \ 'MarkToOpen()'         : ['<c-z>'],
+    \ 'PrtExit()'            : ['<esc>', '<c-c>', '<c-p>'],
+    \ }
+
+" --- Undotree toggle ---
+nnoremap <Leader>u :UndotreeToggle<CR>
+
+" --- Multiple windows ---
+" Remap wincmd
+map <Leader>, <C-w>
+
+set winminheight=0
+set winminwidth=0
+set splitbelow
+set splitright
+set fillchars+=stlnc:\/,vert:│,fold:―,diff:―
+
+" Split windows
+map <C-w>- :split<CR>
+map <C-w>. :vsplit<CR>
+map <C-w>j :close<CR>
+map <C-w>x :q!<CR>
+map <C-w>, <C-w>=
+
+" Resize windows
+if bufwinnr(1)
+    map + :resize +1<CR>
+    map - :resize -1<CR>
+    map < :vertical resize +1<CR>
+    map > :vertical resize -1<CR>
+endif
+
+" Toggle resize window
+nnoremap <silent> <C-w>f :call <SID>ToggleResize()<CR>
+
+" Last, previous and next window; and only one window
+nnoremap <silent> <C-w>l :wincmd p<CR>:echo "Last window."<CR>
+nnoremap <silent> <C-w>p :wincmd w<CR>:echo "Previous window."<CR>
+nnoremap <silent> <C-w>n :wincmd W<CR>:echo "Next window."<CR>
+nnoremap <silent> <C-w>o :wincmd o<CR>:echo "Only one window."<CR>
+
+" --- NERDCommenter settings ---
+let g:NERDDefaultAlign          = 'left'
+let g:NERDSpaceDelims           = 1
+let g:NERDCompactSexyComs       = 1
+let g:NERDCommentEmptyLines     = 0
+let g:NERDCreateDefaultMappings = 0
+let g:NERDCustomDelimiters      = {
+    \ 'python': {'left': '#'},
+    \ }
+
+nnoremap cc :call NERDComment(0,'toggle')<CR>
+vnoremap cc :call NERDComment(0,'toggle')<CR>
