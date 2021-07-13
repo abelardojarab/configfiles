@@ -1,4 +1,4 @@
-" MIT License. Copyright (c) 2013-2019 Bailey Ling et al.
+" MIT License. Copyright (c) 2013-2021 Bailey Ling et al.
 " vim: et ts=2 sts=2 sw=2
 
 scriptencoding utf-8
@@ -161,16 +161,15 @@ function! s:get_number(index)
     return a:index
   endif
   let bidx_mode = get(g:, 'airline#extensions#tabline#buffer_idx_mode', 0)
-  if bidx_mode > 1
-    return join(map(split(a:index+11, '\zs'), 'get(s:number_map, v:val, "")'), '')
-  else
-    return get(s:number_map, a:index+1, '')
-  endif
+  let number_format = bidx_mode > 1 ? '%02d' : '%d'
+  let l:count = bidx_mode == 2 ? a:index+11 : a:index+1
+  return join(map(split(printf(number_format, l:count), '\zs'),
+        \ 'get(s:number_map, v:val, "")'), '')
 endfunction
 
 function! s:select_tab(buf_index)
   " no-op when called in 'keymap_ignored_filetypes'
-  if count(get(g:, 'airline#extensions#tabline#keymap_ignored_filetypes', 
+  if count(get(g:, 'airline#extensions#tabline#keymap_ignored_filetypes',
         \ ['vimfiler', 'nerdtree']), &ft)
     return
   endif
@@ -197,12 +196,13 @@ function! s:map_keys()
   let bidx_mode = get(g:, 'airline#extensions#tabline#buffer_idx_mode', 1)
   if bidx_mode > 0
     if bidx_mode == 1
-      for i in range(1, 9)
-        exe printf('noremap <silent> <Plug>AirlineSelectTab%d :call <SID>select_tab(%d)<CR>', i, i-1)
+      for i in range(1, 10)
+        exe printf('noremap <silent> <Plug>AirlineSelectTab%d :call <SID>select_tab(%d)<CR>', i%10, i-1)
       endfor
     else
-      for i in range(11, 99)
-        exe printf('noremap <silent> <Plug>AirlineSelectTab%d :call <SID>select_tab(%d)<CR>', i, i-11)
+      let start_idx = bidx_mode == 2 ? 11 : 1
+      for i in range(start_idx, 99)
+        exe printf('noremap <silent> <Plug>AirlineSelectTab%02d :call <SID>select_tab(%d)<CR>', i, i-start_idx)
       endfor
     endif
     noremap <silent> <Plug>AirlineSelectPrevTab :<C-u>call <SID>jump_to_tab(-v:count1)<CR>

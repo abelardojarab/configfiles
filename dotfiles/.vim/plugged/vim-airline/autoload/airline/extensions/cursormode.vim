@@ -1,8 +1,15 @@
 " MIT Licsense.
+" Plugin: https://github.com/vheon/vim-cursormode
 " Copyright (C) 2014 Andrea Cedraro <a.cedraro@gmail.com>,
 " Copyright (C) 2017 Eduardo Suarez-Santana <e.suarezsantana@gmail.com>
 
 scriptencoding utf-8
+
+if exists('g:loaded_cursormode')
+  finish
+endif
+
+let g:loaded_cursormode = 1
 
 let s:is_win = has('win32') || has('win64')
 let s:is_iTerm = exists('$TERM_PROGRAM') && $TERM_PROGRAM =~# 'iTerm.app'
@@ -100,6 +107,10 @@ augroup airline#extensions#cursormode
 augroup END
 
 function! airline#extensions#cursormode#activate()
+  if !exists('#airline')
+    " airline disabled
+    return
+  endif
   let s:color_map = s:get_color_map()
   call airline#extensions#cursormode#set()
 endfunction
