@@ -380,6 +380,9 @@ if [[ -d $HOME/.guix-profile ]]; then
   . "$GUIX_PROFILE/etc/profile"
 fi
 
+# Snap
+export PATH=/snap/bin:$PATH
+
 # Local settings
 if [ -f $HOME/.bashrc_local ]; then
   source ~/.bashrc_local
