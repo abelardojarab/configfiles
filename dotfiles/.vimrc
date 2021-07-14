@@ -196,6 +196,9 @@ Plug 'airblade/vim-gitgutter'
 Plug 'tpope/vim-fugitive' " Git integration
 Plug 'junegunn/gv.vim'
 
+" Perforce
+Plug 'nfvs/vim-perforce'
+
 " Tools
 Plug 'ctrlpvim/ctrlp.vim'
 Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
