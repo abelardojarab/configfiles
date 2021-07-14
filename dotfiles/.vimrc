@@ -182,6 +182,10 @@ nnoremap <leader>w :%s/\s\+$//<cr>:let @/=''<CR>
 call plug#begin('~/.vim/plugged')
 " Other plugins here.
 
+" Sessions
+" Plug 'xolox/vim-session'
+" Plug 'xolox/vim-misc'
+
 " Status bar
 Plug 'bling/vim-airline'  " Vim status bar
 Plug 'vim-airline/vim-airline-themes'
