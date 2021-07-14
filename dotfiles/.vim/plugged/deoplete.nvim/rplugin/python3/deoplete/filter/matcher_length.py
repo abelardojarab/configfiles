@@ -4,18 +4,21 @@
 # License: MIT license
 # ============================================================================
 
-from deoplete.filter.base import Base
+from pynvim import Nvim
+
+from deoplete.base.filter import Base
+from deoplete.util import UserContext, Candidates
 
 
 class Filter(Base):
 
-    def __init__(self, vim):
+    def __init__(self, vim: Nvim) -> None:
         super().__init__(vim)
 
         self.name = 'matcher_length'
         self.description = 'length matcher'
 
-    def filter(self, context):
+    def filter(self, context: UserContext) -> Candidates:
         input_len = len(context['complete_str'])
         return [x for x in context['candidates']
                 if len(x['word']) > input_len]

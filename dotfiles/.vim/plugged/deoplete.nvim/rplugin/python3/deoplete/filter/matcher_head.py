@@ -4,19 +4,22 @@
 # License: MIT license
 # ============================================================================
 
-from deoplete.filter.base import Base
+from pynvim import Nvim
+
+from deoplete.base.filter import Base
 from deoplete.util import binary_search_begin, binary_search_end
+from deoplete.util import UserContext, Candidates
 
 
 class Filter(Base):
 
-    def __init__(self, vim):
+    def __init__(self, vim: Nvim) -> None:
         super().__init__(vim)
 
         self.name = 'matcher_head'
         self.description = 'head matcher'
 
-    def filter(self, context):
+    def filter(self, context: UserContext) -> Candidates:
         complete_str = context['complete_str']
         if context['ignorecase']:
             complete_str = complete_str.lower()
@@ -31,7 +34,7 @@ class Filter(Base):
             candidates = context['candidates'][begin:end+1]
 
             if context['ignorecase']:
-                return candidates
+                return list(candidates)
         else:
             candidates = context['candidates']
 

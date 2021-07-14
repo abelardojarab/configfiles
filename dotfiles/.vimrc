@@ -75,7 +75,6 @@ if has('gui_running')
 endif
 
 syntax enable
-colorscheme slate
 set cursorline
 hi CursorLine term=bold cterm=bold guibg=Grey40
 
@@ -181,37 +180,58 @@ nnoremap <leader>w :%s/\s\+$//<cr>:let @/=''<CR>
 " --- Plugins ---
 call plug#begin('~/.vim/plugged')
 " Other plugins here.
+
+" Status bar
+Plug 'bling/vim-airline'  " Vim status bar
+Plug 'vim-airline/vim-airline-themes'
+
+" Git tools
+Plug 'airblade/vim-gitgutter'
+Plug 'tpope/vim-fugitive' " Git integration
+Plug 'junegunn/gv.vim'
+
+" Tools
 Plug 'ctrlpvim/ctrlp.vim'
 Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
-Plug 'bling/vim-airline'  " Vim status bar
-Plug 'tpope/vim-fugitive' " Git integration
-Plug 'scrooloose/syntastic'  " Adds syntax checking
-Plug 'tpope/vim-surround'  " Quoting and parenthesizing made simple
-Plug 'tinyheero/vim-snippets'  " Fork of honza/vim-snippets
-Plug 'tomtom/tcomment_vim'  " Extensible & universal comment
-Plug 'ap/vim-buftabline'  " Vim tabs
 Plug 'Nopik/vim-nerdtree-direnter'  " Fix issue with nerdtree
-Plug 'fholgado/minibufexpl.vim'  " Buffer explorer
-Plug 'rhysd/vim-clang-format' " Clang-format
-Plug 'yegappan/mru' " MRU
-Plug 'prabirshrestha/asyncomplete.vim'
-Plug 'prabirshrestha/vim-lsp'
-Plug 'mattn/vim-lsp-settings'
-Plug 'prabirshrestha/asyncomplete-lsp.vim'
-Plug 'airblade/vim-gitgutter'
-Plug 'tpope/vim-fugitive'
-Plug 'junegunn/gv.vim'
+Plug 'scrooloose/nerdcommenter'
 Plug 'ctrlpvim/ctrlp.vim'
-Plug 'Shougo/deoplete.nvim',
-Plug 'lighttiger2505/deoplete-vim-lsp'
-Plug 'Shougo/context_filetype.vim'
-Plug 'christoomey/vim-tmux-navigator'
-Plug 'dense-analysis/ale'
 Plug 'junegunn/fzf'
 Plug 'junegunn/fzf.vim'
-Plug 'mbbill/undotree'
-Plug 'scrooloose/nerdcommenter'
+Plug 'fholgado/minibufexpl.vim'  " Buffer explorer
+Plug 'yegappan/mru' " MRU
+
+" Completion
+Plug 'Shougo/deoplete.nvim',
+Plug 'prabirshrestha/asyncomplete.vim'
+Plug 'prabirshrestha/asyncomplete-lsp.vim'
+Plug 'lighttiger2505/deoplete-vim-lsp'
+Plug 'liuchengxu/vista.vim'
+Plug 'prabirshrestha/vim-lsp'
+Plug 'mattn/vim-lsp-settings'
+
+" Syntax checker
+Plug 'scrooloose/syntastic'  " Adds syntax checking
+Plug 'tinyheero/vim-snippets'  " Fork of honza/vim-snippets
+Plug 'dense-analysis/ale'
+
+" Tabline
+Plug 'ap/vim-buftabline'  " Vim tabs
+
+" Python
 Plug 'deoplete-plugins/deoplete-jedi',
+
+" C/C++
+Plug 'rhysd/vim-clang-format' " Clang-format
+
+" tmux
+Plug 'christoomey/vim-tmux-navigator'
+
+" Edition
+Plug 'tpope/vim-surround'  " Quoting and parenthesizing made simple
+Plug 'tomtom/tcomment_vim'  " Extensible & universal comment
+Plug 'Shougo/context_filetype.vim'
+Plug 'mbbill/undotree'
 Plug 'junegunn/vim-easy-align'
 Plug 'godlygeek/tabular'
 Plug 'jiangmiao/auto-pairs'
@@ -225,10 +245,17 @@ Plug 'terryma/vim-expand-region'
 Plug 'FooSoft/vim-argwrap'
 Plug 'gerardbm/vim-md-headings'
 Plug 'matze/vim-move'
+
+" Color schemes
 Plug 'gerardbm/vim-atomic'
-Plug 'vim-airline/vim-airline-themes'
-Plug 'liuchengxu/vista.vim'
+Plug 'rakr/vim-one'
+Plug 'sickill/vim-monokai'
+
 call plug#end()
+
+" --- Colors ---
+colorscheme monokai
+set background=dark
 
 " --- LSP support ---
 imap <c-space> <Plug>(asyncomplete_force_refresh)
@@ -292,14 +319,14 @@ map <C-P> :bprevCR>
 map <C-N> :bnext<CR>
 
 " --- Statusbar ---
-let g:airline_theme                       = 'atomic'
+let g:airline_theme                       = 'one'
 let g:airline_powerline_fonts             = 0
 let g:airline#extensions#tabline#enabled  = 1
 let g:airline#extensions#tabline#fnamemod = ':t'
 let g:airline_section_z                   = airline#section#create([
-			\ '%1p%% ',
-			\ 'Ξ%l%',
-			\ '\⍿%c'])
+            \ '%1p%% ',
+            \ 'Ξ%l%',
+            \ '\⍿%c'])
 call airline#parts#define_accent('mode', 'black')
 
 " --- Default vim file browser :Explore
@@ -448,3 +475,13 @@ let $FZF_PREVIEW_COMMAND = 'cat {}'
 nnoremap <C-f><C-f> :Files<CR>
 nnoremap <C-f><C-g> :Commits<CR>
 nnoremap <C-f><Space> :BLines<CR>
+
+" --- ALE settings ---
+let g:ale_sign_column_always = 1
+let g:ale_linters            = {
+    \ 'c'          : ['clang'],
+    \ 'python'     : ['pylint'],
+    \ 'javascript' : ['jshint'],
+    \ 'css'        : ['csslint'],
+    \ 'tex'        : ['chktex'],
+    \ }

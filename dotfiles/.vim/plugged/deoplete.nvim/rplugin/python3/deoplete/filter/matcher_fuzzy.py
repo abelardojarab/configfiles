@@ -4,27 +4,28 @@
 # License: MIT license
 # ============================================================================
 
+from pynvim import Nvim
 import re
 
-from deoplete.filter.base import Base
-from deoplete.util import (
-    fuzzy_escape, binary_search_begin, binary_search_end)
+from deoplete.base.filter import Base
+from deoplete.util import binary_search_begin, binary_search_end
+from deoplete.util import fuzzy_escape, UserContext, Candidates
 
 
 class Filter(Base):
 
-    def __init__(self, vim):
+    def __init__(self, vim: Nvim) -> None:
         super().__init__(vim)
 
         self.name = 'matcher_fuzzy'
         self.description = 'fuzzy matcher'
 
-    def filter(self, context):
+    def filter(self, context: UserContext) -> Candidates:
         complete_str = context['complete_str']
         if context['ignorecase']:
             complete_str = complete_str.lower()
         if not complete_str:
-            return context['candidates']
+            return list(context['candidates'])
 
         if context['is_sorted']:
             begin = binary_search_begin(

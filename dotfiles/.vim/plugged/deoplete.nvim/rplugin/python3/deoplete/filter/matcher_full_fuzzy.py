@@ -4,20 +4,22 @@
 # License: MIT license
 # ============================================================================
 
+from pynvim import Nvim
 import re
-from deoplete.filter.base import Base
-from deoplete.util import fuzzy_escape
+
+from deoplete.base.filter import Base
+from deoplete.util import fuzzy_escape, UserContext, Candidates
 
 
 class Filter(Base):
 
-    def __init__(self, vim):
+    def __init__(self, vim: Nvim) -> None:
         super().__init__(vim)
 
         self.name = 'matcher_full_fuzzy'
         self.description = 'full fuzzy matcher'
 
-    def filter(self, context):
+    def filter(self, context: UserContext) -> Candidates:
         complete_str = context['complete_str']
         if context['ignorecase']:
             complete_str = complete_str.lower()

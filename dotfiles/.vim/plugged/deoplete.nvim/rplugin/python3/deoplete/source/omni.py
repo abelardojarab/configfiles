@@ -4,16 +4,19 @@
 # License: MIT license
 # ============================================================================
 
+from pynvim import Nvim
 import re
+import typing
 
-from deoplete.source.base import Base
+from deoplete.base.source import Base
 from deoplete.util import (
     convert2list, set_pattern, convert2candidates)
+from deoplete.util import UserContext, Candidates
 
 
 class Source(Base):
 
-    def __init__(self, vim):
+    def __init__(self, vim: Nvim) -> None:
         super().__init__(vim)
 
         self.name = 'omni'
@@ -22,18 +25,16 @@ class Source(Base):
         self.is_bytepos = True
         self.min_pattern_length = 0
 
-        input_patterns = {}
+        input_patterns: typing.Dict[str, str] = {}
         set_pattern(input_patterns, 'css,less,scss,sass',
                     [r'\w{2}', r'\w+:?\s*\w*', r'[@!]'])
-        set_pattern(input_patterns, 'lua',
-                    [r'\w+[.:]\w*'])
         self.vars = {
             'input_patterns': input_patterns,
             'functions': {},
         }
 
-    def get_complete_position(self, context):
-        current_ft = self.vim.current.buffer.options['filetype']
+    def get_complete_position(self, context: UserContext) -> int:
+        current_ft = self.get_buf_option('filetype')
 
         for filetype in list(set([context['filetype']] +
                                  context['filetype'].split('.'))):
@@ -42,12 +43,15 @@ class Source(Base):
                 return pos
         return -1
 
-    def _get_complete_position(self, context, current_ft, filetype):
+    def _get_complete_position(self, context: UserContext,
+                               current_ft: str, filetype: str) -> int:
+        complete_pos = -1
+
         for omnifunc in convert2list(
                 self.get_filetype_var(filetype, 'functions')):
             if omnifunc == '' and (filetype == current_ft or
                                    filetype in ['css', 'javascript']):
-                omnifunc = self.vim.current.buffer.options['omnifunc']
+                omnifunc = self.get_buf_option('omnifunc')
             if omnifunc == '':
                 continue
             self._omnifunc = omnifunc
@@ -65,19 +69,21 @@ class Source(Base):
                         'ccomplete#Complete',
                         'htmlcomplete#CompleteTags',
                         'LanguageClient#complete',
+                        'rubycomplete#Complete',
                         'phpcomplete#CompletePHP']:
                     # In the blacklist
-                    return -1
+                    continue
                 try:
-                    complete_pos = self.vim.call(self._omnifunc, 1, '')
+                    complete_pos = int(self.vim.call(self._omnifunc, 1, ''))
                 except Exception:
                     self.print_error('Error occurred calling omnifunction: ' +
                                      self._omnifunc)
                     return -1
-                return complete_pos
-        return -1
+                if complete_pos >= 0:
+                    break
+        return complete_pos
 
-    def gather_candidates(self, context):
+    def gather_candidates(self, context: UserContext) -> Candidates:
         try:
             candidates = self.vim.call(self._omnifunc, 0, '')
             if isinstance(candidates, dict):
@@ -85,13 +91,12 @@ class Source(Base):
             elif not isinstance(candidates, list):
                 candidates = []
         except Exception:
-            self.print_error('Error occurred calling omnifunction: ' +
-                             self._omnifunc)
             candidates = []
 
         candidates = convert2candidates(candidates)
 
         for candidate in candidates:
             candidate['dup'] = 1
+            candidate['equal'] = 1
 
-        return candidates
+        return list(candidates)

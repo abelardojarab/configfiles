@@ -4,19 +4,25 @@
 # License: MIT license
 # ============================================================================
 
-from deoplete.filter.base import Base
+from pynvim import Nvim
+import typing
+
+from deoplete.base.filter import Base
+from deoplete.util import UserContext, Candidates
 
 
 class Filter(Base):
-    def __init__(self, vim):
+    def __init__(self, vim: Nvim) -> None:
         super().__init__(vim)
 
         self.name = 'converter_auto_delimiter'
         self.description = 'auto delimiter converter'
+        self.vars = {
+            'delimiters': ['/'],
+        }
 
-    def filter(self, context):
-        delimiters = self.vim.call(
-            'deoplete#custom#_get_option', 'delimiters')
+    def filter(self, context: UserContext) -> Candidates:
+        delimiters: typing.List[str] = self.get_var('delimiters')
         for candidate, delimiter in [
                 [x, last_find(x['abbr'], delimiters)]
                 for x in context['candidates']
@@ -24,10 +30,11 @@ class Filter(Base):
                 not last_find(x['word'], delimiters) and
                 last_find(x['abbr'], delimiters)]:
             candidate['word'] += delimiter
-        return context['candidates']
+        return list(context['candidates'])
 
 
-def last_find(s, needles):
+def last_find(s: str, needles: typing.List[str]) -> typing.Optional[str]:
     for needle in needles:
         if len(s) >= len(needle) and s[-len(needle):] == needle:
             return needle
+    return None

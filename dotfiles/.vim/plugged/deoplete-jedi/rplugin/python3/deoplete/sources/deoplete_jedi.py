@@ -1,20 +1,15 @@
+import copy
 import logging
 import os
 import re
+from importlib.util import find_spec
 
+from deoplete.base.source import Base
 from deoplete.util import bytepos2charpos, getlines, load_external_module
 
-
-from .base import Base
-
-# Insert Parso and Jedi from our submodules.
-load_external_module(__file__, 'vendored/jedi')
-load_external_module(__file__, 'vendored/parso')
 load_external_module(__file__, 'sources')
 
-from deoplete_jedi import profiler  # isort:skip  # noqa: I100
-
-import jedi  # noqa: E402
+from deoplete_jedi import profiler  # isort:skip  # noqa: E402
 
 # Type mapping.  Empty values will use the key value instead.
 # Keep them 5 characters max to minimize required space to display.
@@ -58,6 +53,7 @@ class Source(Base):
 
     def __init__(self, vim):
         Base.__init__(self, vim)
+
         self.name = 'jedi'
         self.mark = '[jedi]'
         self.rank = 500
@@ -66,25 +62,47 @@ class Source(Base):
                               r'^\s*@\w*$|'
                               r'^\s*from\s+[\w\.]*(?:\s+import\s+(?:\w*(?:,\s*)?)*)?|'
                               r'^\s*import\s+(?:[\w\.]*(?:,\s*)?)*')
+
         self._async_keys = set()
         self.workers_started = False
+        self._jedi = None
 
     def on_init(self, context):
         vars = context['vars']
 
-        self.statement_length = vars.get(
-            'deoplete#sources#jedi#statement_length', 0)
-        self.use_short_types = vars.get(
-            'deoplete#sources#jedi#short_types', False)
-        self.show_docstring = vars.get(
-            'deoplete#sources#jedi#show_docstring', False)
-        self.enable_typeinfo = vars.get(
-            'deoplete#sources#jedi#enable_typeinfo', True)
-        self.ignore_errors = vars.get(
-            'deoplete#sources#jedi#ignore_errors', False)
+        self.statement_length = 50
+        if 'deoplete#sources#jedi#statement_length' in vars:
+            self.statement_length = vars[
+                'deoplete#sources#jedi#statement_length']
+        self.enable_typeinfo = True
+        if 'deoplete#sources#jedi#enable_typeinfo' in vars:
+            self.enable_typeinfo = vars[
+                'deoplete#sources#jedi#enable_typeinfo']
+        self.enable_short_types = False
+        if 'deoplete#sources#jedi#enable_short_types' in vars:
+            self.enable_short_types = vars[
+                'deoplete#sources#jedi#enable_short_types']
+        self.short_types_map = copy.copy(_types)
+        if 'deoplete#sources#jedi#short_types_map' in vars:
+            self.short_types_map.update(vars[
+                'deoplete#sources#jedi#short_types_map'])
+        self.show_docstring = False
+        if 'deoplete#sources#jedi#show_docstring' in vars:
+            self.show_docstring = vars[
+                'deoplete#sources#jedi#show_docstring']
+        self.ignore_errors = False
+        if 'deoplete#sources#jedi#ignore_errors' in vars:
+            self.ignore_errors = vars[
+                'deoplete#sources#jedi#ignore_errors']
+        self.ignore_private_members = False
+        if 'deoplete#sources#jedi#ignore_private_members' in vars:
+            self.ignore_private_members = vars[
+                'deoplete#sources#jedi#ignore_private_members']
         # TODO(blueyed)
-        self.extra_path = vars.get(
-            'deoplete#sources#jedi#extra_path', [])
+        self.extra_path = ''
+        if 'deoplete#sources#jedi#extra_path' in vars:
+            self.extra_path = vars[
+                'deoplete#sources#jedi#extra_path']
 
         if not self.is_debug_enabled:
             root_log = logging.getLogger('deoplete')
@@ -100,6 +118,13 @@ class Source(Base):
         self._envs = {}
         """Cache for Jedi Environments."""
 
+        if find_spec('jedi'):
+            import jedi  # noqa: E402
+            self._jedi = jedi
+        else:
+            self.print_error(
+                'jedi module is not found.  You need to install it.')
+
     @profiler.profile
     def set_env(self, python_path):
         if not python_path:
@@ -110,17 +135,17 @@ class Source(Base):
         try:
             self._env = self._envs[python_path]
         except KeyError:
-            self._env = self._envs[python_path] = jedi.api.environment.Environment(
-                python_path)
+            self._env = self._jedi.api.environment.Environment(
+                python_path, env_vars={'PYTHONPATH': str(self.extra_path)})
             self.debug('Using Jedi environment: %r', self._env)
 
     @profiler.profile
-    def get_script(self, source, line, col, filename, environment):
-        return jedi.Script(source, line, col, filename, environment=self._env)
+    def get_script(self, source, filename, environment):
+        return self._jedi.Script(code=source, path=filename, environment=self._env)
 
     @profiler.profile
-    def get_completions(self, script):
-        return script.completions()
+    def get_completions(self, script, line, col):
+        return script.complete(line, col)
 
     @profiler.profile
     def finalize_completions(self, completions):
@@ -129,6 +154,9 @@ class Source(Base):
         for c in completions:
             out.append(self.parse_completion(c, tmp_filecache))
 
+        if self.ignore_private_members:
+            out = [x for x in out if not x['name'].startswith('__')]
+
         # partly from old finalized_cached
         out = [self.finalize(x) for x in sorted(out, key=sort_key)]
 
@@ -136,9 +164,14 @@ class Source(Base):
 
     @profiler.profile
     def gather_candidates(self, context):
-        python_path = context['vars'].get(
-            'deoplete#sources#jedi#python_path', None)
-        if python_path != self._python_path:
+        if not self._jedi:
+            return []
+
+        python_path = None
+        if 'deoplete#sources#jedi#python_path' in context['vars']:
+            python_path = context['vars'][
+                'deoplete#sources#jedi#python_path']
+        if python_path != self._python_path or self.extra_path:
             self.set_env(python_path)
 
         line = context['position'][1]
@@ -163,11 +196,10 @@ class Source(Base):
         self.debug('Line: %r, Col: %r, Filename: %r, modified: %r',
                    line, col, filename, modified)
 
-        script = self.get_script(source, line, col, filename,
-                                 environment=self._env)
+        script = self.get_script(source, filename, environment=self._env)
 
         try:
-            completions = self.get_completions(script)
+            completions = self.get_completions(script, line, col)
         except BaseException:
             if not self.ignore_errors:
                 raise
@@ -176,6 +208,9 @@ class Source(Base):
         return self.finalize_completions(completions)
 
     def get_complete_position(self, context):
+        if not self._jedi:
+            return -1
+
         pattern = r'\w*$'
         if context['input'].lstrip().startswith(('from ', 'import ')):
             m = re.search(r'[,\s]$', context['input'])
@@ -225,7 +260,7 @@ class Source(Base):
 
             abbr = sig
 
-        if self.use_short_types:
+        if self.enable_short_types:
             kind = item['short_type'] or item['type']
         else:
             kind = item['type']
@@ -235,19 +270,22 @@ class Source(Base):
             'abbr': abbr,
             'kind': kind,
             'info': desc.strip(),
-            'menu': '[jedi] ',
             'dup': 1,
         }
 
     def completion_dict(self, name, type_, comp):
         """Final construction of the completion dict."""
+
+        doc = ''
         if self.show_docstring:
-            doc = comp.docstring()
+            try:
+                doc = comp.docstring()
+            except BaseException:
+                if not self.ignore_errors:
+                    raise
             i = doc.find('\n\n')
             if i != -1:
                 doc = doc[i:]
-        else:
-            doc = ''
 
         params = None
         try:
@@ -270,7 +308,7 @@ class Source(Base):
         return {
             'name': name,
             'type': type_,
-            'short_type': _types.get(type_),
+            'short_type': self.short_types_map.get(type_),
             'doc': doc.strip(),
             'params': params,
         }

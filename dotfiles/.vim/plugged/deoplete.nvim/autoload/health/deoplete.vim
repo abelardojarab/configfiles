@@ -23,7 +23,7 @@ function! s:check_timers() abort
   endif
 endfunction
 
-function! s:check_required_python_for_deoplete() abort
+function! s:check_required_python() abort
   if has('python3')
     call health#report_ok('has("python3") was successful')
   else
@@ -37,11 +37,21 @@ function! s:check_required_python_for_deoplete() abort
   endif
 
   if !deoplete#init#_python_version_check()
-    call health#report_ok('Python3.5+ was successful')
+    call health#report_ok('Require Python 3.6.1+ was successful')
   else
     call health#report_error(
-          \ 'Python3.5+ was not successful',
-          \ 'Please use Python3.5+.')
+          \ 'Require Python 3.6.1+ was not successful',
+          \ 'Please use Python 3.6.1+.')
+  endif
+endfunction
+
+function! s:check_required_msgpack() abort
+  if !deoplete#init#_msgpack_version_check()
+    call health#report_ok('Require msgpack 1.0.0+ was successful')
+  else
+    call health#report_error(
+          \ 'Require msgpack 1.0.0+ was not successful',
+          \ 'Please install/upgrade msgpack 1.0.0+.')
   endif
 endfunction
 
@@ -49,11 +59,11 @@ function! s:still_have_issues() abort
   let indentation = '        '
   call health#report_info("If you're still having problems, " .
         \ "try the following commands:\n" .
-        \ indentation . "$ export NVIM_PYTHON_LOG_FILE=/tmp/log\n" .
-        \ indentation . "$ export NVIM_PYTHON_LOG_LEVEL=DEBUG\n" .
-        \ indentation . "$ nvim\n" .
-        \ indentation . "$ cat /tmp/log_{PID}\n" .
-        \ indentation . ' and then create an issue on github'
+        \ indentation . "- $ export NVIM_PYTHON_LOG_FILE=/tmp/log\n" .
+        \ indentation . "- $ export NVIM_PYTHON_LOG_LEVEL=DEBUG\n" .
+        \ indentation . "- $ nvim\n" .
+        \ indentation . "- $ cat /tmp/log_{PID}\n" .
+        \ indentation . '- and then create an issue on github'
         \ )
 endfunction
 
@@ -62,7 +72,8 @@ function! health#deoplete#check() abort
 
   call s:check_t_list()
   call s:check_timers()
-  call s:check_required_python_for_deoplete()
+  call s:check_required_python()
+  call s:check_required_msgpack()
 
   call s:still_have_issues()
 endfunction

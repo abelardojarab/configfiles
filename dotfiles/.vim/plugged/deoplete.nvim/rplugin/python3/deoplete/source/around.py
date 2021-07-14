@@ -4,21 +4,23 @@
 # License: MIT license
 # ============================================================================
 
+from pynvim import Nvim
 import re
 
-from deoplete.source.base import Base
+from deoplete.base.source import Base
 from deoplete.util import parse_buffer_pattern, getlines
+from deoplete.util import UserContext, Candidates
 
 
 class Source(Base):
-    def __init__(self, vim):
+    def __init__(self, vim: Nvim) -> None:
         super().__init__(vim)
         self.name = 'around'
         self.rank = 300
         self.vars = {
             'mark_above': '[A]',
-            'mark_below': '[B]',
-            'mark_changes': '[C]',
+            'mark_below': '[A]',
+            'mark_changes': '[A]',
             'range_above': 20,
             'range_below': 20,
         }
@@ -28,9 +30,9 @@ class Source(Base):
         if custom_vars:
             self.vars.update(custom_vars)
 
-    def gather_candidates(self, context):
+    def gather_candidates(self, context: UserContext) -> Candidates:
         line = context['position'][1]
-        candidates = []
+        candidates: Candidates = []
 
         # lines above
         words = parse_buffer_pattern(
@@ -49,7 +51,7 @@ class Source(Base):
         p = re.compile(r'[\s\d]+')
         lines = set()
         for change_line in [
-            x[p.search(x).span()[1]:]
+            x[p.search(x).span()[1]:]  # type: ignore
             for x in self.vim.call('execute', 'changes').split('\n')[2:]
             if p.search(x)
         ]:

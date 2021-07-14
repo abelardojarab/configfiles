@@ -4,20 +4,11 @@
 # License: MIT license
 # ============================================================================
 
-from abc import abstractmethod
-from deoplete.logger import LoggingMixin
+from pynvim import Nvim
+
+from deoplete.base.filter import Base as _Base
 
 
-class Base(LoggingMixin):
-
-    def __init__(self, vim):
-        self.vim = vim
-        self.name = 'base'
-        self.description = ''
-
-    def on_event(self, context):
-        pass
-
-    @abstractmethod
-    def filter(self, context):
-        pass
+class Base(_Base):
+    def __init__(self, vim: Nvim) -> None:
+        super().__init__(vim)
