@@ -3,7 +3,7 @@ source ~/.vim/autoload/win.vim
 behave mswin
 source ~/.vim/autoload/plug.vim
 
-" --- general settings
+" --- general settings ---
 set nocompatible   " Disable vi-compatibility
 set guifont=menlo\ for\ powerline:h16
 set guioptions-=T " Removes top toolbar
@@ -12,7 +12,7 @@ set go-=L " Removes left hand scroll bar
 set linespace=15
 set t_Co=256
 
-" --- editor settings
+" --- editor settings ---
 set showmode                    " always show what mode we're currently editing in
 set nowrap                      " don't wrap lines
 set tabstop=4                   " a tab is four spaces
@@ -30,10 +30,9 @@ set smartcase                   " ignore case if search pattern is all lowercase
 set mouse=a                     "enable mouse automatically entering visual mode
 set clipboard=unnamed,unnamedplus                    "Use system clipboard by default
 
-" --- spell checking
+" --- spell checking ---
 set spelllang=en_us         " spell checking
 set encoding=utf-8 nobomb   " BOM often causes trouble, UTF-8 is awsum.
-
 
 " --- performance / buffer ---
 set hidden                  " can put buffer to the background without writing
@@ -41,19 +40,16 @@ set hidden                  " can put buffer to the background without writing
 set lazyredraw              " don't update the display while executing macros
 set ttyfast                 " Send more characters at a given time.
 
-
 " --- history / file handling ---
 set history=999             " Increase history (default = 20)
 set undolevels=999          " Moar undo (default=100)
 set autoread                " reload files if changed externally
-
 
 " --- backup and swap files ---
 " I save all the time, those are annoying and unnecessary...
 set nobackup
 set nowritebackup
 set noswapfile
-
 
 " --- search / regexp ---
 set gdefault                " RegExp global by default
@@ -149,23 +145,6 @@ nnoremap k gk
 
 " Easy escaping to normal model
 imap jj <esc>
-
-" Easier window navigation
-nmap <C-h> <C-w>h
-nmap <C-j> <C-w>j
-nmap <C-k> <C-w>k
-nmap <C-l> <C-w>l
-map <Tab><Tab> <C-W>w
-
-" Resize vsplit
-nmap <C-w> :vertical resize +5<cr>
-
-" Create split below
-nmap :sp :rightbelow sp<cr>
-
-" Quickly go forward or backward to buffer
-nmap :bp :BufSurfBack<cr>
-nmap :bn :BufSurfForward<cr>
 
 " Open splits
 nmap vs :vsplit<cr>
@@ -289,7 +268,20 @@ let NERDTreeMapOpenInTab='\r'
 " Toggle NERDTree drawer
 map <leader>d <plug>NERDTreeToggle<CR>
 
-" Move between buffers
+" Find files
+nnoremap <C-f><C-s> :NERDTreeFind<CR>
+
+" Start NERDTree when Vim is opened and leave the cursor in it.
+autocmd VimEnter * NERDTree
+
+" Start NERDTree when Vim is opened and put the cursor back in the other window.
+autocmd VimEnter * NERDTree | wincmd p
+
+" Exit Vim if NERDTree is the only window left.
+autocmd BufEnter * if tabpagenr('$') == 1 && winnr('$') == 1 && exists('b:NERDTree') && b:NERDTree.isTabTree() |
+    \ quit | endif
+
+" --- Move between buffers ---
 map <C-Left> <Esc>:bprev<CR>
 map <C-Right> <Esc>:bnext<CR>
 
@@ -304,6 +296,11 @@ let g:airline_theme                       = 'atomic'
 let g:airline_powerline_fonts             = 0
 let g:airline#extensions#tabline#enabled  = 1
 let g:airline#extensions#tabline#fnamemod = ':t'
+let g:airline_section_z                   = airline#section#create([
+			\ '%1p%% ',
+			\ 'Ξ%l%',
+			\ '\⍿%c'])
+call airline#parts#define_accent('mode', 'black')
 
 " --- Default vim file browser :Explore
 let g:netrw_liststyle = 3
@@ -445,3 +442,9 @@ let g:NERDCustomDelimiters      = {
 
 nnoremap cc :call NERDComment(0,'toggle')<CR>
 vnoremap cc :call NERDComment(0,'toggle')<CR>
+
+" --- FZF settings ---
+let $FZF_PREVIEW_COMMAND = 'cat {}'
+nnoremap <C-f><C-f> :Files<CR>
+nnoremap <C-f><C-g> :Commits<CR>
+nnoremap <C-f><Space> :BLines<CR>
