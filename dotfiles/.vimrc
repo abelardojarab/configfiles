@@ -175,6 +175,9 @@ noremap <leader>0 :tablast<cr>
 " Toggle paste mode
 nmap <leader>o :set paste!<CR>
 
+" Toggle paste mode
+set pastetoggle=<F5>
+
 " Remove trailing whitespace
 nnoremap <leader>w :%s/\s\+$//<cr>:let @/=''<CR>
 
@@ -205,7 +208,6 @@ Plug 'ctrlpvim/ctrlp.vim'
 Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
 Plug 'Nopik/vim-nerdtree-direnter'  " Fix issue with nerdtree
 Plug 'scrooloose/nerdcommenter'
-Plug 'ctrlpvim/ctrlp.vim'
 Plug 'junegunn/fzf'
 Plug 'junegunn/fzf.vim'
 " Plug 'fholgado/minibufexpl.vim'  " Buffer explorer
@@ -301,6 +303,12 @@ set switchbuf=useopen,usetab,newtab
 catch
 endtry
 
+tab sball
+set laststatus=2
+nmap <F9> :bprev<CR>
+nmap <F10> :bnext<CR>
+nmap <silent> <leader>q :SyntasticCheck # <CR> :bp <BAR> bd #<CR>
+
 let g:lightline = {
       \ 'colorscheme': 'one',
       \ 'active': {
@@ -329,8 +337,16 @@ let g:lightline.tabline          = {'left': [['buffers']], 'right': [['close']]}
 let g:lightline.component_expand = {'buffers': 'lightline#bufferline#buffers'}
 let g:lightline.component_type   = {'buffers': 'tabsel'}
 
+" new tab
+map <C-t><C-t> :tabnew<CR>
+
+" close tab
+map <C-t><C-x> :tabclose<CR>
+
 " --- Nerd Tree ---
-map <C-t> :NERDTreeToggle<CR>
+let NERDTreeIgnore=['\.pyc$', '\.pyo$', '__pycache__$']     " Ignore files in NERDTree
+
+map <C-e> :NERDTreeToggle<CR>
 
 " Open files in new tabs in Nerdtree
 let NERDTreeMapOpenInTab='\r'
@@ -339,7 +355,7 @@ let NERDTreeMapOpenInTab='\r'
 map <leader>d <plug>NERDTreeToggle<CR>
 
 " Find files
-nnoremap <C-f><C-s> :NERDTreeFind<CR>
+nnoremap <C-f><C-l> :NERDTreeFind<CR>
 
 " --- Move between buffers ---
 map <C-Left> <Esc>:bprev<CR>
@@ -356,6 +372,7 @@ let g:airline_theme                       = 'one'
 let g:airline_powerline_fonts             = 0
 let g:airline#extensions#tabline#enabled  = 1
 let g:airline#extensions#tabline#fnamemod = ':t'
+let g:airline#extensions#tabline#formatter='unique_tail'
 let g:airline_section_z                   = airline#section#create([
             \ '%1p%% ',
             \ 'Ξ%l%',
@@ -388,7 +405,6 @@ nnoremap <Leader>gu :GitGutterUndoHunk<CR>
 let g:session_autosave  = 'yes'
 let g:session_autoload  = 'yes'
 let g:session_directory = '~/.vim.cache/sessions'
-nnoremap <C-b> :OpenSession<CR>
 
 function! MakeSession(overwrite)
   let b:sessiondir = $HOME . "/.vim.cache/sessions" . getcwd()
@@ -413,6 +429,10 @@ function! LoadSession()
   endif
 endfunction
 
+"Restore cursor to file position in previous editing session
+set viminfo='10,\"100,:20,%,n~/.viminfo
+au BufReadPost * if line("'\"") > 0|if line("'\"") <= line("$")|exe("norm '\"")|else|exe "norm $"|endif|endif
+
 " Adding automatons for when entering or leaving Vim
 if(argc() == 0)
   au VimEnter * nested :call LoadSession()
@@ -426,7 +446,6 @@ nnoremap <leader>b :CtrlPBuffer<CR>
 let g:ctrlp_map                 = '<C-p>'
 let g:ctrlp_cmd                 = 'CtrlPBuffer'
 let g:ctrlp_working_path_mode   = 'rc'
-let g:ctrlp_custom_ignore       = '\v[\/]\.(git|hg|svn)$'
 let g:ctrlp_match_window        = 'bottom,order:btt,min:1,max:10,results:85'
 let g:ctrlp_show_hidden         = 1
 let g:ctrlp_follow_symlinks     = 1
@@ -452,6 +471,12 @@ let g:ctrlp_prompt_mappings     = {
     \ 'PrtExit()'            : ['<esc>', '<c-c>', '<c-p>'],
     \ }
 
+" Ignore some files when fuzzy searching
+let g:ctrlp_custom_ignore = {
+  \ 'dir':  '\v[\/]\.?(git|hg|svn|meteor|bundle|node_modules|bower_components)$',
+  \ 'file': '\v\.(so|swp|zip)$'
+  \ }
+
 " --- Undotree toggle ---
 nnoremap <Leader>u :UndotreeToggle<CR>
 
@@ -468,8 +493,8 @@ set fillchars+=stlnc:\/,vert:│,fold:―,diff:―
 " Split windows
 map <C-w>- :split<CR>
 map <C-w>. :vsplit<CR>
-map <C-w>j :close<CR>
-map <C-w>x :q!<CR>
+map <C-w>x :close<CR>
+map <C-w>q :q!<CR>
 map <C-w>, <C-w>=
 
 " Resize windows
@@ -517,3 +542,22 @@ let g:ale_linters            = {
     \ 'css'        : ['csslint'],
     \ 'tex'        : ['chktex'],
     \ }
+
+" --- Syntastic settings ---
+set statusline+=%#warningmsg#
+set statusline+=%{SyntasticStatuslineFlag()}
+set statusline+=%*
+
+let g:syntastic_always_populate_loc_list=1
+let g:syntastic_auto_loc_list=1
+let g:syntastic_enable_signs=1
+let g:syntastic_aggregate_errors=1
+let g:syntastic_loc_list_height=5
+let g:syntastic_error_symbol='X'
+let g:syntastic_style_error_symbol='X'
+let g:syntastic_warning_symbol='x'
+let g:syntastic_style_warning_symbol='x'
+let g:syntastic_python_checkers=['flake8', 'pydocstyle', 'python3']
+
+let g:syntastic_check_on_open = 0
+let g:syntastic_check_on_wq = 1
