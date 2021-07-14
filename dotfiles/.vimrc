@@ -28,6 +28,7 @@ set number                      " always show line numbers
 set ignorecase                  " ignore case when searching
 set smartcase                   " ignore case if search pattern is all lowercase,
 set mouse=a                     "enable mouse automatically entering visual mode
+set ttymouse=xterm2
 set clipboard=unnamed,unnamedplus                    "Use system clipboard by default
 
 " --- spell checking ---
