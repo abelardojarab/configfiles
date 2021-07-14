@@ -313,6 +313,8 @@ let g:vista_executive_for = {
         \ }
 let g:vista_ignore_kinds = ['Variable']
 
+let g:coc_disable_startup_warning = 1
+
 " --- Tabbar ---
 try
 set showtabline=2
