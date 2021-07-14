@@ -198,6 +198,7 @@ Plug 'junegunn/gv.vim'
 
 " Perforce
 Plug 'nfvs/vim-perforce'
+Plug 'ngemily/vim-vp4'
 
 " Tools
 Plug 'ctrlpvim/ctrlp.vim'
