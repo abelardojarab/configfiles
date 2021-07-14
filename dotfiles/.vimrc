@@ -198,7 +198,7 @@ Plug 'scrooloose/nerdcommenter'
 Plug 'ctrlpvim/ctrlp.vim'
 Plug 'junegunn/fzf'
 Plug 'junegunn/fzf.vim'
-Plug 'fholgado/minibufexpl.vim'  " Buffer explorer
+" Plug 'fholgado/minibufexpl.vim'  " Buffer explorer
 Plug 'yegappan/mru' " MRU
 
 " Completion
@@ -217,6 +217,8 @@ Plug 'dense-analysis/ale'
 
 " Tabline
 Plug 'ap/vim-buftabline'  " Vim tabs
+Plug 'mengelbrecht/lightline-bufferline'
+Plug 'itchyny/lightline.vim'
 
 " Python
 Plug 'deoplete-plugins/deoplete-jedi',
@@ -285,6 +287,34 @@ set showtabline=2
 set switchbuf=useopen,usetab,newtab
 catch
 endtry
+
+let g:lightline = {
+      \ 'colorscheme': 'one',
+      \ 'active': {
+      \   'left': [ [ 'mode', 'paste' ], [ 'readonly', 'filename', 'modified' ] ]
+      \ },
+      \ 'tabline': {
+      \   'left': [ ['buffers'] ],
+      \   'right': [ ['close'] ]
+      \ },
+      \ 'component_expand': {
+      \   'buffers': 'lightline#bufferline#buffers'
+      \ },
+      \ 'component_type': {
+      \   'buffers': 'tabsel'
+      \ }
+      \ }
+
+autocmd BufWritePost,TextChanged,TextChangedI * call lightline#update()
+
+let g:lightline#bufferline#show_number  = 1
+let g:lightline#bufferline#shorten_path = 0
+let g:lightline#bufferline#unnamed      = '[No Name]'
+
+let g:lightline                  = {}
+let g:lightline.tabline          = {'left': [['buffers']], 'right': [['close']]}
+let g:lightline.component_expand = {'buffers': 'lightline#bufferline#buffers'}
+let g:lightline.component_type   = {'buffers': 'tabsel'}
 
 " --- Nerd Tree ---
 map <C-t> :NERDTreeToggle<CR>
