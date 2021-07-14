@@ -158,6 +158,7 @@ cmap w!! w !sudo tee % >/dev/null
 " --- Leader based key bindings ---
 "Auto change directory to match current file ,cd
 nnoremap <leader>cd :cd %:p:h<CR>:pwd<CR>
+autocmd BufEnter * silent! lcd %:p:h
 
 " Go to tab by number
 noremap <leader>1 1gt
@@ -184,6 +185,7 @@ call plug#begin('~/.vim/plugged')
 " Status bar
 Plug 'bling/vim-airline'  " Vim status bar
 Plug 'vim-airline/vim-airline-themes'
+Plug 'ton/vim-bufsurf'
 
 " Git tools
 Plug 'airblade/vim-gitgutter'
@@ -200,6 +202,9 @@ Plug 'junegunn/fzf'
 Plug 'junegunn/fzf.vim'
 " Plug 'fholgado/minibufexpl.vim'  " Buffer explorer
 Plug 'yegappan/mru' " MRU
+
+" Search
+Plug 'jremmen/vim-ripgrep'
 
 " Completion
 Plug 'Shougo/deoplete.nvim',
@@ -328,16 +333,6 @@ map <leader>d <plug>NERDTreeToggle<CR>
 " Find files
 nnoremap <C-f><C-s> :NERDTreeFind<CR>
 
-" Start NERDTree when Vim is opened and leave the cursor in it.
-autocmd VimEnter * NERDTree
-
-" Start NERDTree when Vim is opened and put the cursor back in the other window.
-autocmd VimEnter * NERDTree | wincmd p
-
-" Exit Vim if NERDTree is the only window left.
-autocmd BufEnter * if tabpagenr('$') == 1 && winnr('$') == 1 && exists('b:NERDTree') && b:NERDTree.isTabTree() |
-    \ quit | endif
-
 " --- Move between buffers ---
 map <C-Left> <Esc>:bprev<CR>
 map <C-Right> <Esc>:bnext<CR>
@@ -385,7 +380,6 @@ nnoremap <Leader>gu :GitGutterUndoHunk<CR>
 let g:session_autosave  = 'yes'
 let g:session_autoload  = 'yes'
 let g:session_directory = '~/.vim.cache/sessions'
-
 nnoremap <C-b> :OpenSession<CR>
 
 function! MakeSession(overwrite)
