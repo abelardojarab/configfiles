@@ -208,16 +208,23 @@ Plug 'ngemily/vim-vp4'
 Plug 'ctrlpvim/ctrlp.vim'
 Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
 Plug 'Nopik/vim-nerdtree-direnter'  " Fix issue with nerdtree
+Plug 'jistr/vim-nerdtree-tabs'
 Plug 'scrooloose/nerdcommenter'
 Plug 'junegunn/fzf'
 Plug 'junegunn/fzf.vim'
 " Plug 'fholgado/minibufexpl.vim'  " Buffer explorer
 Plug 'yegappan/mru' " MRU
+Plug 'tmhedberg/SimpylFold'
 
 " Search
 Plug 'jremmen/vim-ripgrep'
 
 " Completion
+Plug 'neoclide/coc.nvim', {'for':['zig','cmake','rust',
+     \'java','json', 'haskell', 'ts','sh', 'cs',
+     \'yaml', 'c', 'cpp', 'd', 'go',
+     \'python', 'dart', 'javascript', 'vim'], 'branch': 'release'}
+
 Plug 'Shougo/deoplete.nvim',
 Plug 'prabirshrestha/asyncomplete.vim'
 Plug 'prabirshrestha/asyncomplete-lsp.vim'
@@ -238,6 +245,8 @@ Plug 'itchyny/lightline.vim'
 
 " Python
 Plug 'deoplete-plugins/deoplete-jedi',
+Plug 'vim-scripts/indentpython.vim'
+Plug 'Vimjas/vim-python-pep8-indent'
 
 " C/C++
 Plug 'rhysd/vim-clang-format' " Clang-format
