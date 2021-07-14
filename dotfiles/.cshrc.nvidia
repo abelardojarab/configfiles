@@ -20,7 +20,7 @@ setenv TERM xterm-256color
 
 # Binary path
 setenv gcc_root /home/utils/gcc-8.3.0-binutils-2.30-goldld/bin
-setenv path_utils '/home/utils/kubectl-1.11.2/bin /home/utils/texlive-2017/bin/x86_64-linux /home/utils/emacs-27.1-2/bin /home/utils/pandoc-1.19.2.1/bin /home/utils/graphviz-2.38.0/bin /home/utils/gnuplot-5.0.4/bin /home/utils/Python-3.7.3/bin /home/utils/go-1.13/bin /home/utils/flex-2.6.4/bin /home/utils/bison-3.4.1/bin /home/utils/texinfo-6.1/bin /home/utils/doxygen-1.8.8/bin /home/utils/make-4.2.1/bin /home/utils/gdb-8.2.1/bin /home/utils/binutils-2.30/bin /home/utils/docker-1.9.1/bin /home/utils/cmake-3.16.3/bin /home/nv/bin /home/utils/bin /usr/X11R6/bin /usr/kerberos/bin /usr/local/lsf/bin'
+setenv path_utils '/home/utils/ripgrep-0.10.0/bin /home/utils/kubectl-1.11.2/bin /home/utils/texlive-2017/bin/x86_64-linux /home/utils/emacs-27.1-2/bin /home/utils/pandoc-1.19.2.1/bin /home/utils/graphviz-2.38.0/bin /home/utils/gnuplot-5.0.4/bin /home/utils/Python-3.7.3/bin /home/utils/go-1.13/bin /home/utils/flex-2.6.4/bin /home/utils/bison-3.4.1/bin /home/utils/texinfo-6.1/bin /home/utils/doxygen-1.8.8/bin /home/utils/make-4.2.1/bin /home/utils/gdb-8.2.1/bin /home/utils/binutils-2.30/bin /home/utils/docker-1.9.1/bin /home/utils/cmake-3.16.3/bin /home/nv/bin /home/utils/bin /usr/X11R6/bin /usr/kerberos/bin /usr/local/lsf/bin'
 
 if ( ! $?newpath ) set newpath
 foreach d (/home/utils/bash-5.0/bin /home/utils/perl-5.26/5.26.2-028/bin /home/utils/openssh-7.7p1/bin $gcc_root/bin $HOME/anaconda3/bin $HOME/.local/bin $HOME/local/bin $HOME/local/usr/bin $HOME/bin $HOME/.cask/bin $HOME/builds/llvm/build/bin $path_utils $PATH /sbin /bin /usr/sbin /usr/bin /usr/games /usr/local/sbin /usr/local/bin)
