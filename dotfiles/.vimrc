@@ -275,6 +275,13 @@ call plug#end()
 colorscheme monokai
 set background=dark
 
+" --- netrw settings ---
+nmap <leader>f :Explore<CR>
+nmap <leader><s-f> :edit.<CR>
+
+let g:netrw_altv = 1
+let g:netrw_dirhistmax = 0
+
 " --- LSP support ---
 imap <c-space> <Plug>(asyncomplete_force_refresh)
 inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
@@ -515,6 +522,24 @@ nnoremap <silent> <C-w>p :wincmd w<CR>:echo "Previous window."<CR>
 nnoremap <silent> <C-w>n :wincmd W<CR>:echo "Next window."<CR>
 nnoremap <silent> <C-w>o :wincmd o<CR>:echo "Only one window."<CR>
 
+" setting horizontal and vertical splits
+set splitbelow
+set splitright
+
+" split navigations
+nnoremap <C-J> <C-W><C-J>
+nnoremap <C-K> <C-W><C-K>
+nnoremap <C-L> <C-W><C-L>
+nnoremap <C-H> <C-W><C-H>
+
+"  --- Folding ---
+" Enable folding
+set foldmethod=indent
+set foldlevel=99
+
+" Enable folding with the spacebar
+nnoremap <space> za
+
 " --- NERDCommenter settings ---
 let g:NERDDefaultAlign          = 'left'
 let g:NERDSpaceDelims           = 1
@@ -562,3 +587,18 @@ let g:syntastic_python_checkers=['flake8', 'pydocstyle', 'python3']
 
 let g:syntastic_check_on_open = 0
 let g:syntastic_check_on_wq = 1
+
+" --- Setting up indendation ---
+au BufNewFile, BufRead *.py
+    \ set tabstop=4 |
+    \ set softtabstop=4 |
+    \ set shiftwidth=4 |
+    \ set textwidth=79 |
+    \ set expandtab |
+    \ set autoindent |
+    \ set fileformat=unix
+
+au BufNewFile, BufRead *.js, *.html, *.css
+    \ set tabstop=2 |
+    \ set softtabstop=2 |
+    \ set shiftwidth=2
