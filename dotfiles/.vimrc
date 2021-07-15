@@ -30,6 +30,8 @@ set smartcase                   " ignore case if search pattern is all lowercase
 set mouse=a                     "enable mouse automatically entering visual mode
 set ttymouse=xterm2
 set clipboard=unnamed,unnamedplus                    "Use system clipboard by default
+filetype indent on
+filetype plugin on
 
 " --- spell checking ---
 set spelllang=en_us         " spell checking
@@ -124,9 +126,6 @@ set nostartofline               " Make j/k respect the columns
 set timeoutlen=500              " how long it wait for mapped commands
 set ttimeoutlen=100             " faster timeout for escape key and others
 
-" Use leader x to remove the current line but not erase buffer
-map <leader>x "_dd
-
 " Use leader l to rapidly toggle `set list`
 nmap <leader>l :set list!<CR>
 
@@ -146,41 +145,65 @@ nnoremap k gk
 " Easy escaping to normal model
 imap jj <esc>
 
-" Open splits
-nmap vs :vsplit<cr>
-nmap sp :split<cr>
-
 " Allow saving a sudo file if forgot to open as sudo
 cmap w!! w !sudo tee % >/dev/null
 
 " turns on nice popup menu for omni completion
 :highlight Pmenu ctermbg=238 gui=bold
 
-" --- Leader based key bindings ---
-"Auto change directory to match current file ,cd
-nnoremap <leader>cd :cd %:p:h<CR>:pwd<CR>
-autocmd BufEnter * silent! lcd %:p:h
+" --- key fixes ---
+map  <Esc>[1;5A <C-Up>
+map  <Esc>[1;5B <C-Down>
+map  <Esc>[1;5D <C-Left>
+map  <Esc>[1;5C <C-Right>
+cmap <Esc>[1;5A <C-Up>
+cmap <Esc>[1;5B <C-Down>
+cmap <Esc>[1;5D <C-Left>
+cmap <Esc>[1;5C <C-Right>
 
-" Go to tab by number
-noremap <leader>1 1gt
-noremap <leader>2 2gt
-noremap <leader>3 3gt
-noremap <leader>4 4gt
-noremap <leader>5 5gt
-noremap <leader>6 6gt
-noremap <leader>7 7gt
-noremap <leader>8 8gt
-noremap <leader>9 9gt
-noremap <leader>0 :tablast<cr>
+map  <Esc>[1;2D <S-Left>
+map  <Esc>[1;2C <S-Right>
+cmap <Esc>[1;2D <S-Left>
+cmap <Esc>[1;2C <S-Right>
+
+" ---  Clipboard  ---
+
+" Allow Shift+Insert to paste
+map <S-Insert> <MiddleMouse>
+map! <S-Insert> <MiddleMouse>
+" set clipboard=unnamedplus
+
+" Copy filename
+:nmap yY :let @" = expand("%")<CR>
+
+" Copy file path
+:nmap yZ :let @" = expand("%:p")<CR>
+
+" F2 = Paste Toggle (in insert mode, pasting indented text behavior changes)
+set pastetoggle=<F2>
 
 " Toggle paste mode
 nmap <leader>o :set paste!<CR>
 
-" Toggle paste mode
-set pastetoggle=<F5>
+" --- Whitespace ---
 
 " Remove trailing whitespace
 nnoremap <leader>w :%s/\s\+$//<cr>:let @/=''<CR>
+
+" Toggle whitespace visibility with ,s
+nmap <Leader>s :set list!<CR>
+set listchars=tab:>\ ,trail:·,extends:»,precedes:«,nbsp:×
+:set list " Enable by default
+
+" --- Leader based key bindings ---
+
+" Auto change directory to match current file ,cd
+nnoremap <leader>cd :cd %:p:h<CR>:pwd<CR>
+autocmd BufEnter * silent! lcd %:p:h
+
+" Edit and Reload .vimrc files
+nmap <silent> <Leader>ev :e $MYVIMRC<CR>
+nmap <silent> <Leader>es :so $MYVIMRC<CR>
 
 " --- Plugins ---
 call plug#begin('~/.vim/plugged')
@@ -215,6 +238,7 @@ Plug 'junegunn/fzf.vim'
 " Plug 'fholgado/minibufexpl.vim'  " Buffer explorer
 Plug 'yegappan/mru' " MRU
 Plug 'tmhedberg/SimpylFold'
+Plug 'liuchengxu/vim-which-key'
 
 " Search
 Plug 'jremmen/vim-ripgrep'
@@ -242,6 +266,7 @@ Plug 'dense-analysis/ale'
 Plug 'ap/vim-buftabline'  " Vim tabs
 Plug 'mengelbrecht/lightline-bufferline'
 Plug 'itchyny/lightline.vim'
+Plug 'mihaifm/bufstop'
 
 " Python
 Plug 'deoplete-plugins/deoplete-jedi',
@@ -324,9 +349,6 @@ endtry
 
 tab sball
 set laststatus=2
-nmap <F9> :bprev<CR>
-nmap <F10> :bnext<CR>
-nmap <silent> <leader>q :SyntasticCheck # <CR> :bp <BAR> bd #<CR>
 
 let g:lightline = {
       \ 'colorscheme': 'one',
@@ -356,16 +378,10 @@ let g:lightline.tabline          = {'left': [['buffers']], 'right': [['close']]}
 let g:lightline.component_expand = {'buffers': 'lightline#bufferline#buffers'}
 let g:lightline.component_type   = {'buffers': 'tabsel'}
 
-" new tab
-map <C-t><C-t> :tabnew<CR>
-
-" close tab
-map <C-t><C-x> :tabclose<CR>
-
 " --- Nerd Tree ---
 let NERDTreeIgnore=['\.pyc$', '\.pyo$', '__pycache__$']     " Ignore files in NERDTree
 
-map <C-e> :NERDTreeToggle<CR>
+map <C-t> :NERDTreeToggle<CR>
 
 " Open files in new tabs in Nerdtree
 let NERDTreeMapOpenInTab='\r'
@@ -420,48 +436,27 @@ nnoremap <silent> <C-g> :call <SID>ToggleGGPrev()<CR>zz
 nnoremap <Leader>ga :GitGutterStageHunk<CR>
 nnoremap <Leader>gu :GitGutterUndoHunk<CR>
 
+" --- Buffer navigation ---
+let g:BufstopSpeedKeys = ["<F1>", "<F2>", "<F3>", "<F4>", "<F5>", "<F6>"]
+let g:BufstopLeader = ""
+let g:BufstopAutoSpeedToggle = 1
+
+nnoremap <leader>b :Bufstop<CR>
+
 " --- Sessions ---
 let g:session_autosave  = 'yes'
 let g:session_autoload  = 'yes'
 let g:session_directory = '~/.vim.cache/sessions'
 
-function! MakeSession(overwrite)
-  let b:sessiondir = $HOME . "/.vim.cache/sessions" . getcwd()
-  if (filewritable(b:sessiondir) != 2)
-    exe 'silent !mkdir -p ' b:sessiondir
-    redraw!
-  endif
-  let b:filename = b:sessiondir . '/session.vim'
-  if a:overwrite == 0 && !empty(glob(b:filename))
-    return
-  endif
-  exe "mksession! " . b:filename
-endfunction
-
-function! LoadSession()
-  let b:sessiondir = $HOME . "/.vim.cache/sessions" . getcwd()
-  let b:sessionfile = b:sessiondir . "/session.vim"
-  if (filereadable(b:sessionfile))
-    exe 'source ' b:sessionfile
-  else
-    echo "No session loaded."
-  endif
-endfunction
-
-"Restore cursor to file position in previous editing session
+" Restore cursor to file position in previous editing session
 set viminfo='10,\"100,:20,%,n~/.viminfo
 au BufReadPost * if line("'\"") > 0|if line("'\"") <= line("$")|exe("norm '\"")|else|exe "norm $"|endif|endif
 
-" Adding automatons for when entering or leaving Vim
-if(argc() == 0)
-  au VimEnter * nested :call LoadSession()
-  au VimLeave * :call MakeSession(1)
-else
-  au VimLeave * :call MakeSession(0)
+" --- CtrlP settings ---
+if executable('rg')
+  let g:ctrlp_user_command = 'rg %s --files --hidden --color=never --glob ""'
 endif
 
-" --- CtrlP settings ---
-nnoremap <leader>b :CtrlPBuffer<CR>
 let g:ctrlp_map                 = '<C-p>'
 let g:ctrlp_cmd                 = 'CtrlPBuffer'
 let g:ctrlp_working_path_mode   = 'rc'
@@ -503,6 +498,7 @@ nnoremap <Leader>u :UndotreeToggle<CR>
 " Remap wincmd
 map <Leader>, <C-w>
 
+" Settings
 set winminheight=0
 set winminwidth=0
 set splitbelow
@@ -538,10 +534,10 @@ set splitbelow
 set splitright
 
 " split navigations
-nnoremap <C-J> <C-W><C-J>
-nnoremap <C-K> <C-W><C-K>
-nnoremap <C-L> <C-W><C-L>
-nnoremap <C-H> <C-W><C-H>
+nnoremap <Leader>h <C-w>h
+nnoremap <Leader>l <C-w>l
+nnoremap <Leader>j <C-w>j
+nnoremap <Leader>k <C-w>k
 
 "  --- Folding ---
 " Enable folding
@@ -581,6 +577,8 @@ let g:ale_linters            = {
     \ }
 
 " --- Syntastic settings ---
+nmap <silent> <leader>q :SyntasticCheck # <CR> :bp <BAR> bd #<CR>
+
 set statusline+=%#warningmsg#
 set statusline+=%{SyntasticStatuslineFlag()}
 set statusline+=%*
