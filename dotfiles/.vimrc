@@ -380,6 +380,7 @@ let g:lightline.component_type   = {'buffers': 'tabsel'}
 
 " --- Nerd Tree ---
 let NERDTreeIgnore=['\.pyc$', '\.pyo$', '__pycache__$']     " Ignore files in NERDTree
+let NERDTreeMinimalUI=1
 
 map <C-t> :NERDTreeToggle<CR>
 
