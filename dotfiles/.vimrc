@@ -210,6 +210,7 @@ call plug#begin('~/.vim/plugged')
 " Other plugins here.
 
 " Sessions
+" Plug 'conweller/findr.vim' " requires Lua
 " Plug 'xolox/vim-session'
 " Plug 'xolox/vim-misc'
 
