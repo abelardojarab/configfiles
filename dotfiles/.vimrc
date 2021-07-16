@@ -193,7 +193,6 @@ nnoremap <leader>w :%s/\s\+$//<cr>:let @/=''<CR>
 " Toggle whitespace visibility with ,s
 nmap <Leader>s :set list!<CR>
 set listchars=tab:>\ ,trail:·,extends:»,precedes:«,nbsp:×
-:set list " Enable by default
 
 " --- Leader based key bindings ---
 
