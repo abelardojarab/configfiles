@@ -44,7 +44,7 @@ setenv path_utils '/home/utils/ripgrep-0.10.0/bin \
        /usr/local/lsf/bin'
 
 if ( ! $?newpath ) set newpath
-foreach d (/home/utils/bash-5.0/bin \
+foreach d ((/home/utils/bash-5.0/bin \
            /home/utils/vim-8.2.1703/bin \
            /home/utils/perl-5.26/5.26.2-028/bin \
            /home/utils/openssh-7.7p1/bin \
@@ -64,7 +64,7 @@ foreach d (/home/utils/bash-5.0/bin \
            /usr/bin \
            /usr/games \
            /usr/local/sbin \
-           /usr/local/bin)
+           /usr/local/bin))
     echo $d
     if ( -d $d ) then
         set -f newpath = ( $newpath $d )
