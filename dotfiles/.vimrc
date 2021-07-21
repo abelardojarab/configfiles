@@ -44,9 +44,28 @@ set lazyredraw              " don't update the display while executing macros
 set ttyfast                 " Send more characters at a given time.
 
 " --- history / file handling ---
-set history=999             " Increase history (default = 20)
+set history=10000             " Increase history (default = 20)
 set undolevels=999          " Moar undo (default=100)
 set autoread                " reload files if changed externally
+
+" --- Leader key to add extra key combinations ---
+let mapleader = ','
+let g:mapleader = ','
+
+" --- Time delay on <Leader> key ---
+set timeoutlen=3000 ttimeoutlen=100
+
+" --- Update time ---
+set updatetime=250
+
+" --- Trigger InsertLeave autocmd ---
+inoremap <C-c> <Esc>
+
+" --- No need for Ex mode ---
+nnoremap Q <NOP>
+
+" --- Open help in a vertical window ---
+cnoreabbrev help vert help
 
 " --- backup and swap files ---
 " I save all the time, those are annoying and unnecessary...
@@ -123,8 +142,6 @@ set nofoldenable            " don't fold by default
 set backspace=indent,eol,start  " allow backspacing over everything.
 set esckeys                     " Allow cursor keys in insert mode.
 set nostartofline               " Make j/k respect the columns
-set timeoutlen=500              " how long it wait for mapped commands
-set ttimeoutlen=100             " faster timeout for escape key and others
 
 " Use leader l to rapidly toggle `set list`
 nmap <leader>l :set list!<CR>
@@ -240,6 +257,10 @@ Plug 'yegappan/mru' " MRU
 Plug 'tmhedberg/SimpylFold'
 Plug 'liuchengxu/vim-which-key'
 
+" Snippets
+Plug 'Shougo/neosnippet.vim',
+Plug 'Shougo/neosnippet-snippets'
+
 " Search
 Plug 'jremmen/vim-ripgrep'
 
@@ -276,8 +297,42 @@ Plug 'Vimjas/vim-python-pep8-indent'
 " C/C++
 Plug 'rhysd/vim-clang-format' " Clang-format
 
+" Go
+Plug 'fatih/vim-go',
+Plug 'nsf/gocode', { 'rtp': 'vim', 'do': '~/.vim/plugged/gocode/vim/symlink.sh' }
+Plug 'deoplete-plugins/deoplete-go'
+
+" Perl
+Plug 'c9s/perlomni.vim'
+
+" JavaScript
+Plug 'ternjs/tern_for_vim', { 'do': 'npm install' }
+Plug 'carlitux/deoplete-ternjs', { 'do': 'npm install -g tern' }
+Plug 'othree/jspc.vim'
+Plug 'maksimr/vim-jsbeautify'
+
+" Rust
+Plug 'racer-rust/vim-racer'
+
+" Markdown
+Plug 'godlygeek/tabular'
+Plug 'plasticboy/vim-markdown'
+
+" Additional syntax files
+Plug 'othree/html5.vim'
+Plug 'vim-language-dept/css-syntax.vim'
+Plug 'hail2u/vim-css3-syntax'
+Plug 'pangloss/vim-javascript'
+Plug 'aklt/plantuml-syntax'
+Plug 'gerardbm/asy.vim'
+Plug 'gerardbm/eukleides.vim'
+
 " tmux
 Plug 'christoomey/vim-tmux-navigator'
+
+" Net
+Plug 'mattn/webapi-vim'
+Plug 'diepm/vim-rest-console'
 
 " Edition
 Plug 'tpope/vim-surround'  " Quoting and parenthesizing made simple
@@ -285,7 +340,6 @@ Plug 'tomtom/tcomment_vim'  " Extensible & universal comment
 Plug 'Shougo/context_filetype.vim'
 Plug 'mbbill/undotree'
 Plug 'junegunn/vim-easy-align'
-Plug 'godlygeek/tabular'
 Plug 'jiangmiao/auto-pairs'
 Plug 'alvan/vim-closetag'
 Plug 'tpope/vim-surround'
