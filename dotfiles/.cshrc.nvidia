@@ -72,15 +72,13 @@ foreach d ($array)
     if ( -d $d ) then
         set -f newpath = ( $newpath $d )
     endif
-    echo done
 end
 set path = ( $newpath )
 unset d
 unset newpath
 
-# Library path
-if ( ! $?newpath ) set newpath
-foreach d ($HOME/local/lib64 \
+set lib_array = (\
+           $HOME/local/lib64 \
            $HOME/local/lib \
            $HOME/local/usr/lib \
            $HOME/.local/lib64 \
@@ -93,7 +91,12 @@ foreach d ($HOME/local/lib64 \
            /usr/lib \
            /usr/local/lib64 \
            /usr/local/lib \
-           /home/utils/gtk+-3.6.4/lib)
+           /home/utils/gtk+-3.6.4/lib \
+                 )
+
+# Library path
+if ( ! $?newpath ) set newpath
+foreach d ($lib_array)
     echo $d
     if ( -d $d ) then
         set -f newpath = "${newpath}:${d}"
