@@ -69,6 +69,7 @@ foreach d (/home/utils/bash-5.0/bin \
     if ( -d $d ) then
         set -f newpath = ( $newpath $d )
     endif
+    echo done
 end
 set path = ( $newpath )
 unset d
@@ -90,6 +91,7 @@ foreach d ($HOME/local/lib64 \
            /usr/local/lib64 \
            /usr/local/lib \
            /home/utils/gtk+-3.6.4/lib)
+    echo $d
     if ( -d $d ) then
         set -f newpath = "${newpath}:${d}"
     endif
