@@ -44,27 +44,27 @@ setenv path_utils '/home/utils/ripgrep-0.10.0/bin \
        /usr/local/lsf/bin'
 
 set array = (\
-           /home/utils/bash-5.0/bin \
-           /home/utils/vim-8.2.1703/bin \
-           /home/utils/perl-5.26/5.26.2-028/bin \
-           /home/utils/openssh-7.7p1/bin \
-           /home/utils/go-1.10.3\bin \
-           $gcc_root/bin \
-           $HOME/.local/bin \
-           $HOME/local/bin \
-           $HOME/local/usr/bin \
-           $HOME/bin \
-           $HOME/.cask/bin \
-           $HOME/builds/llvm/build/bin \
-           $path_utils \
-           $PATH \
-           /sbin \
-           /bin \
-           /usr/sbin \
-           /usr/bin \
-           /usr/games \
-           /usr/local/sbin \
-           /usr/local/bin \
+             /home/utils/bash-5.0/bin \
+             /home/utils/vim-8.2.1703/bin \
+             /home/utils/perl-5.26/5.26.2-028/bin \
+             /home/utils/openssh-7.7p1/bin \
+             /home/utils/go-1.10.3\bin \
+             $gcc_root/bin \
+             $HOME/.local/bin \
+             $HOME/local/bin \
+             $HOME/local/usr/bin \
+             $HOME/bin \
+             $HOME/.cask/bin \
+             $HOME/builds/llvm/build/bin \
+             $path_utils \
+             $PATH \
+             /sbin \
+             /bin \
+             /usr/sbin \
+             /usr/bin \
+             /usr/games \
+             /usr/local/sbin \
+             /usr/local/bin \
              )
 if ( ! $?newpath ) set newpath
 foreach d ($array)
@@ -77,20 +77,20 @@ unset d
 unset newpath
 
 set lib_array = (\
-           $HOME/local/lib64 \
-           $HOME/local/lib \
-           $HOME/local/usr/lib \
-           $HOME/.local/lib64 \
-           $HOME/.local/lib \
-           $gcc_root/lib64 \
-           $gcc_root/lib \
-           /lib64 \
-           /lib \
-           /usr/lib64 \
-           /usr/lib \
-           /usr/local/lib64 \
-           /usr/local/lib \
-           /home/utils/gtk+-3.6.4/lib \
+                 $HOME/local/lib64 \
+                 $HOME/local/lib \
+                 $HOME/local/usr/lib \
+                 $HOME/.local/lib64 \
+                 $HOME/.local/lib \
+                 $gcc_root/lib64 \
+                 $gcc_root/lib \
+                 /lib64 \
+                 /lib \
+                 /usr/lib64 \
+                 /usr/lib \
+                 /usr/local/lib64 \
+                 /usr/local/lib \
+                 /home/utils/gtk+-3.6.4/lib \
                  )
 
 # Library path
