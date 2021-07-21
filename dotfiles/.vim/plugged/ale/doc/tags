@@ -193,6 +193,7 @@ ale-dafny-options	ale-dafny.txt	/*ale-dafny-options*
 ale-dart-analysis_server	ale-dart.txt	/*ale-dart-analysis_server*
 ale-dart-dartanalyzer	ale-dart.txt	/*ale-dart-dartanalyzer*
 ale-dart-dartfmt	ale-dart.txt	/*ale-dart-dartfmt*
+ale-dart-format	ale-dart.txt	/*ale-dart-format*
 ale-dart-options	ale-dart.txt	/*ale-dart-options*
 ale-deoplete-integration	ale.txt	/*ale-deoplete-integration*
 ale-design-goals	ale-development.txt	/*ale-design-goals*
@@ -703,6 +704,7 @@ b:ale_chef_cookstyle_executable	ale-chef.txt	/*b:ale_chef_cookstyle_executable*
 b:ale_chef_cookstyle_options	ale-chef.txt	/*b:ale_chef_cookstyle_options*
 b:ale_chef_foodcritic_executable	ale-chef.txt	/*b:ale_chef_foodcritic_executable*
 b:ale_chef_foodcritic_options	ale-chef.txt	/*b:ale_chef_foodcritic_options*
+b:ale_clojure_clj_kondo_options	ale-clojure.txt	/*b:ale_clojure_clj_kondo_options*
 b:ale_cmake_cmakeformat_executable	ale-cmake.txt	/*b:ale_cmake_cmakeformat_executable*
 b:ale_cmake_cmakeformat_options	ale-cmake.txt	/*b:ale_cmake_cmakeformat_options*
 b:ale_cmake_cmakelint_executable	ale-cmake.txt	/*b:ale_cmake_cmakelint_executable*
@@ -759,6 +761,8 @@ b:ale_dart_analysis_server_executable	ale-dart.txt	/*b:ale_dart_analysis_server_
 b:ale_dart_dartanalyzer_executable	ale-dart.txt	/*b:ale_dart_dartanalyzer_executable*
 b:ale_dart_dartfmt_executable	ale-dart.txt	/*b:ale_dart_dartfmt_executable*
 b:ale_dart_dartfmt_options	ale-dart.txt	/*b:ale_dart_dartfmt_options*
+b:ale_dart_format_executable	ale-dart.txt	/*b:ale_dart_format_executable*
+b:ale_dart_format_options	ale-dart.txt	/*b:ale_dart_format_options*
 b:ale_default_navigation	ale.txt	/*b:ale_default_navigation*
 b:ale_deno_executable	ale-typescript.txt	/*b:ale_deno_executable*
 b:ale_deno_lsp_project_root	ale-typescript.txt	/*b:ale_deno_lsp_project_root*
@@ -1412,6 +1416,7 @@ g:ale_chef_cookstyle_executable	ale-chef.txt	/*g:ale_chef_cookstyle_executable*
 g:ale_chef_cookstyle_options	ale-chef.txt	/*g:ale_chef_cookstyle_options*
 g:ale_chef_foodcritic_executable	ale-chef.txt	/*g:ale_chef_foodcritic_executable*
 g:ale_chef_foodcritic_options	ale-chef.txt	/*g:ale_chef_foodcritic_options*
+g:ale_clojure_clj_kondo_options	ale-clojure.txt	/*g:ale_clojure_clj_kondo_options*
 g:ale_close_preview_on_insert	ale.txt	/*g:ale_close_preview_on_insert*
 g:ale_cmake_cmakeformat_executable	ale-cmake.txt	/*g:ale_cmake_cmakeformat_executable*
 g:ale_cmake_cmakeformat_options	ale-cmake.txt	/*g:ale_cmake_cmakeformat_options*
@@ -1475,6 +1480,8 @@ g:ale_dart_analysis_server_executable	ale-dart.txt	/*g:ale_dart_analysis_server_
 g:ale_dart_dartanalyzer_executable	ale-dart.txt	/*g:ale_dart_dartanalyzer_executable*
 g:ale_dart_dartfmt_executable	ale-dart.txt	/*g:ale_dart_dartfmt_executable*
 g:ale_dart_dartfmt_options	ale-dart.txt	/*g:ale_dart_dartfmt_options*
+g:ale_dart_format_executable	ale-dart.txt	/*g:ale_dart_format_executable*
+g:ale_dart_format_options	ale-dart.txt	/*g:ale_dart_format_options*
 g:ale_default_navigation	ale.txt	/*g:ale_default_navigation*
 g:ale_deno_executable	ale-typescript.txt	/*g:ale_deno_executable*
 g:ale_deno_lsp_project_root	ale-typescript.txt	/*g:ale_deno_lsp_project_root*
