@@ -65,6 +65,7 @@ foreach d (/home/utils/bash-5.0/bin \
            /usr/games \
            /usr/local/sbin \
            /usr/local/bin)
+    echo $d
     if ( -d $d ) then
         set -f newpath = ( $newpath $d )
     endif
