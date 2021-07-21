@@ -68,7 +68,6 @@ set array = (\
              )
 if ( ! $?newpath ) set newpath
 foreach d ($array)
-    echo $d
     if ( -d $d ) then
         set -f newpath = ( $newpath $d )
     endif
@@ -97,7 +96,6 @@ set lib_array = (\
 # Library path
 if ( ! $?newpath ) set newpath
 foreach d ($lib_array)
-    echo $d
     if ( -d $d ) then
         set -f newpath = "${newpath}:${d}"
     endif
