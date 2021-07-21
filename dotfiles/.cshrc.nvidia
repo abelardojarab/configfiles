@@ -10,8 +10,7 @@ setenv  VISUAL      "${EDITOR}"
 setenv  PAGER       less
 setenv  BLOCKSIZE   K
 setenv  EMACS_SERVER_FILE $HOME/.emacs.cache/server/server
-setenv  TERM
-xterm-256color
+setenv  TERM        xterm-256color
 
 # Local
 setenv LANG en_US.UTF-8
@@ -20,10 +19,51 @@ setenv TERM xterm-256color
 
 # Binary path
 setenv gcc_root /home/utils/gcc-8.3.0-binutils-2.30-goldld/bin
-setenv path_utils '/home/utils/ripgrep-0.10.0/bin /home/utils/kubectl-1.11.2/bin /home/utils/texlive-2017/bin/x86_64-linux /home/utils/emacs-27.1-2/bin /home/utils/pandoc-1.19.2.1/bin /home/utils/graphviz-2.38.0/bin /home/utils/gnuplot-5.0.4/bin /home/utils/Python-3.7.3/bin /home/utils/go-1.13/bin /home/utils/flex-2.6.4/bin /home/utils/bison-3.4.1/bin /home/utils/texinfo-6.1/bin /home/utils/doxygen-1.8.8/bin /home/utils/make-4.2.1/bin /home/utils/gdb-8.2.1/bin /home/utils/binutils-2.30/bin /home/utils/docker-1.9.1/bin /home/utils/cmake-3.16.3/bin /home/nv/bin /home/utils/bin /usr/X11R6/bin /usr/kerberos/bin /usr/local/lsf/bin'
+setenv path_utils '/home/utils/ripgrep-0.10.0/bin \
+       /home/utils/kubectl-1.11.2/bin \
+       /home/utils/texlive-2017/bin/x86_64-linux \
+       /home/utils/emacs-27.1-2/bin \
+       /home/utils/pandoc-1.19.2.1/bin \
+       /home/utils/graphviz-2.38.0/bin \
+       /home/utils/gnuplot-5.0.4/bin \
+       /home/utils/Python-3.7.3/bin \
+       /home/utils/go-1.13/bin \
+       /home/utils/flex-2.6.4/bin \
+       /home/utils/bison-3.4.1/bin \
+       /home/utils/texinfo-6.1/bin \
+       /home/utils/doxygen-1.8.8/bin \
+       /home/utils/make-4.2.1/bin \
+       /home/utils/gdb-8.2.1/bin \
+       /home/utils/binutils-2.30/bin \
+       /home/utils/docker-1.9.1/bin \
+       /home/utils/cmake-3.16.3/bin \
+       /home/nv/bin \
+       /home/utils/bin \
+       /usr/X11R6/bin \
+       /usr/kerberos/bin \
+       /usr/local/lsf/bin'
 
 if ( ! $?newpath ) set newpath
-foreach d (/home/utils/bash-5.0/bin /home/utils/vim-8.2.1703/bin /home/utils/perl-5.26/5.26.2-028/bin /home/utils/openssh-7.7p1/bin $gcc_root/bin $HOME/anaconda3/bin $HOME/.local/bin $HOME/local/bin $HOME/local/usr/bin $HOME/bin $HOME/.cask/bin $HOME/builds/llvm/build/bin $path_utils $PATH /sbin /bin /usr/sbin /usr/bin /usr/games /usr/local/sbin /usr/local/bin)
+foreach d (/home/utils/bash-5.0/bin \
+           /home/utils/vim-8.2.1703/bin \
+           /home/utils/perl-5.26/5.26.2-028/bin \
+           /home/utils/openssh-7.7p1/bin \
+           $gcc_root/bin \
+           $HOME/.local/bin \
+           $HOME/local/bin \
+           $HOME/local/usr/bin \
+           $HOME/bin \
+           $HOME/.cask/bin \
+           $HOME/builds/llvm/build/bin \
+           $path_utils \
+           $PATH \
+           /sbin \
+           /bin \
+           /usr/sbin \
+           /usr/bin \
+           /usr/games \
+           /usr/local/sbin \
+           /usr/local/bin)
     if ( -d $d ) then
         set -f newpath = ( $newpath $d )
     endif
@@ -34,7 +74,20 @@ unset newpath
 
 # Library path
 if ( ! $?newpath ) set newpath
-foreach d ($HOME/local/lib64 $HOME/local/lib $HOME/local/usr/lib $HOME/.local/lib64 $HOME/.local/lib $gcc_root/lib64 $gcc_root/lib /lib64 /lib /usr/lib64 /usr/lib /usr/local/lib64 /usr/local/lib /home/utils/gtk+-3.6.4/lib)
+foreach d ($HOME/local/lib64 \
+           $HOME/local/lib \
+           $HOME/local/usr/lib \
+           $HOME/.local/lib64 \
+           $HOME/.local/lib \
+           $gcc_root/lib64 \
+           $gcc_root/lib \
+           /lib64 \
+           /lib \
+           /usr/lib64 \
+           /usr/lib \
+           /usr/local/lib64 \
+           /usr/local/lib \
+           /home/utils/gtk+-3.6.4/lib)
     if ( -d $d ) then
         set -f newpath = "${newpath}:${d}"
     endif
@@ -84,7 +137,20 @@ setenv NNN_TRASH 1
 
 # Use locate on $HOME directory (locate from GNU findutils)
 setenv LOCATE_PATH "$HOME/.home.mlocate.db"
-alias lupdatedb "updatedb --localpaths='/home/abelardoj /home/abelardoj/workspace /home/abelardoj/local /home/abelardoj/.local /home/abelardoj/cmake_builds /home/scratch.abelardoj_denver-info_1' --output=/home/abelardoj/.home.mlocate.db --netpaths='/home/abelardoj/workspace /home/abelardoj/workspace/nvcpu/dev /home/abelardoj/cmake_builds /home/scratch.abelardoj_denver-info_1 /home/abelardoj/local /home/abelardoj/.local' --prunepaths='/home/abelardoj/.snapshot /home/abelardoj/builds'"
+alias lupdatedb "updatedb --localpaths='/home/abelardoj \
+      /home/abelardoj/workspace \
+      /home/abelardoj/local \
+      /home/abelardoj/.local \
+      /home/abelardoj/cmake_builds \
+      /home/scratch.abelardoj_denver-info_1' \
+      --output=/home/abelardoj/.home.mlocate.db \
+      --netpaths='/home/abelardoj/workspace \
+      /home/abelardoj/workspace/nvcpu/dev \
+      /home/abelardoj/cmake_builds \
+      /home/scratch.abelardoj_denver-info_1 \
+      /home/abelardoj/local \
+      /home/abelardoj/.local' \
+      --prunepaths='/home/abelardoj/.snapshot /home/abelardoj/builds'"
 
 # Missing compiler flags
 # https://github.com/zdevito/ATen/issues/183
