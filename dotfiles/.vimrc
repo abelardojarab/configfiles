@@ -100,7 +100,6 @@ syntax enable
 set cursorline
 hi CursorLine term=bold cterm=bold guibg=Grey40
 
-set laststatus=2            " Always show status line
 set report=0                " Show all changes.
 set showcmd                 " show partial command on last line of screen.
 set showmatch               " show matching parenthesis
@@ -142,6 +141,11 @@ set nofoldenable            " don't fold by default
 set backspace=indent,eol,start  " allow backspacing over everything.
 set esckeys                     " Allow cursor keys in insert mode.
 set nostartofline               " Make j/k respect the columns
+
+" Allow us to use Ctrl-s and Ctrl-q as keybinds
+" Restore default behaviour when leaving Vim.
+silent !stty -ixon
+autocmd VimLeave * silent !stty ixon
 
 " Use leader l to rapidly toggle `set list`
 nmap <leader>l :set list!<CR>
@@ -394,6 +398,29 @@ let g:vista_ignore_kinds = ['Variable']
 
 let g:coc_disable_startup_warning = 1
 
+" --- Status line ---
+set laststatus=2
+set statusline=\ %{HasPaste()}%<%-15.25(%f%)%m%r%h\ %w\ \
+set statusline+=\ \ \ %<%20.30(%{hostname()}:%{CurDir()}%)\
+set statusline+=\ \ \ [%{&ff}/%Y]
+set statusline+=%#warningmsg#
+set statusline+=%{SyntasticStatuslineFlag()}
+set statusline+=%=%-10.(%l,%c%V%)\ %p%%/%L
+set statusline+=%*
+
+function! CurDir()
+    let curdir = substitute(getcwd(), $HOME, "~", "")
+    return curdir
+endfunction
+
+function! HasPaste()
+    if &paste
+        return '[PASTE]'
+    else
+        return ''
+    endif
+endfunction
+
 " --- Tabbar ---
 try
 set showtabline=2
@@ -402,7 +429,6 @@ catch
 endtry
 
 tab sball
-set laststatus=2
 
 let g:lightline = {
       \ 'colorscheme': 'one',
@@ -634,10 +660,6 @@ let g:ale_linters            = {
 " --- Syntastic settings ---
 nmap <silent> <leader>q :SyntasticCheck # <CR> :bp <BAR> bd #<CR>
 
-set statusline+=%#warningmsg#
-set statusline+=%{SyntasticStatuslineFlag()}
-set statusline+=%*
-
 let g:syntastic_always_populate_loc_list=1
 let g:syntastic_auto_loc_list=1
 let g:syntastic_enable_signs=1
@@ -666,3 +688,48 @@ au BufNewFile, BufRead *.js, *.html, *.css
     \ set tabstop=2 |
     \ set softtabstop=2 |
     \ set shiftwidth=2
+
+" --- Language settings ---
+" Go sttings
+let g:go_highlight_functions         = 1
+let g:go_highlight_methods           = 1
+let g:go_highlight_fields            = 1
+let g:go_highlight_types             = 1
+let g:go_highlight_operators         = 1
+let g:go_highlight_build_constraints = 1
+
+" Javascript settings
+let g:javascript_plugin_jsdoc = 1
+let g:javascript_plugin_ngdoc = 1
+let g:javascript_plugin_flow  = 1
+
+" Tern_for_vim settings
+let g:tern#command   = ['tern']
+let g:tern#arguments = ['--persistent']
+
+" JS-Beautify
+let g:config_Beautifier = {}
+let g:config_Beautifier['js'] = {}
+let g:config_Beautifier['js'].indent_style = 'tab'
+let g:config_Beautifier['jsx'] = {}
+let g:config_Beautifier['jsx'].indent_style = 'tab'
+let g:config_Beautifier['json'] = {}
+let g:config_Beautifier['json'].indent_style = 'tab'
+let g:config_Beautifier['css'] = {}
+let g:config_Beautifier['css'].indent_style = 'tab'
+let g:config_Beautifier['html'] = {}
+let g:config_Beautifier['html'].indent_style = 'tab'
+
+augroup beautify
+    autocmd!
+    autocmd FileType javascript nnoremap <buffer> <Leader>bf :call JsBeautify()<cr>
+    autocmd FileType javascript vnoremap <buffer> <Leader>bf :call RangeJsBeautify()<cr>
+    autocmd FileType json nnoremap <buffer> <Leader>bf :call JsonBeautify()<cr>
+    autocmd FileType json vnoremap <buffer> <Leader>bf :call RangeJsonBeautify()<cr>
+    autocmd FileType jsx nnoremap <buffer> <Leader>bf :call JsxBeautify()<cr>
+    autocmd FileType jsx vnoremap <buffer> <Leader>bf :call RangeJsxBeautify()<cr>
+    autocmd FileType html nnoremap <buffer> <Leader>bf :call HtmlBeautify()<cr>
+    autocmd FileType html vnoremap <buffer> <Leader>bf :call RangeHtmlBeautify()<cr>
+    autocmd FileType css nnoremap <buffer> <Leader>bf :call CSSBeautify()<cr>
+    autocmd FileType css vnoremap <buffer> <Leader>bf :call RangeCSSBeautify()<cr>
+augroup end
