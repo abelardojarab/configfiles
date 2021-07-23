@@ -29,7 +29,6 @@ set ignorecase                  " ignore case when searching
 set smartcase                   " ignore case if search pattern is all lowercase,
 set mouse=a                     "enable mouse automatically entering visual mode
 set ttymouse=xterm2
-set clipboard=unnamed,unnamedplus                    "Use system clipboard by default
 filetype indent on
 filetype plugin on
 
@@ -192,6 +191,7 @@ cmap <Esc>[1;2C <S-Right>
 " Allow Shift+Insert to paste
 map <S-Insert> <MiddleMouse>
 map! <S-Insert> <MiddleMouse>
+set clipboard=unnamed,unnamedplus  "Use system clipboard by default
 " set clipboard=unnamedplus
 
 " Copy filename
@@ -261,12 +261,18 @@ Plug 'yegappan/mru' " MRU
 Plug 'tmhedberg/SimpylFold'
 Plug 'liuchengxu/vim-which-key'
 
+" Copy paste
+Plug 'svermeulen/vim-cutlass'
+Plug 'svermeulen/vim-yoink'
+Plug 'svermeulen/vim-subversive'
+
 " Snippets
 Plug 'Shougo/neosnippet.vim',
 Plug 'Shougo/neosnippet-snippets'
 
 " Search
 Plug 'jremmen/vim-ripgrep'
+Plug 'mileszs/ack.vim'
 
 " Completion
 Plug 'neoclide/coc.nvim', {'for':['zig','cmake','rust',
@@ -572,6 +578,11 @@ let g:ctrlp_custom_ignore = {
   \ 'file': '\v\.(so|swp|zip)$'
   \ }
 
+" --- Search with ack ---
+if executable('ag')
+    let g:ackprg = 'ag --vimgrep'
+endif
+
 " --- Undotree toggle ---
 nnoremap <Leader>u :UndotreeToggle<CR>
 
@@ -688,6 +699,15 @@ au BufNewFile, BufRead *.js, *.html, *.css
     \ set tabstop=2 |
     \ set softtabstop=2 |
     \ set shiftwidth=2
+
+" --- Better copy paste ---
+let g:yoinkIncludeDeleteOperations   = 1
+
+nnoremap x d
+xnoremap x d
+
+nnoremap xx dd
+nnoremap X D
 
 " --- Language settings ---
 " Go sttings
