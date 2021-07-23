@@ -370,7 +370,8 @@ Plug 'sickill/vim-monokai'
 call plug#end()
 
 " --- Colors ---
-colorscheme monokai
+" colorscheme monokai
+colorscheme slate
 set background=dark
 
 " --- netrw settings ---
@@ -753,3 +754,4 @@ augroup beautify
     autocmd FileType css nnoremap <buffer> <Leader>bf :call CSSBeautify()<cr>
     autocmd FileType css vnoremap <buffer> <Leader>bf :call RangeCSSBeautify()<cr>
 augroup end
+
