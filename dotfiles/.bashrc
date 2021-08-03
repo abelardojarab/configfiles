@@ -324,6 +324,9 @@ export GTAGSTHROUGH=true
 export GTAGSLABEL=exuberant-ctags
 export GTAGSFORCECPP=1
 
+# Go
+export PATH=$HOME/go/bin:$PATH
+
 # Node
 export NPM_CONFIG_PREFIX=$HOME/.npm-global
 export PATH=$NPM_CONFIG_PREFIX/bin:$PATH
