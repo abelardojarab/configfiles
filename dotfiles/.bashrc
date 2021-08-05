@@ -135,6 +135,12 @@ alias lmlicense='/opt/mentor/calibre/2013.3_28.19/bin/lmgrd -c'
 if [ -d /usr/lib/jvm/java-9-oracle ]; then
   export JAVA_HOME=/usr/lib/jvm/java-9-oracle
 fi
+if [ -d /usr/lib/jvm/java-16-oracle ]; then
+  export JAVA_HOME=/usr/lib/jvm/java-16-oracle
+  CLASSPATH=.:$JAVA_HOME/lib/tools.jar:$JAVA_HOME/lib/dt.jar
+  export CLASSPATH
+fi
+
 export FILEBOT_OPTS="-Dnet.filebot.UserFiles.fileChooser=Swing"
 
 # Intel performance tools
