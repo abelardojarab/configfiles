@@ -272,3 +272,10 @@ export PROMPT_COMMAND=set_prompt
 
 # After each command, append to the history file and reread it
 export PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"
+
+# The following settings are interpreted by EMACS, do not remove them.
+# Local Variables:
+# mode: sh-mode
+# fill-column: 80
+# coding: utf-8
+# End:
