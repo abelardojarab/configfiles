@@ -176,6 +176,11 @@ export PATH=$PATH:/usr/lib/chromium-browser
 # DynamoRIO
 export PATH=$PATH:/media/workspace/dynamorio/build/bin64
 
+# Local settings
+if [ -f $HOME/.bashrc_local ]; then
+  source ~/.bashrc_local
+fi
+
 # Regular Colors
 Black="\[\033[0;30m\]"        # Black
 Red="\[\033[0;31m\]"          # Red
