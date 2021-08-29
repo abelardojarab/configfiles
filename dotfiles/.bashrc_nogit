@@ -153,6 +153,9 @@ ulimit -s unlimited
 # Go
 export PATH=$HOME/go/bin:$PATH
 
+# Snap
+export PATH=/snap/bin:$PATH
+
 # Set up general GTAGS location
 export GTAGSLIBPATH=$HOME/.gtags/
 export GTAGSTHROUGH=true
