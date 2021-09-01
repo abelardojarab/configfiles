@@ -397,6 +397,9 @@ if [ -f $HOME/.bashrc_local ]; then
   source ~/.bashrc_local
 fi
 
+# TERM
+export TERM="xterm-color"
+
 # set a fancy prompt (non-color, unless we know we "want" color)
 case "$TERM" in
   xterm-color) color_prompt=yes;;
