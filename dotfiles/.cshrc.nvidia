@@ -37,6 +37,7 @@ setenv path_utils '/home/utils/ripgrep-0.10.0/bin \
        /home/utils/binutils-2.30/bin \
        /home/utils/docker-1.9.1/bin \
        /home/utils/cmake-3.16.3/bin \
+       /home/utils/neovim-0.5.0/bin \
        /home/nv/bin \
        /home/utils/bin \
        /usr/X11R6/bin \
@@ -45,6 +46,7 @@ setenv path_utils '/home/utils/ripgrep-0.10.0/bin \
 
 set array = (\
              /home/utils/bash-5.0/bin \
+             /home/utils/tmux-3.2a/bin \
              /home/utils/vim-8.2.1703/bin \
              /home/utils/perl-5.26/5.26.2-028/bin \
              /home/utils/openssh-7.7p1/bin \
