@@ -398,7 +398,11 @@ if [ -f $HOME/.bashrc_local ]; then
 fi
 
 # TERM
-export TERM="xterm-color"
+if [ -f /usr/share/terminfo/x/xterm-256color ]; then
+  export TERM="xterm-256color"
+else
+  export TERM="xterm-color"
+fi
 
 # set a fancy prompt (non-color, unless we know we "want" color)
 case "$TERM" in
