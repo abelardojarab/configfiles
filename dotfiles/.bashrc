@@ -337,6 +337,7 @@ export PATH=$HOME/go/bin:$PATH
 # Node
 export NPM_CONFIG_PREFIX=$HOME/.npm-global
 export PATH=$NPM_CONFIG_PREFIX/bin:$PATH
+export PATH=$PATH:$HOME/node_modules/npm/bin
 
 # Python env
 if [[ -d ${HOME}/.pyenv ]] ; then
