@@ -349,6 +349,7 @@ export KUBECONFIG=$HOME/.kube/config
 if  [[ -f ${HOME}/.kube/nvidia ]] ; then
   export KUBECONFIG=$HOME/.kube/nvidia:$KUBECONFIG
 fi
+alias kubepodsinfo='kubectl get pod -o=custom-columns=NAME:.metadata.name,STATUS:.status.phase,NODE:.spec.nodeName,IP:.status.podIP --all-namespaces'
 
 # Hadoop dev
 export HADOOP_HOME=/opt/hadoop/hadoop-2.7.7
