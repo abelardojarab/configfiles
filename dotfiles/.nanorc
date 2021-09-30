@@ -2,7 +2,7 @@
 # set linenumbers
 
 ## use smooth scrolling
-set smooth
+# set smooth
 
 ## save search/replace history
 set historylog
@@ -25,7 +25,7 @@ set regexp
 set smarthome
 
 ## Use the blank line below the titlebar as extra editing space.
-set morespace
+# set morespace
 
 ## Allow multiple file buffers (inserting a file will put it into a
 ## separate buffer).
