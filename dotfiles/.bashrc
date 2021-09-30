@@ -103,6 +103,7 @@ export CTEST_OUTPUT_ON_FAILURE=1
 # Vagrant
 export VAGRANT_LOG=error
 export VAGRANT_DEFAULT_PROVIDER=libvirt
+export LIBVIRT_DEFAULT_URI=qemu:///system
 
 # Fix GTK3 scroll not working
 export GDK_CORE_DEVICE_EVENTS=1
@@ -336,6 +337,7 @@ export PATH=$HOME/go/bin:$PATH
 # Node
 export NPM_CONFIG_PREFIX=$HOME/.npm-global
 export PATH=$NPM_CONFIG_PREFIX/bin:$PATH
+export PATH=$PATH:$HOME/node_modules/npm/bin
 
 # Python env
 if [[ -d ${HOME}/.pyenv ]] ; then
