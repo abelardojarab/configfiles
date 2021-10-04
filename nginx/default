@@ -280,6 +280,12 @@ server {
         proxy_busy_buffers_size 256k;
     }
 
+    location /kubernetes/ {
+        proxy_pass http://localhost:8001;
+        rewrite  ^/kubernetes/(.*)  /$1 break;
+        proxy_set_header Authorization "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6IkxlcVRKb2lvOGtiLU5yekJGck5TaUxoM0RnR1FZVmRxQjBnaTN1c3lDVEUifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlcm5ldGVzLWRhc2hib2FyZCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJhYmVsYXJkb2phcmEtdG9rZW4tcGZqZnMiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiYWJlbGFyZG9qYXJhIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQudWlkIjoiNzg3ZTRiYTAtMGNmMC00YzE1LWI5NDctNGYzYjkyNWYxZmUyIiwic3ViIjoic3lzdGVtOnNlcnZpY2VhY2NvdW50Omt1YmVybmV0ZXMtZGFzaGJvYXJkOmFiZWxhcmRvamFyYSJ9.LHdsFOv6NQoEDfF_z45OtWbaa59V7g2iEx04DoWIy5Z5ItcOFLFTUVBZyT1CdYk7kR5IOd2myW3u1_RtxOCRbw68dd9vTvl2Wt6gDertMXj5uD3L8BAY7wyLvS_WJ4C46OeXlOF9iMrMONrI67xj2WZBPN8utYr0-SqbVdhpSaVgdJkBXhFB4I4VZOn72fJAACyzCgnJpfecBjWcDrqrX4kjmeOKh1mSMIcpvyawDgdn4eRHHkKJN0-3yjHGhi89ZGUrTaMNFKViqoErcWHBVkmPzHpHFNV3d7wPdxHZ2s_14oiXRn82ySgrC7IeRQQSNljSyB68BfzhwOHXfZUdDw";
+    }
+
     location /grafana/ {
         proxy_pass http://localhost:3000;
         rewrite  ^/grafana/(.*)  /$1 break;
@@ -287,6 +293,12 @@ server {
         proxy_buffers 4 256k;
         proxy_buffer_size 128k;
         proxy_busy_buffers_size 256k;
+    }
+
+    location ~ /kibana {
+        proxy_pass http://localhost:5601;
+        auth_basic "Restricted Content";
+        auth_basic_user_file /var/www/.htpasswd;
     }
 
     location /webmin/ {
