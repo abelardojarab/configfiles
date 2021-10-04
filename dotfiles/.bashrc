@@ -352,6 +352,7 @@ if  [[ -f ${HOME}/.kube/nvidia ]] ; then
   export KUBECONFIG=$HOME/.kube/nvidia:$KUBECONFIG
 fi
 alias kubepodsinfo='kubectl get pod -o=custom-columns=NAME:.metadata.name,STATUS:.status.phase,NODE:.spec.nodeName,IP:.status.podIP --all-namespaces'
+alias kubetoken='kubectl get secret -n kubernetes-dashboard $(kubectl get serviceaccount abelardojara -n kubernetes-dashboard -o jsonpath="{.secrets[0].name}") -o jsonpath="{.data.token}" | base64 --decode'
 
 # Hadoop dev
 export HADOOP_HOME=/opt/hadoop/hadoop-2.7.7
