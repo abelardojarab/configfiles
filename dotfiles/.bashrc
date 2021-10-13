@@ -41,6 +41,9 @@ shopt -s checkwinsize
 # make less more friendly for non-text input files, see lesspipe(1)
 [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
 
+# Elasticsearch
+alias elasticcurlget='curl -XGET -u elastic 'http://localhost:9200/_search' -H 'Content-Type: application/json' -d'
+
 # enable color support of ls and also add handy aliases
 if [ -x /usr/bin/dircolors ]; then
   test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
@@ -58,6 +61,9 @@ alias l='ls -CF'
 
 # Use gpg2
 alias gpg='gpg2'
+
+# curl
+alias curl='curl --insecure'
 
 # rsync utilities
 alias rsynccopy="rsync --partial --progress --append --rsh=ssh -r -h "
@@ -355,7 +361,7 @@ alias kubepodsinfo='kubectl get pod -o=custom-columns=NAME:.metadata.name,STATUS
 alias kubetoken='kubectl get secret -n kubernetes-dashboard $(kubectl get serviceaccount abelardojara -n kubernetes-dashboard -o jsonpath="{.secrets[0].name}") -o jsonpath="{.data.token}" | base64 --decode'
 
 # Hadoop dev
-export HADOOP_HOME=/opt/hadoop/hadoop-2.7.7
+export HADOOP_HOME=/opt/hadoop/2.7.7
 export PATH=$PATH:$HADOOP_HOME/bin
 export HADOOP_MAPRED_HOME=$HADOOP_HOME
 export HADOOP_COMMON_HOME=$HADOOP_HOME
@@ -364,7 +370,7 @@ export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native
 export HADOOP_OPTS="-Djava.library.path=$HADOOP_HOME/lib"
 
 # Spark settings
-export SPARK_HOME=/opt/spark/spark-2.4.0-bin-hadoop2.7
+export SPARK_HOME=/opt/spark/2.4.0-hadoop-2.7.7
 export PATH=$PATH:$SPARK_HOME/bin
 
 # Spark cluster settings
