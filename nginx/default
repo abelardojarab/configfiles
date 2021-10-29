@@ -34,6 +34,10 @@ map $http_upgrade $proxy_connection {
     "" close;
 }
 
+# upstream docservice {
+#   server localhost:8000;
+#}
+
 upstream php8_src {
     server unix:/run/php/php8.2-fpm.sock;
 }
@@ -431,8 +435,8 @@ server {
     }
 
     location /documentserver/ {
-        rewrite  ^/documentserver/(.*)  /$1 break;
-        proxy_pass http://localhost:9999/;
+        proxy_pass http://docservice;
+        # rewrite  ^/documentserver/(.*)  /$1 break;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection $proxy_connection;
