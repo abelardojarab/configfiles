@@ -122,6 +122,44 @@ server {
     # Sessions
     proxy_cache_key "$host$request_uri$cookie_sessioncookie";
 
+    # Challenges
+    location ^~ ./well-known/pki-validation/ {
+        # No HTTP authentication
+        allow all;
+
+        # Set correct content type. According to this:
+        # https://community.letsencrypt.org/t/using-the-webroot-domain-verification-method/1445/29
+        # Current specification requires "text/plain" or no content header at all.
+        # It seems that "text/plain" is a safe option.
+        default_type "text/plain";
+    }
+
+    # Hide /pki-challenge subdirectory and return 404 on all requests.
+    # It is somewhat more secure than letting Nginx return 403.
+    # Ending slash is important!
+    location = .well-known/pki-validation/ {
+        return 404;
+    }
+
+    # Challenges
+    location ^~ ./well-known/acme-challenge/ {
+        # No HTTP authentication
+        allow all;
+
+        # Set correct content type. According to this:
+        # https://community.letsencrypt.org/t/using-the-webroot-domain-verification-method/1445/29
+        # Current specification requires "text/plain" or no content header at all.
+        # It seems that "text/plain" is a safe option.
+        default_type "text/plain";
+    }
+
+    # Hide /acme-challenge subdirectory and return 404 on all requests.
+    # It is somewhat more secure than letting Nginx return 403.
+    # Ending slash is important!
+    location = .well-known/acme-challenge/ {
+        return 404;
+    }
+
     # Pass all .php files onto a php-fpm/php-fcgi server.
     location ~ \.php$ {
         # Comment the 'try_files' line out if you set up php-fpm/php-fcgi on another machine.  And then cross your fingers that you won't get hacked.
