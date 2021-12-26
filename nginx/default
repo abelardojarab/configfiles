@@ -89,6 +89,7 @@ server {
     # SSL settings
     # listen 443 ssl;
     ssl_certificate      /etc/letsencrypt/live/jaraberrocal.readmyblog.org/fullchain.pem;
+    # ssl_certificate       /var/www/certs/ssl-bundle.crt;
     ssl_certificate_key  /etc/letsencrypt/live/jaraberrocal.readmyblog.org/privkey.pem;
     ssl_session_timeout  5m;
     ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
@@ -126,6 +127,9 @@ server {
 
     # Sessions
     proxy_cache_key "$host$request_uri$cookie_sessioncookie";
+
+    # STS header
+    add_header Strict-Transport-Security max-age=31536000;
 
     # Challenges
     location ^~ ./well-known/pki-validation/ {
