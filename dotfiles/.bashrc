@@ -448,20 +448,6 @@ Gray="\[\033[1;30m\]"         # Gray
 White="\[\033[0;37m\]"        # White
 NO_COLOR="\[\033[0m\]"
 
-RED="\[\033[0;31m\]"
-PINK="\[\033[1;31m\]"
-YELLOW="\[\033[1;33m\]"
-GREEN="\[\033[0;32m\]"
-LT_GREEN="\[\033[1;32m\]"
-BLUE="\[\033[0;34m\]"
-WHITE="\[\033[1;37m\]"
-PURPLE="\[\033[1;35m\]"
-CYAN="\[\033[1;36m\]"
-BROWN="\[\033[0;33m\]"
-LIGHT="\[\033[0;37m\]"
-DARK="\[\033[0;90m\]"
-COLOR_NONE="\[\033[0m\]"
-
 LIGHTNING_BOLT="⚡"
 UP_ARROW="↑"
 DOWN_ARROW="↓"
@@ -506,11 +492,7 @@ $Yellow[\w] \
                 echo -n '$White('\$(git rev-parse HEAD | head -c7)': '\$refname')';\
             fi;\
         fi;\
-        git diff --quiet --cached &> /dev/null \
-            || echo -n '$BGreen*';\
-        git diff --quiet &> /dev/null \
-            || echo -n '$BRed*';\
-        git status --porcelain 2> /dev/null | grep -q ^?? \
+        git status -uno --no-ahead-behind --porcelain 2> /dev/null | grep -q ^?? \
         && echo -n '$Gray*';\
         echo -n ' ';\
     fi\
