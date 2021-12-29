@@ -492,8 +492,6 @@ $Yellow[\w] \
                 echo -n '$White('\$(git rev-parse HEAD | head -c7)': '\$refname')';\
             fi;\
         fi;\
-        git status -uno --no-ahead-behind --porcelain 2> /dev/null | grep -q ^?? \
-        && echo -n '$Gray*';\
         echo -n ' ';\
     fi\
 )\
