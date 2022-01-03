@@ -400,7 +400,7 @@ fi
 export PATH=/snap/bin:$PATH
 
 # nvim
-export PATH=/opt/nvim/current/bin:$PATH
+# export PATH=/opt/nvim/current/bin:$PATH
 
 # Local settings
 if [ -f $HOME/.bashrc_local ]; then
