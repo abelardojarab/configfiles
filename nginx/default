@@ -25,6 +25,10 @@ upstream php7 {
     server unix:/run/php/php7.0-fpm.sock;
 }
 
+upstream portainer {
+    server       127.0.0.1:9010;
+}
+
 upstream teamcity {
     server       127.0.0.1:8112 fail_timeout=0;
     keepalive    32;
@@ -160,7 +164,7 @@ server {
         # Current specification requires "text/plain" or no content header at all.
         # It seems that "text/plain" is a safe option.
         default_type "text/plain";
-    }
+   }
 
     # Hide /acme-challenge subdirectory and return 404 on all requests.
     # It is somewhat more secure than letting Nginx return 403.
@@ -331,6 +335,7 @@ server {
         auth_basic_user_file /var/www/.htpasswd;
     }
 
+    # Artifactory
     location /artifactory/ {
         client_max_body_size 2000M;
         proxy_read_timeout  900;
@@ -352,6 +357,7 @@ server {
         proxy_set_header  X-Forwarded-Proto $scheme;
     }
 
+    # Jira
     location /jira/ {
         proxy_pass http://localhost:8181;
         proxy_set_header  Host $host:$server_port;
@@ -364,6 +370,7 @@ server {
         proxy_busy_buffers_size 256k;
     }
 
+    # Teamcity
     location /teamcity/ {
         proxy_pass http://localhost:8112;
         proxy_set_header Host $host:$server_port;
@@ -376,6 +383,7 @@ server {
         proxy_busy_buffers_size 256k;
     }
 
+    # Kubernetes dashboard
     location /kubernetes/ {
         proxy_pass http://localhost:8001;
         rewrite  ^/kubernetes/(.*)  /$1 break;
@@ -389,6 +397,7 @@ server {
         auth_request_set $token $upstream_http_x_auth_request_access_token;
     }
 
+    # Grafana
     location /grafana/ {
         proxy_pass http://localhost:3000;
         rewrite  ^/grafana/(.*)  /$1 break;
@@ -398,12 +407,14 @@ server {
         proxy_busy_buffers_size 256k;
     }
 
+    # Kibana
     location ~ /kibana {
         proxy_pass http://localhost:5601;
         auth_basic "Restricted Content";
         auth_basic_user_file /var/www/.htpasswd;
     }
 
+    # Prometheus
     location /prometheus/ {
         proxy_pass http://localhost:9091;
         proxy_http_version 1.1;
@@ -415,6 +426,7 @@ server {
         auth_basic_user_file /var/www/.htpasswd;
     }
 
+    # Webmin
     location /webmin/ {
         proxy_pass http://localhost:10000;
         proxy_set_header Host $host;
@@ -423,6 +435,7 @@ server {
         auth_basic_user_file /var/www/.htpasswd;
     }
 
+    # Elasticsearch
     location ~ ^/es(.*) {
         rewrite /es/(.*) /$1  break;
 
@@ -443,6 +456,7 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 
+    # Jupyter
     location = /notebook {
         rewrite ^/(.*)$ $1/ permanent;
     }
@@ -481,25 +495,22 @@ server {
         proxy_read_timeout    86400;
     }
 
-    # static files
+    # Collabora
     location ^~ /loleaflet {
         proxy_pass http://localhost:9980;
         proxy_set_header Host $http_host;
     }
 
-    # WOPI discovery URL
     location ^~ /hosting/discovery {
         proxy_pass http://localhost:9980;
         proxy_set_header Host $http_host;
     }
 
-    # Capabilities
     location ^~ /hosting/capabilities {
         proxy_pass http://localhost:9980;
         proxy_set_header Host $http_host;
     }
 
-    # main websocket
     location ~ ^/lool/(.*)/ws$ {
         proxy_pass http://localhost:9980;
         proxy_set_header Upgrade $http_upgrade;
@@ -508,13 +519,11 @@ server {
         proxy_read_timeout 36000s;
     }
 
-    # download, presentation and image upload
     location ~ ^/lool {
         proxy_pass http://localhost:9980;
         proxy_set_header Host $http_host;
     }
 
-    # Admin Console websocket
     location ^~ /lool/adminws {
         proxy_pass http://localhost:9980;
         proxy_set_header Upgrade $http_upgrade;
@@ -523,6 +532,21 @@ server {
         proxy_read_timeout 36000s;
     }
 
+    # Portainer
+    location /portainer/ {
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_pass http://portainer/;
+    }
+
+    location /portainer/api/websocket/ {
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_http_version 1.1;
+        proxy_pass http://portainer/api/websocket/;
+    }
+
+    # Nextcloud
     location ^~ /nextcloud {
         # set max upload size
         client_max_body_size 512M;
