@@ -204,14 +204,17 @@ server {
     # Octant
     location /octant/ {
         proxy_pass http://localhost:7777/;
-        # rewrite  ^/octant/(.*)  /$1 break;
+        # rewrite  ^/octant/(.*)  /$1 break; # not needed if / is added at end of location
+
+        # Use remote real IP
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP  $remote_addr;
-        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 
-        # proxy_http_version 1.1;
-        # proxy_set_header Upgrade $http_upgrade;
-        # proxy_set_header Connection "upgrade";
+        # Use websockets
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
 
         proxy_buffers 4 256k;
         proxy_buffer_size 128k;
@@ -228,20 +231,24 @@ server {
 
     # Note that regex takes precedence, so use of "^~" ensures earlier evaluation
     location /jenkins {
+        # Use websockets
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
+
+        # Proxy redirect
         proxy_pass http://127.0.0.1:9380/jenkins/;
         proxy_redirect http:// https://;
         sendfile off;
 
+        # Use remote real IP
         proxy_set_header   Host                 $host:$server_port;
         proxy_set_header   X-Real-IP            $remote_addr;
         proxy_set_header   X-Forwarded-For      $proxy_add_x_forwarded_for;
         proxy_set_header   X-Forwarded-Proto    https;
         proxy_max_temp_file_size 0;
 
-        # this is the maximum upload size
+        # Set maximum upload size
         client_max_body_size       10m;
         client_body_buffer_size    128k;
 
@@ -317,18 +324,17 @@ server {
 
     # Cockpit
     location /cockpit/ {
-        # Required to proxy the connection to Cockpit
+        # Proxy redirect
         proxy_pass https://localhost:9000/cockpit/;
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-Proto $scheme;
 
-        # Required for web sockets to function
+        # Use websockets
         proxy_http_version 1.1;
         proxy_buffering off;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
 
-        # Pass ETag header from Cockpit to clients.
         # See: https://github.com/cockpit-project/cockpit/issues/5239
         gzip off;
         auth_basic "Restricted Content";
@@ -341,6 +347,8 @@ server {
         proxy_read_timeout  900;
         proxy_cookie_path   ~*^/.* /;
         proxy_pass          http://localhost:8081/artifactory/;
+
+        # Use remote real IP
         proxy_set_header  Host $host:$server_port;
         proxy_set_header  X-Real-IP $remote_addr;
         proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -360,10 +368,13 @@ server {
     # Jira
     location /jira/ {
         proxy_pass http://localhost:8181;
+
+        # Use remote real IP
         proxy_set_header  Host $host:$server_port;
         proxy_set_header  X-Real-IP $remote_addr;
         proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header  X-Forwarded-Proto $scheme;
+
         client_max_body_size 10M;
         proxy_buffers 4 256k;
         proxy_buffer_size 128k;
@@ -373,10 +384,13 @@ server {
     # Teamcity
     location /teamcity/ {
         proxy_pass http://localhost:8112;
+
+        # Use remote real IP
         proxy_set_header Host $host:$server_port;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+
         client_max_body_size 10M;
         proxy_buffers 4 256k;
         proxy_buffer_size 128k;
@@ -387,11 +401,13 @@ server {
     location /kubernetes/ {
         proxy_pass http://localhost:8001;
         rewrite  ^/kubernetes/(.*)  /$1 break;
+
         proxy_ssl_certificate /etc/kubernetes/pki/front-proxy-client.crt;
         proxy_ssl_certificate_key /etc/kubernetes/pki/front-proxy-client.key;
         proxy_ssl_trusted_certificate /etc/kubernetes/pki/ca.crt;
         set $token "eyJhbGciOiJSUzI1NiIsImtpZCI6IkxlcVRKb2lvOGtiLU5yekJGck5TaUxoM0RnR1FZVmRxQjBnaTN1c3lDVEUifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlcm5ldGVzLWRhc2hib2FyZCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJhYmVsYXJkb2phcmEtdG9rZW4tcGZqZnMiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiYWJlbGFyZG9qYXJhIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQudWlkIjoiNzg3ZTRiYTAtMGNmMC00YzE1LWI5NDctNGYzYjkyNWYxZmUyIiwic3ViIjoic3lzdGVtOnNlcnZpY2VhY2NvdW50Omt1YmVybmV0ZXMtZGFzaGJvYXJkOmFiZWxhcmRvamFyYSJ9.LHdsFOv6NQoEDfF_z45OtWbaa59V7g2iEx04DoWIy5Z5ItcOFLFTUVBZyT1CdYk7kR5IOd2myW3u1_RtxOCRbw68dd9vTvl2Wt6gDertMXj5uD3L8BAY7wyLvS_WJ4C46OeXlOF9iMrMONrI67xj2WZBPN8utYr0-SqbVdhpSaVgdJkBXhFB4I4VZOn72fJAACyzCgnJpfecBjWcDrqrX4kjmeOKh1mSMIcpvyawDgdn4eRHHkKJN0-3yjHGhi89ZGUrTaMNFKViqoErcWHBVkmPzHpHFNV3d7wPdxHZ2s_14oiXRn82ySgrC7IeRQQSNljSyB68BfzhwOHXfZUdDw";
         proxy_set_header Authorization "Bearer $token";
+
         auth_basic "Restricted Content";
         auth_basic_user_file /var/www/.htpasswd;
         auth_request_set $token $upstream_http_x_auth_request_access_token;
@@ -401,7 +417,9 @@ server {
     location /grafana/ {
         proxy_pass http://localhost:3000;
         rewrite  ^/grafana/(.*)  /$1 break;
+
         proxy_set_header Host $host;
+
         proxy_buffers 4 256k;
         proxy_buffer_size 128k;
         proxy_busy_buffers_size 256k;
@@ -410,6 +428,7 @@ server {
     # Kibana
     location ~ /kibana {
         proxy_pass http://localhost:5601;
+
         auth_basic "Restricted Content";
         auth_basic_user_file /var/www/.htpasswd;
     }
@@ -418,10 +437,12 @@ server {
     location /prometheus/ {
         proxy_pass http://localhost:9091;
         proxy_http_version 1.1;
+
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
         proxy_set_header Host $host;
         proxy_cache_bypass $http_upgrade;
+
         auth_basic "Restricted Content";
         auth_basic_user_file /var/www/.htpasswd;
     }
@@ -429,8 +450,10 @@ server {
     # Webmin
     location /webmin/ {
         proxy_pass http://localhost:10000;
+
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-For $http_x_forwarded_for;
+
         auth_basic "Restricted Content";
         auth_basic_user_file /var/www/.htpasswd;
     }
@@ -452,6 +475,7 @@ server {
 
         proxy_pass http://localhost:9200;
         proxy_redirect off;
+
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     }
@@ -479,7 +503,8 @@ server {
     location ~ /notebook/api/kernels/ {
         proxy_pass            https://notebook;
         proxy_set_header      Host $host;
-        # websocket support
+
+        # Use websockets
         proxy_http_version    1.1;
         proxy_set_header      Upgrade "websocket";
         proxy_set_header      Connection "Upgrade";
@@ -488,7 +513,8 @@ server {
     location ~ /notebook/terminals/ {
         proxy_pass            https://notebook;
         proxy_set_header      Host $host;
-        # websocket support
+
+        # Use websockets
         proxy_http_version    1.1;
         proxy_set_header      Upgrade "websocket";
         proxy_set_header      Connection "Upgrade";
@@ -546,6 +572,15 @@ server {
         proxy_pass http://portainer/api/websocket/;
     }
 
+    # Guacamole
+    location ^~ /guacamole/ {
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_pass http://localhost:8190/guacamole/;
+
+        proxy_buffering off;
+    }
+
     # Nextcloud
     location ^~ /nextcloud {
         # set max upload size
@@ -574,14 +609,13 @@ server {
         }
 
         location ~ ^/nextcloud/(?:index|remote|public|cron|core/ajax/update|status|ocs/v[12]|updater/.+|ocs-provider/.+|core/templates/40[34])\.php(?:$|/) {
-
             fastcgi_split_path_info ^(.+\.php)(/.+)$;
             include fastcgi_params;
 
             fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
             fastcgi_param PATH_INFO $fastcgi_path_info;
             fastcgi_param HTTPS on;
-            #Avoid sending the security headers twice
+            # Avoid sending the security headers twice
             fastcgi_param modHeadersAvailable true;
             fastcgi_param front_controller_active true;
             fastcgi_pass php8;
