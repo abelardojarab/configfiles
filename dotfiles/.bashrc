@@ -148,9 +148,17 @@ fi
 export FILEBOT_OPTS="-Dnet.filebot.UserFiles.fileChooser=Swing"
 
 # Intel performance tools
-export INTELPARALLELSTUDIO=/opt/intel/parallel_studio_xe_2018
-if [ -f $INTELPARALLELSTUDIO/psxevars.sh ]; then
-  source $INTELPARALLELSTUDIO/psxevars.sh
+if [ -f /opt/intel/parallel_studio_xe_2018/psxevars.sh ]; then
+  export INTELPARALLELSTUDIO=/opt/intel/parallel_studio_xe_2018
+  if [ -f $INTELPARALLELSTUDIO/psxevars.sh ]; then
+    source $INTELPARALLELSTUDIO/psxevars.sh
+  fi
+fi
+if [ -f /opt/intel/parallel_studio_xe_2020/psxevars.sh ]; then
+  export INTELPARALLELSTUDIO=/opt/intel/parallel_studio_xe_2020
+  if [ -f $INTELPARALLELSTUDIO/psxevars.sh ]; then
+    source $INTELPARALLELSTUDIO/psxevars.sh
+  fi
 fi
 
 # Intel OpenCL compiler for x86
@@ -172,7 +180,7 @@ if [ -d /usr/local/cuda-10.2 ]; then
   export LD_LIBRARY_PATH=$CUDADIR/lib64:$LD_LIBRARY_PATH
 fi
 
-# CUDA 11.0
+# CUDA 11.2
 if [ -d /usr/local/cuda-11.2 ]; then
   export PATH=/usr/local/cuda-11.2/bin:$PATH
   export CUDADIR=/usr/local/cuda-11.2
@@ -252,7 +260,7 @@ export MGLS_LICENSE_FILE=$HOME/flexlm/precision.dat:$MGLS_LICENSE_FILE
 export ALDEC_LICENSE_FILE=$HOME/flexlm/aldec.dat
 
 # Matlab settings
-export PATH=/opt/Matlab/R2019a/bin:$PATH
+export PATH=/opt/Matlab/current/bin:$PATH
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/matlab.dat
 
 # Altera settings
