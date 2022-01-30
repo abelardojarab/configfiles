@@ -244,7 +244,7 @@ export MGLS_LICENSE_FILE=$HOME/flexlm/calibre.dat
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/calibre.dat
 
 # Modelsim settings
-export MTI_HOME=/opt/mentor/questasim/10.7c/modeltech
+export MTI_HOME=/opt/mentor/questasim/current/modeltech
 export PATH=$MTI_HOME/bin:$PATH
 export LM_LICENSE_FILE=$HOME/flexlm/modelsim.dat:$LM_LICENSE_FILE:
 export MGLS_LICENSE_FILE=$HOME/flexlm/modelsim.dat:$MGLS_LICENSE_FILE
