@@ -139,8 +139,8 @@ alias lmlicense='/opt/mentor/calibre/2013.3_28.19/bin/lmgrd -c'
 if [ -d /usr/lib/jvm/java-9-oracle ]; then
   export JAVA_HOME=/usr/lib/jvm/java-9-oracle
 fi
-if [ -d /usr/lib/jvm/java-16-oracle ]; then
-  export JAVA_HOME=/usr/lib/jvm/java-16-oracle
+if [ -d /usr/lib/jvm/java-17-oracle ]; then
+  export JAVA_HOME=/usr/lib/jvm/java-17-oracle
   CLASSPATH=.:$JAVA_HOME/lib/tools.jar:$JAVA_HOME/lib/dt.jar
   export CLASSPATH
 fi
@@ -188,7 +188,6 @@ if [ -d /usr/local/cuda-11.2 ]; then
   export CUDA_TOOLKIT_ROOT_DIR=$CUDADIR
   export LD_LIBRARY_PATH=$CUDADIR/lib64:$LD_LIBRARY_PATH
 fi
-# export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
 
 # OpenAccess
 export OA_UNSUPPORTED_PLAT=linux_rhel50_gcc44x
@@ -200,22 +199,25 @@ export PDK_DIR=/opt/FreePDK45
 export PDK_DIR_SC=/opt/FreePDK45StandardCells
 
 # Cadence settings
+export CDS_VERSION=IC618
 export CDS_AUTO_64BIT=NONE
-export CDSROOT=/opt/cadence/installs/IC615
-export CDSHOME=/opt/cadence/installs/IC615
-export CDS_ROOT=/opt/cadence/installs/IC615
-export BASIC_LIB_PATH=$CDSROOT/tools/dfII/etc/cdslib/basic
-export ANALOG_LIB_PATH=$CDSROOT/tools/dfII/etc/cdslib/artist/analogLib/
-export CDS_LIC_FILE=27000@ubuntu
-export CDS_LOG_PATH=/tmp
-export CDS_LOG_VERSION=pid
-export CDS_AUTO_CKOUT=all
-export CDS_LOAD_ENV=CWD
-export CDS_Netlisting_Mode=Analog
-export EDI_ROOT=/opt/cadence/installs/EDI131
-export MMSIM_ROOT=/opt/cadence/installs/MMSIM121
-export PATH=$MMSIM_ROOT/tools/bin:$MMSIM_ROOT/tools/spectre/bin:$CDS_ROOT/tools/bin:$CDS_ROOT/tools/dfII/bin:$PATH:$EDI_ROOT/bin
-export LM_LICENSE_FILE=$HOME/flexlm/cadence.dat
+if [ -d /opt/cadence/installs/$CDS_VERSION ]; then
+  export CDSROOT=/opt/cadence/installs/$CDS_VERSION
+  export CDSHOME=$CDS_ROOT
+  export CDS_ROOT=$CDS_ROOT
+  export BASIC_LIB_PATH=$CDSROOT/tools/dfII/etc/cdslib/basic
+  export ANALOG_LIB_PATH=$CDSROOT/tools/dfII/etc/cdslib/artist/analogLib/
+  export CDS_LIC_FILE=27000@ubuntu
+  export CDS_LOG_PATH=/tmp
+  export CDS_LOG_VERSION=pid
+  export CDS_AUTO_CKOUT=all
+  export CDS_LOAD_ENV=CWD
+  export CDS_Netlisting_Mode=Analog
+  export EDI_ROOT=/opt/cadence/installs/EDI131
+  export MMSIM_ROOT=/opt/cadence/installs/MMSIM121
+  export PATH=$MMSIM_ROOT/tools/bin:$MMSIM_ROOT/tools/spectre/bin:$CDS_ROOT/tools/bin:$CDS_ROOT/tools/dfII/bin:$PATH:$EDI_ROOT/bin
+  export LM_LICENSE_FILE=$HOME/flexlm/cadence.dat
+fi
 
 # Apache settings
 export APACHEDA_LICENSE_FILE=$HOME/flexlm/apache.dat
@@ -237,11 +239,14 @@ export PATH=$SNPS_ICWB_ROOT/bin/amd64:$SNPS_ICV_ROOT/bin/SUSE.64:$PATH
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/synopsys.dat
 
 # Calibre settings
-export CALIBRE_HOME=/opt/mentor/calibre/2013.3_28.19
-export MGC_HOME=/opt/mentor/calibre/2013.3_28.19
-export PATH=$CALIBRE_HOME/bin:$PATH
-export MGLS_LICENSE_FILE=$HOME/flexlm/calibre.dat
-export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/calibre.dat
+export CALIBRE_VERSION=2013.3_28.19
+if [ -d /opt/mentor/calibre/$CALIBRE_VERSION ]; then
+  export CALIBRE_HOME=/opt/mentor/calibre/$CALIBRE_VERSION
+  export MGC_HOME=$CALIBRE_HOME
+  export PATH=$CALIBRE_HOME/bin:$PATH
+  export MGLS_LICENSE_FILE=$HOME/flexlm/calibre.dat
+  export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/calibre.dat
+fi
 
 # Modelsim settings
 export MTI_HOME=/opt/mentor/questasim/current/modeltech
@@ -252,9 +257,12 @@ export MTI_VCO_MODE=64
 export COMP64=1
 
 # Precision settings
-export PATH=/opt/mentor/precision/2019.1/bin:$PATH
-export LM_LICENSE_FILE=$HOME/flexlm/precision.dat:$LM_LICENSE_FILE:
-export MGLS_LICENSE_FILE=$HOME/flexlm/precision.dat:$MGLS_LICENSE_FILE
+export PRECISSION_VERSION=2019.1
+if [ -d /opt/mentor/precission/$PRECISSION_VERSION ]; then
+  export PATH=/opt/mentor/precision/$PRECISSION_VERSION/bin:$PATH
+  export LM_LICENSE_FILE=$HOME/flexlm/precision.dat:$LM_LICENSE_FILE:
+  export MGLS_LICENSE_FILE=$HOME/flexlm/precision.dat:$MGLS_LICENSE_FILE
+fi
 
 # Aldec settings
 export ALDEC_LICENSE_FILE=$HOME/flexlm/aldec.dat
@@ -264,7 +272,7 @@ export PATH=/opt/Matlab/current/bin:$PATH
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/matlab.dat
 
 # Altera settings
-export QUARTUS_VERSION=19.1
+export QUARTUS_VERSION=17.1
 export QUARTUS_64BIT=1
 export QUARTUS_ROOT=/opt/intelFPGA_pro/$QUARTUS_VERSION
 export QUARTUS_HOME=$QUARTUS_ROOT/quartus
@@ -279,20 +287,21 @@ export LM_LICENSE_FILE=$HOME/flexlm/altera_university.dat:$LM_LICENSE_FILE
 export ALTERAOCLSDKROOT=$INTELFPGAOCLSDKROOT
 export LD_LIBRARY_PATH=$INTELFPGAOCLSDKROOT/host/linux64/lib:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=$INTELFPGAOCLSDKROOT/linux64/lib:$LD_LIBRARY_PATH
-# export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$QUARTUS_HOME/linux64
 
 # Xilinx settings
 export XILINX_VERSION=2019.1
-export XILINX_VIVADO=/opt/Xilinx/Vivado/$XILINX_VERSION
-export PATH=$PATH:$XILINX_VIVADO/bin
-export PATH=$PATH:/opt/Xilinx/SDK/$XILINX_VERSION/bin
-export XILINX_SDX=/opt/Xilinx/SDx/$XILINX_VERSION
-export PATH=$PATH:$XILINX_SDX/bin
-export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/Xilinx.lic
-export XILINX_XRT=/opt/xilinx/xrt
-export PATH=$XILINX_XRT/bin:$PATH
-export LD_LIBRARY_PATH=$XILINX_XRT/lib:$LD_LIBRARY_PATH
-export CPATH=/usr/include/x86_64-linux-gnu
+if [ -d /opt/Xilinx/Vivado/$XILINX_VERSION ]; then
+  export XILINX_VIVADO=/opt/Xilinx/Vivado/$XILINX_VERSION
+  export PATH=$PATH:$XILINX_VIVADO/bin
+  export PATH=$PATH:/opt/Xilinx/SDK/$XILINX_VERSION/bin
+  export XILINX_SDX=/opt/Xilinx/SDx/$XILINX_VERSION
+  export PATH=$PATH:$XILINX_SDX/bin
+  export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/Xilinx.lic
+  export XILINX_XRT=/opt/xilinx/xrt
+  export PATH=$XILINX_XRT/bin:$PATH
+  export LD_LIBRARY_PATH=$XILINX_XRT/lib:$LD_LIBRARY_PATH
+  export CPATH=/usr/include/x86_64-linux-gnu
+fi
 
 # AWS FPGA directory
 export AWS_FPGA_REPO_DIR=/opt/aws-fpga
@@ -303,7 +312,7 @@ export PATH=$PATH:/opt/bwtk/2018.6L/bin
 # Synopsys Synplify
 export SNPSLMD_LICENSE_FILE=$HOME/flexlm/synplify.dat
 export PATH=$PATH:/opt/synopsys/Synplify/L-2016.03-SP1/bin
-export LM_LICENSE_FILE=47323@ubuntu01:$LM_LICENSE_FILE:$HOME/flexlm/synplify.dat
+export LM_LICENSE_FILE=47323@localhost:$LM_LICENSE_FILE:$HOME/flexlm/synplify.dat
 
 # SPSS settings
 export PATH=/opt/IBM/SPSS/Statistics/22/bin:$PATH
@@ -389,10 +398,6 @@ export PYSPARK_DRIVER_PYTHON="jupyter"
 export PYSPARK_DRIVER_PYTHON_OPTS="notebook"
 export PYSPARK_PYTHON=python3
 
-# Pycharm
-export PYCHARM_HOME=/opt/JetBrains/pycharm/2019.2.3
-export PATH=$PATH:$PYCHARM_HOME/bin
-
 # Understand tool
 export PATH=$PATH:/opt/scitools/Understand/5.0/bin/linux64
 
@@ -406,9 +411,6 @@ fi
 
 # Snap
 export PATH=/snap/bin:$PATH
-
-# nvim
-# export PATH=/opt/nvim/current/bin:$PATH
 
 # Local settings
 if [ -f $HOME/.bashrc_local ]; then
