@@ -197,7 +197,7 @@ if [ -d /opt/cadence/installs/$CDS_VERSION ]; then
   export CDS_ROOT=$CDS_ROOT
   export BASIC_LIB_PATH=$CDSROOT/tools/dfII/etc/cdslib/basic
   export ANALOG_LIB_PATH=$CDSROOT/tools/dfII/etc/cdslib/artist/analogLib/
-  export CDS_LIC_FILE=27000@ubuntu
+  export CDS_LIC_FILE=27000@localhost
   export CDS_LOG_PATH=/tmp
   export CDS_LOG_VERSION=pid
   export CDS_AUTO_CKOUT=all
