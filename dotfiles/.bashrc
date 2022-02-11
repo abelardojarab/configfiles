@@ -134,6 +134,7 @@ export PATH=$HOME/.cask/bin:$PATH
 # Flexlm settings
 export theHost=`hostname`
 alias lmlicense='/opt/mentor/calibre/2013.3_28.19/bin/lmgrd -c'
+export LM_LICENSE_FILE=47323@localhost:$LM_LICENSE_FILE
 
 # Java options
 if [ -d /usr/lib/jvm/java-9-oracle ]; then
@@ -161,9 +162,6 @@ if [ -f /opt/intel/parallel_studio_xe_2020/psxevars.sh ]; then
   fi
 fi
 
-# Intel OpenCL compiler for x86
-export PATH=/opt/intel/system_studio_2019/opencl/SDK/bin:$PATH
-
 # NVIDIA settings
 export GPU_FORCE_64BIT_PTR=0
 export GPU_MAX_HEAP_SIZE=100
@@ -181,27 +179,19 @@ if [ -d /usr/local/cuda-10.2 ]; then
 fi
 
 # CUDA 11.2
-if [ -d /usr/local/cuda-11.2 ]; then
-  export PATH=/usr/local/cuda-11.2/bin:$PATH
-  export CUDADIR=/usr/local/cuda-11.2
+export CUDA_VERSION=11.2
+if [ -d /usr/local/cuda-$CUDA_VERSION ]; then
+  export CUDADIR=/usr/local/cuda-$CUDA_VERSION
+  export PATH=$CUDA_DIR/bin:$PATH
   export CUDA_HOME=$CUDADIR
   export CUDA_TOOLKIT_ROOT_DIR=$CUDADIR
   export LD_LIBRARY_PATH=$CUDADIR/lib64:$LD_LIBRARY_PATH
 fi
 
-# OpenAccess
-export OA_UNSUPPORTED_PLAT=linux_rhel50_gcc44x
-export OA_HOME=/opt/cadence/installs/IC616/oa_v22.43.018
-
-# PDKs
-export CDK_DIR=/opt/ncsu-cdk-1.6.0
-export PDK_DIR=/opt/FreePDK45
-export PDK_DIR_SC=/opt/FreePDK45StandardCells
-
 # Cadence settings
 export CDS_VERSION=IC618
-export CDS_AUTO_64BIT=NONE
 if [ -d /opt/cadence/installs/$CDS_VERSION ]; then
+  export CDS_AUTO_64BIT=NONE
   export CDSROOT=/opt/cadence/installs/$CDS_VERSION
   export CDSHOME=$CDS_ROOT
   export CDS_ROOT=$CDS_ROOT
@@ -217,26 +207,50 @@ if [ -d /opt/cadence/installs/$CDS_VERSION ]; then
   export MMSIM_ROOT=/opt/cadence/installs/MMSIM121
   export PATH=$MMSIM_ROOT/tools/bin:$MMSIM_ROOT/tools/spectre/bin:$CDS_ROOT/tools/bin:$CDS_ROOT/tools/dfII/bin:$PATH:$EDI_ROOT/bin
   export LM_LICENSE_FILE=$HOME/flexlm/cadence.dat
+
+  # OpenAccess
+  export OA_UNSUPPORTED_PLAT=linux_rhel50_gcc44x
+  export OA_HOME=/opt/cadence/installs/IC616/oa_v22.60.007
+
+  # PDKs
+  export CDK_DIR=/opt/ncsu-cdk-1.6.0
+  export PDK_DIR=/opt/FreePDK45
+  export PDK_DIR_SC=/opt/FreePDK45StandardCells
 fi
 
 # Apache settings
-export APACHEDA_LICENSE_FILE=$HOME/flexlm/apache.dat
-export APACHEROOT=/opt/ansys/Totem14.1.b2
-export PATH=$APACHEROOT/bin:$PATH
-export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/apache.dat
+if [ -d /opt/ansys/Totem/$TOTEM_VERSION ]; then
+  export TOTEM_VERSION=14.1.b2
+  export APACHEDA_LICENSE_FILE=$HOME/flexlm/apache.dat
+  export APACHEROOT=/opt/ansys/Totem/$TOTEM_VERSION
+  export PATH=$APACHEROOT/bin:$PATH
+  export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/apache.dat
+fi
 
 # Synopsys settings
 export SYNOPSYS=/opt/synopsys
 export SNPSLMD_LICENSE_FILE=$HOME/flexlm/synopsys.dat
-export SNPS_DC_ROOT=/opt/synopsys/designcompiler/B-2008.09
-export SNPS_HSPICE_ROOT=/opt/synopsys/hspice/F-2011.09-SP2
-export SNPS_STARRC_ROOT=/opt/synopsys/starrc/H-2012.12
-export SNPS_COSMOSSCOPE_ROOT=/opt/synopsys/cosmosscope/H-2012.12
-export SNPS_ICWB_ROOT=/opt/synopsys/icweb/G-2012.06-SP1
-export SNPS_ICV_ROOT=/opt/synopsys/icvalidator/H-2013.06
-export PATH=$SNPS_HSPICE_ROOT/hspice/linux:$SNPS_DC_ROOT/bin:$SNPS_STARRC_ROOT/bin:$SNPS_COSMOSSCOPE_ROOT/ai_bin:$PATH
-export PATH=$SNPS_ICWB_ROOT/bin/amd64:$SNPS_ICV_ROOT/bin/SUSE.64:$PATH
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/synopsys.dat
+
+export DESIGN_COMPILER_VERSION=B-2008.09
+export HSPICE_VERSION=F-2011.09-SP2
+export STARRC_VERSION=H-2012.12
+export COSMOSSCOPE_VERSION=H-2012.12
+export ICWB_VERSION=G-2012.06-SP1
+export ICV_VERSION=H-2013.06
+
+export SNPS_DC_ROOT=/opt/synopsys/designcompiler/$DESIGN_COMPILER_VERSION
+export SNPS_HSPICE_ROOT=/opt/synopsys/hspice/$HSPICE_VERSION
+export SNPS_STARRC_ROOT=/opt/synopsys/starrc/$STARRC_VERSION
+export SNPS_COSMOSSCOPE_ROOT=/opt/synopsys/cosmosscope/$COSMOSSCOPE_VERSION
+export SNPS_ICWB_ROOT=/opt/synopsys/icweb/$ICWB_VERSION
+export SNPS_ICV_ROOT=/opt/synopsys/icvalidator/$ICV_VERSION
+
+if [ -d $SNPS_DC_ROOT/bin ]; then
+  export PATH=$SNPS_DC_ROOT/bin:$PATH
+fi
+export PATH=$SNPS_HSPICE_ROOT/hspice/linux:$SNPS_STARRC_ROOT/bin:$SNPS_COSMOSSCOPE_ROOT/ai_bin:$PATH
+export PATH=$SNPS_ICWB_ROOT/bin/amd64:$SNPS_ICV_ROOT/bin/SUSE.64:$PATH
 
 # Calibre settings
 export CALIBRE_VERSION=2013.3_28.19
@@ -249,12 +263,15 @@ if [ -d /opt/mentor/calibre/$CALIBRE_VERSION ]; then
 fi
 
 # Modelsim settings
-export MTI_HOME=/opt/mentor/questasim/current/modeltech
-export PATH=$MTI_HOME/bin:$PATH
-export LM_LICENSE_FILE=$HOME/flexlm/modelsim.dat:$LM_LICENSE_FILE:
-export MGLS_LICENSE_FILE=$HOME/flexlm/modelsim.dat:$MGLS_LICENSE_FILE
-export MTI_VCO_MODE=64
-export COMP64=1
+export QUESTASIM_VERSION=10.7c
+if [ -d MTI_HOME=/opt/mentor/questasim/$QUESTASIM_VERSION/modeltech ]; then
+  export MTI_HOME=/opt/mentor/questasim/$QUESTASIM_VERSION/modeltech
+  export PATH=$MTI_HOME/bin:$PATH
+  export LM_LICENSE_FILE=$HOME/flexlm/modelsim.dat:$LM_LICENSE_FILE:
+  export MGLS_LICENSE_FILE=$HOME/flexlm/modelsim.dat:$MGLS_LICENSE_FILE
+  export MTI_VCO_MODE=64
+  export COMP64=1
+fi
 
 # Precision settings
 export PRECISSION_VERSION=2019.1
@@ -264,29 +281,28 @@ if [ -d /opt/mentor/precission/$PRECISSION_VERSION ]; then
   export MGLS_LICENSE_FILE=$HOME/flexlm/precision.dat:$MGLS_LICENSE_FILE
 fi
 
-# Aldec settings
-export ALDEC_LICENSE_FILE=$HOME/flexlm/aldec.dat
-
 # Matlab settings
 export PATH=/opt/Matlab/current/bin:$PATH
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/matlab.dat
 
 # Altera settings
 export QUARTUS_VERSION=17.1
-export QUARTUS_64BIT=1
-export QUARTUS_ROOT=/opt/intelFPGA_pro/$QUARTUS_VERSION
-export QUARTUS_HOME=$QUARTUS_ROOT/quartus
-export QUARTUS_ROOTDIR=$QUARTUS_HOME
-export PATH=$QUARTUS_ROOT/quartus/bin:$QUARTUS_ROOT/qsys/bin:$PATH
-export INTELFPGAOCLSDKROOT=$QUARTUS_ROOT/hld
-export PATH=$PATH:$INTELFPGAOCLSDKROOT/bin
-export PATH=$INTELFPGAOCLSDKROOT/host/linux64/bin:$PATH
-export QSYS_ROOTDIR=$QUARTUS_ROOT/qsys/bin
-export LM_LICENSE_FILE=$HOME/flexlm/altera.dat:$LM_LICENSE_FILE
-export LM_LICENSE_FILE=$HOME/flexlm/altera_university.dat:$LM_LICENSE_FILE
-export ALTERAOCLSDKROOT=$INTELFPGAOCLSDKROOT
-export LD_LIBRARY_PATH=$INTELFPGAOCLSDKROOT/host/linux64/lib:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=$INTELFPGAOCLSDKROOT/linux64/lib:$LD_LIBRARY_PATH
+if [ -d /opt/intelFPGA_pro/$QUARTUS_VERSION ]; then
+  export QUARTUS_64BIT=1
+  export QUARTUS_ROOT=/opt/intelFPGA_pro/$QUARTUS_VERSION
+  export QUARTUS_HOME=$QUARTUS_ROOT/quartus
+  export QUARTUS_ROOTDIR=$QUARTUS_HOME
+  export PATH=$QUARTUS_ROOT/quartus/bin:$QUARTUS_ROOT/qsys/bin:$PATH
+  export INTELFPGAOCLSDKROOT=$QUARTUS_ROOT/hld
+  export PATH=$PATH:$INTELFPGAOCLSDKROOT/bin
+  export PATH=$INTELFPGAOCLSDKROOT/host/linux64/bin:$PATH
+  export QSYS_ROOTDIR=$QUARTUS_ROOT/qsys/bin
+  export LM_LICENSE_FILE=$HOME/flexlm/altera.dat:$LM_LICENSE_FILE
+  export LM_LICENSE_FILE=$HOME/flexlm/altera_university.dat:$LM_LICENSE_FILE
+  export ALTERAOCLSDKROOT=$INTELFPGAOCLSDKROOT
+  export LD_LIBRARY_PATH=$INTELFPGAOCLSDKROOT/host/linux64/lib:$LD_LIBRARY_PATH
+  export LD_LIBRARY_PATH=$INTELFPGAOCLSDKROOT/linux64/lib:$LD_LIBRARY_PATH
+fi
 
 # Xilinx settings
 export XILINX_VERSION=2019.1
@@ -303,41 +319,46 @@ if [ -d /opt/Xilinx/Vivado/$XILINX_VERSION ]; then
   export CPATH=/usr/include/x86_64-linux-gnu
 fi
 
-# AWS FPGA directory
-export AWS_FPGA_REPO_DIR=/opt/aws-fpga
-
 # Bitware tools
 export PATH=$PATH:/opt/bwtk/2018.6L/bin
 
 # Synopsys Synplify
-export SNPSLMD_LICENSE_FILE=$HOME/flexlm/synplify.dat
-export PATH=$PATH:/opt/synopsys/Synplify/L-2016.03-SP1/bin
-export LM_LICENSE_FILE=47323@localhost:$LM_LICENSE_FILE:$HOME/flexlm/synplify.dat
+export SINPLIFY_VERSION=L-2016.03-SP1
+if [ -d /opt/synopsys/Synplify/$SINPLIFY_VERSION/bin ]; then
+  export SNPSLMD_LICENSE_FILE=$HOME/flexlm/synplify.dat
+  export PATH=$PATH:/opt/synopsys/Synplify/$SINPLIFY_VERSION/bin
+  export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/synplify.dat
+fi
 
 # SPSS settings
-export PATH=/opt/IBM/SPSS/Statistics/22/bin:$PATH
+export PATH=/opt/IBM/SPSS/Statistics/current/bin:$PATH
 
 # Sublime Text settings
 export PATH=/opt/sublime_text:$PATH
 
-# Master PDF 3 and PDF Studio
-export PATH=/opt/master-pdf-editor-3:$PATH
+# Master PDF and PDF Studio
+export PATH=/opt/master-pdf-editor-5:$PATH
 export PATH=/opt/PDFStudio:$PATH
 
 # Intel OpenCL compiler for x86
-export INTEL_OCL_SDK=/opt/intel/system_studio_2019/opencl-sdk
-export PATH=${PATH}:${INTEL_OCL_SDK}/bin
+export INTEL_OCL_SDK_VERSION=2019
+if [ -d /opt/intel/system_studio_$INTEL_OCL_SDK_VERSION/opencl-sdk ]; then
+  export INTEL_OCL_SDK=/opt/intel/system_studio_$INTEL_OCL_SDK_VERSION/opencl-sdk
+  export PATH=${PATH}:${INTEL_OCL_SDK}/bin
+fi
 
 # Perforce
-export PATH=$PATH:/opt/perforce/p4-2018.1/bin
-export P4CLIENT=abelardojara-nvcpu
-export P4EDITOR=vim
-export P4PORT=p4hw:2001
-export P4USER=abelardoj
-export P4DIFF
+if [ -d /opt/perforce ]; then
+  export PATH=$PATH:/opt/perforce/p4-2018.1/bin
+  export P4CLIENT=abelardojara-nvcpu
+  export P4EDITOR=vim
+  export P4PORT=p4hw:2001
+  export P4USER=abelardoj
+  export P4DIFF
 
-# ccollab
-export PATH=$PATH:/opt/perforce/ccollab-cmdline.13.1.13400
+  # ccollab
+  export PATH=$PATH:/opt/perforce/ccollab-cmdline.13.1.13400
+fi
 
 # as2
 if [ -d /opt/nv/utils/as2 ] ; then
@@ -371,11 +392,11 @@ export KUBECONFIG=$HOME/.kube/config
 if  [[ -f ${HOME}/.kube/nvidia ]] ; then
   export KUBECONFIG=$HOME/.kube/nvidia:$KUBECONFIG
 fi
-alias kubepodsinfo='kubectl get pod -o=custom-columns=NAME:.metadata.name,STATUS:.status.phase,NODE:.spec.nodeName,IP:.status.podIP --all-namespaces'
-alias kubetoken='kubectl get secret -n kubernetes-dashboard $(kubectl get serviceaccount abelardojara -n kubernetes-dashboard -o jsonpath="{.secrets[0].name}") -o jsonpath="{.data.token}" | base64 --decode'
+alias kubectl_get_pods_info='kubectl get pod -o=custom-columns=NAME:.metadata.name,STATUS:.status.phase,NODE:.spec.nodeName,IP:.status.podIP --all-namespaces'
+alias kubectl_get_token='kubectl get secret -n kubernetes-dashboard $(kubectl get serviceaccount abelardojara -n kubernetes-dashboard -o jsonpath="{.secrets[0].name}") -o jsonpath="{.data.token}" | base64 --decode'
 
 # Hadoop dev
-export HADOOP_HOME=/opt/hadoop/2.7.7
+export HADOOP_HOME=/opt/hadoop/current
 export PATH=$PATH:$HADOOP_HOME/bin
 export HADOOP_MAPRED_HOME=$HADOOP_HOME
 export HADOOP_COMMON_HOME=$HADOOP_HOME
@@ -384,7 +405,7 @@ export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native
 export HADOOP_OPTS="-Djava.library.path=$HADOOP_HOME/lib"
 
 # Spark settings
-export SPARK_HOME=/opt/spark/2.4.0-hadoop-2.7.7
+export SPARK_HOME=/opt/spark/current
 export PATH=$PATH:$SPARK_HOME/bin
 
 # Spark cluster settings
@@ -399,7 +420,7 @@ export PYSPARK_DRIVER_PYTHON_OPTS="notebook"
 export PYSPARK_PYTHON=python3
 
 # Understand tool
-export PATH=$PATH:/opt/scitools/Understand/5.0/bin/linux64
+export PATH=$PATH:/opt/scitools/Understand/current/bin/linux64
 
 # Guix
 export PATH="$HOME/.config/guix/current/bin:$PATH"
