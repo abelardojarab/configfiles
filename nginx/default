@@ -37,6 +37,10 @@ upstream code-server {
    server       127.0.0.1:8085;
 }
 
+upstream drawio {
+   server       127.0.0.1:8087;
+}
+
 upstream teamcity {
     server       127.0.0.1:8112 fail_timeout=0;
     keepalive    32;
@@ -211,15 +215,29 @@ server {
         log_not_found off;
     }
 
+    # Joomla
+    location /joomla {
+        try_files $uri $uri/ /index.php?$args;
+        # time out settings
+        fastcgi_read_timeout 120;
+
+        if ($request_uri ~ "^system.*"){
+            rewrite ^/joomla/(.*)$ /joomla/index.php?/$1 last;
+        }
+        if (!-e $request_filename){
+            rewrite ^/joomla/(.*)$ /joomla/index.php?/$1 last;
+        }
+    }
+
     # Octant
     location /octant/ {
         proxy_pass http://localhost:7777/;
         # rewrite  ^/octant/(.*)  /$1 break; # not needed if / is added at end of location
 
-        # Use remote real IP
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP  $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        # Use remote real IP, add $server_port to remove port number
+        proxy_set_header   Host             $host:$server_port;
+        proxy_set_header   X-Real-IP        $remote_addr;
+        proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
 
         # Use websockets
         proxy_http_version 1.1;
@@ -478,7 +496,7 @@ server {
         proxy_set_header   X-Real-IP        $remote_addr;
         proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
 
-        proxy_max_temp_file_size 0;
+        proxy_max_temp_file_size   0;
         proxy_connect_timeout      90;
         proxy_send_timeout         90;
         proxy_read_timeout         90;
@@ -588,11 +606,20 @@ server {
         proxy_read_timeout 36000s;
     }
 
+    # Code server
     location /code-server/ {
        proxy_http_version 1.1;
        proxy_set_header Upgrade $http_upgrade;
        proxy_set_header Connection "upgrade";
        proxy_pass http://code-server/;
+    }
+
+    # Drawio
+    location /drawio/ {
+       proxy_http_version 1.1;
+       proxy_set_header Upgrade $http_upgrade;
+       proxy_set_header Connection "upgrade";
+       proxy_pass http://drawio/;
     }
 
     # Portainer
