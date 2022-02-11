@@ -249,8 +249,21 @@ export SNPS_ICV_ROOT=/opt/synopsys/icvalidator/$ICV_VERSION
 if [ -d $SNPS_DC_ROOT/bin ]; then
   export PATH=$SNPS_DC_ROOT/bin:$PATH
 fi
-export PATH=$SNPS_HSPICE_ROOT/hspice/linux:$SNPS_STARRC_ROOT/bin:$SNPS_COSMOSSCOPE_ROOT/ai_bin:$PATH
-export PATH=$SNPS_ICWB_ROOT/bin/amd64:$SNPS_ICV_ROOT/bin/SUSE.64:$PATH
+if [ -d $SNPS_HSPICE_ROOT/hspice/linux ]; then
+  export PATH=$SNPS_HSPICE_ROOT/hspice/linux:$PATH
+fi
+if [ -d $SNPS_STARRC_ROOT/bin ]; then
+  export PATH=$SNPS_STARRC_ROOT/bin:$PATH
+fi
+if [ -d $SNPS_COSMOSSCOPE_ROOT/ai_bin ]; then
+  export PATH=$SNPS_COSMOSSCOPE_ROOT/ai_bin:$PATH
+fi
+if [ -d $SNPS_ICWB_ROOT/bin/amd64 ]; then
+  export PATH=$SNPS_ICWB_ROOT/bin/amd64:$PATH
+fi
+if [ -d $SNPS_ICV_ROOT/bin/SUSE.64 ]; then
+  export PATH=$SNPS_ICV_ROOT/bin/SUSE.64:$PATH
+fi
 
 # Calibre settings
 export CALIBRE_VERSION=2013.3_28.19
