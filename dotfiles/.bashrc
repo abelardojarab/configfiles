@@ -442,7 +442,9 @@ if [[ -d $HOME/.guix-profile ]]; then
   export GUIX_PROFILE="$HOME/.guix-profile"
   . "$GUIX_PROFILE/etc/profile"
 fi
-
+if [[ ! -d $HOME/.guix-profile/share/emacs ]]; then
+  unset EMACSLOADPATH
+fi
 # Snap
 export PATH=/snap/bin:$PATH
 
