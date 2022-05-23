@@ -29,6 +29,10 @@ upstream heimdall {
    server        127.0.0.1:7888;
 }
 
+upstream mariadb {
+   server        127.0.0.1:8095;
+}
+
 upstream portainer {
    server       127.0.0.1:9010;
 }
@@ -57,7 +61,7 @@ upstream artifactory {
 }
 
 upstream notebook {
-    server       127.0.0.1:8888 fail_timeout=0;
+    server       127.0.0.1:8889 fail_timeout=0;
     keepalive    32;
 }
 
@@ -265,7 +269,7 @@ server {
         proxy_set_header Connection "upgrade";
 
         # Proxy redirect
-        proxy_pass http://127.0.0.1:9380/jenkins/;
+        proxy_pass http://127.0.0.1:9082/jenkins;
         proxy_redirect http:// https://;
         sendfile off;
 
@@ -350,7 +354,14 @@ server {
         auth_basic_user_file /var/www/.htpasswd;
     }
 
-	# Calibreweb
+    # phpmyadmin
+    location /mariadb/ {
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_pass http://mariadb/;
+    }
+
+    # Calibreweb
     location /calibre-web {
         proxy_pass              http://localhost:8084;
         proxy_set_header        Host            $http_host;
@@ -380,26 +391,35 @@ server {
 
     # Artifactory
     location /artifactory/ {
-        client_max_body_size 2000M;
-        proxy_read_timeout  900;
-        proxy_cookie_path   ~*^/.* /;
-        proxy_pass          http://localhost:8081/artifactory/;
+        proxy_buffers            4 256k;
+        proxy_busy_buffers_size  256k;
+        proxy_read_timeout       900;
+
+        # Paths
+        proxy_cookie_path        ~*^/.* /;
+        proxy_pass               http://localhost:8081/artifactory/;
 
         # Use remote real IP
         proxy_set_header  Host $host:$server_port;
         proxy_set_header  X-Real-IP $remote_addr;
         proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header  X-Forwarded-Proto $scheme;
+
+        # No buffering to temp files, it fails for large downloads
+        proxy_max_temp_file_size 0;
+
+        # Disable check to allow unlimited body sizes
+        client_max_body_size 0;
     }
 
     location /ui/ {
-        proxy_read_timeout  900;
-        proxy_cookie_path   ~*^/.* /;
-        proxy_pass          http://localhost:8082/ui/;
-        proxy_set_header  Host $host:$server_port;
-        proxy_set_header  X-Real-IP $remote_addr;
-        proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header  X-Forwarded-Proto $scheme;
+        proxy_read_timeout 900;
+        proxy_cookie_path  ~*^/.* /;
+        proxy_pass         http://localhost:8082/ui/;
+        proxy_set_header   Host $host:$server_port;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
     }
 
     # Jira
@@ -428,7 +448,7 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
 
-        client_max_body_size 10M;
+        client_max_body_size 100M;
         proxy_buffers 4 256k;
         proxy_buffer_size 128k;
         proxy_busy_buffers_size 256k;
@@ -453,7 +473,7 @@ server {
     # Grafana
     location /grafana/ {
         proxy_pass http://localhost:3000;
-        rewrite  ^/grafana/(.*)  /$1 break;
+        rewrite ^/grafana/(.*)  /$1 break;
 
         proxy_set_header Host $host;
 
