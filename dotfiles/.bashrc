@@ -400,6 +400,13 @@ if [[ -d ${HOME}/.pyenv ]] ; then
   eval "$(pyenv init -)"
 fi
 
+# Other variables
+export DLRM_DIR=$HOME/workspace/dlrm
+export OMP_NUM_THREADS=32
+export MODEL_DIR=../../model
+export DATA_DIR=./fake_criteo
+ulimit -n 8192
+
 # Kubernetes
 export KUBECONFIG=$HOME/.kube/config
 if  [[ -f ${HOME}/.kube/nvidia ]] ; then
