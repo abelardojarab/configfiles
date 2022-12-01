@@ -45,7 +45,6 @@ bind ^P prevword main
 bind ^N nextword main
 bind ^B firstline main
 bind ^E lastline main
-bind ^L curpos main
 bind ^J gotoline main
 
 bind ^Space mark main
