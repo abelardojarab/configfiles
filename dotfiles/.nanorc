@@ -18,6 +18,9 @@ set boldtext
 ## tabsize
 set tabsize 4
 
+## Convert typed tabs to spaces.
+set tabstospaces
+
 ## enable regular expressions
 set regexp
 
