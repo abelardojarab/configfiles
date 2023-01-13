@@ -444,7 +444,6 @@ export PATH=$PATH:/opt/scitools/Understand/current/bin/linux64
 
 # Cruise
 export VAULT_ADDR=https://vault.robot.car:8200
-export PATH=$PATH:/opt/homebrew/bin
 
 # Add the following into your shell rc (e.g. .zshrc, .bashrc)
 # This is so that inside tmux, it will export the variables that make 'code' work.
@@ -454,6 +453,11 @@ if [ -n "$TMUX" ]; then
   export "`tmux showenv VSCODE_GIT_ASKPASS_MAIN`"
   export "`tmux showenv VSCODE_GIT_ASKPASS_NODE`"
   export "`tmux showenv VSCODE_IPC_HOOK_CLI`"
+fi
+
+# set the default editor inside the vscode integrated terminal.
+if [ -n "$VSCODE_IPC_HOOK_CLI" ]; then
+  export EDITOR="code -w"
 fi
 
 # Guix
