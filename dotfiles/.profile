@@ -149,3 +149,12 @@ export PROMPT_COMMAND=set_prompt
 
 # After each command, append to the history file and reread it
 export PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"
+
+# Cruise
+export VAULT_ADDR=https://vault.robot.car:8200
+export PATH=$PATH:/opt/homebrew/bin
+
+# Setting PATH for Python 3.11
+# The original version is saved in .profile.pysave
+PATH="/Library/Frameworks/Python.framework/Versions/3.11/bin:${PATH}"
+export PATH

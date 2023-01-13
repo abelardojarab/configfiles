@@ -442,6 +442,10 @@ export PYSPARK_PYTHON=python3
 # Understand tool
 export PATH=$PATH:/opt/scitools/Understand/current/bin/linux64
 
+# Cruise
+export VAULT_ADDR=https://vault.robot.car:8200
+export PATH=$PATH:/opt/homebrew/bin
+
 # Guix
 export PATH="$HOME/.config/guix/current/bin:$PATH"
 export INFOPATH="$HOME/.config/guix/current/share/info:$INFOPATH"
