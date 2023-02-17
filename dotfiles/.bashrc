@@ -383,13 +383,14 @@ export PATH=$PATH:/home/nv/bin
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:8085@10.210.1.38:5280@10.210.1.38:8093@10.210.1.38
 XPLORERVER=9.0.17
 TOOLCHAIN=RI-2021.7
-export PATH=${PATH}:${HOME}/workspace/my26-dsp-efpga-support/xtensa/Xplorer-${XPLORERVER}
-export XTENSA_TOOLS_PATH=${HOME}/workspace/my26-dsp-efpga-support/xtensa/XtDevTools/install/tools/${TOOLCHAIN}-linux/XtensaTools
-export PATH=$PATH:$XTENSA_TOOLS_PATH/bin
+export XTENSA_ROOT=${HOME}/workspace/my26-dsp-efpga-support/xtensa
+export PATH=${PATH}:${XTENSA_ROOT}/Xplorer-${XPLORERVER}
+export XTENSA_TOOLS_PATH=${XTENSA_ROOT}/XtDevTools/install/tools/${TOOLCHAIN}-linux/XtensaTools
+export PATH=${PATH}:$XTENSA_TOOLS_PATH/bin
+export XTENSA_SYSTEM=${XTENSA_ROOT}/XtDevTools/install/tools/${TOOLCHAIN}-linux/XtensaTools/config/
 
 export XTENSA_CORE=Xm_dune_q7
-export XTENSA_SYSTEM=${HOME}/workspace/my26-dsp-efpga-support/xtensa/XtDevTools/install/tools/${TOOLCHAIN}-linux/XtensaTools/config/
-export XTENSA_CONFIG_PATH=${HOME}/workspace/my26-dsp-efpga-support/xtensa/XtDevTools/install/builds/RI-2021.7-linux/Xm_dune_q7/
+export XTENSA_CONFIG_PATH=${XTENSA_ROOT}/XtDevTools/install/builds/RI-2021.7-linux/${XTENSA_CORE}/
 
 # Set up general GTAGS location
 export GTAGSLIBPATH=$HOME/.gtags/
