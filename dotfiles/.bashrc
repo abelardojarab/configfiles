@@ -407,6 +407,9 @@ export MODEL_DIR=../../model
 export DATA_DIR=./fake_criteo
 ulimit -n 8192
 
+# Poppy SSH
+export POPPY_DIRECT_CONNECT=t
+
 # Kubernetes
 export KUBECONFIG=$HOME/.kube/config
 if  [[ -f ${HOME}/.kube/nvidia ]] ; then
