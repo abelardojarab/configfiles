@@ -501,6 +501,9 @@ if [ -f /usr/share/terminfo/x/xterm-256color ]; then
 else
   export TERM="xterm"
 fi
+if [ -f /usr/lib/terminfo/x/xterm-256color ]; then
+  export TERM="xterm-256color"
+fi
 
 # set a fancy prompt (non-color, unless we know we "want" color)
 case "$TERM" in
