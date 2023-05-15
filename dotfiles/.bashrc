@@ -379,6 +379,19 @@ if [ -d /opt/nv/utils/as2 ] ; then
 fi
 export PATH=$PATH:/home/nv/bin
 
+# Xtensa tools
+export LM_LICENSE_FILE=$LM_LICENSE_FILE:8085@10.210.1.38:5280@10.210.1.38:8093@10.210.1.38
+XPLORERVER=9.0.17
+TOOLCHAIN=RI-2021.7
+export XTENSA_ROOT=${HOME}/workspace/my26-dsp-efpga-support/xtensa
+export PATH=${PATH}:${XTENSA_ROOT}/Xplorer-${XPLORERVER}
+export XTENSA_TOOLS_PATH=${XTENSA_ROOT}/XtDevTools/install/tools/${TOOLCHAIN}-linux/XtensaTools
+export PATH=${PATH}:$XTENSA_TOOLS_PATH/bin
+export XTENSA_SYSTEM=${XTENSA_ROOT}/XtDevTools/install/tools/${TOOLCHAIN}-linux/XtensaTools/config/
+
+export XTENSA_CORE=Xm_dune_q7
+export XTENSA_CONFIG_PATH=${XTENSA_ROOT}/XtDevTools/install/builds/RI-2021.7-linux/${XTENSA_CORE}/
+
 # Set up general GTAGS location
 export GTAGSLIBPATH=$HOME/.gtags/
 export GTAGSTHROUGH=true
@@ -406,6 +419,9 @@ export OMP_NUM_THREADS=32
 export MODEL_DIR=../../model
 export DATA_DIR=./fake_criteo
 ulimit -n 8192
+
+# Poppy SSH
+export POPPY_DIRECT_CONNECT=t
 
 # Kubernetes
 export KUBECONFIG=$HOME/.kube/config
@@ -447,13 +463,13 @@ export VAULT_ADDR=https://vault.robot.car:8200
 
 # Add the following into your shell rc (e.g. .zshrc, .bashrc)
 # This is so that inside tmux, it will export the variables that make 'code' work.
-if [ -n "$TMUX" ]; then
-  export "`tmux showenv PATH`"
-  export "`tmux showenv GIT_ASKPASS`"
-  export "`tmux showenv VSCODE_GIT_ASKPASS_MAIN`"
-  export "`tmux showenv VSCODE_GIT_ASKPASS_NODE`"
-  export "`tmux showenv VSCODE_IPC_HOOK_CLI`"
-fi
+# if [ -n "$TMUX" ]; then
+#   export "`tmux showenv PATH`"
+#   export "`tmux showenv GIT_ASKPASS`"
+#   export "`tmux showenv VSCODE_GIT_ASKPASS_MAIN`"
+#   export "`tmux showenv VSCODE_GIT_ASKPASS_NODE`"
+#   export "`tmux showenv VSCODE_IPC_HOOK_CLI`"
+# fi
 
 # set the default editor inside the vscode integrated terminal.
 if [ -n "$VSCODE_IPC_HOOK_CLI" ]; then
@@ -484,6 +500,9 @@ if [ -f /usr/share/terminfo/x/xterm-256color ]; then
   export TERM="xterm-256color"
 else
   export TERM="xterm"
+fi
+if [ -f /usr/lib/terminfo/x/xterm-256color ]; then
+  export TERM="xterm-256color"
 fi
 
 # set a fancy prompt (non-color, unless we know we "want" color)
@@ -583,3 +602,4 @@ export PROMPT_COMMAND=set_prompt
 
 # After each command, append to the history file and reread it
 export PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"
+
