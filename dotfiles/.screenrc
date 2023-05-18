@@ -8,6 +8,9 @@ hardstatus string '%{= kG}[%{G}%H%? %1`%?%{g}][%= %{= kw}%-w%{+b yk} %n*%t%?(%u)
 # format activity message
 activity "%c activity -> %n%f %t"
 
+# enable screen -x
+multiuser on
+
 # on split screen, switch window focus by clicking
 mousetrack on
 
@@ -21,8 +24,14 @@ defscrollback 5000
 altscreen on
 
 # Enable colors and some useful terminfo
-term screen-256color
+# term screen-256color
 terminfo rxvt-unicode 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm'
+
+# for mutt transparency
+defbce on
+
+# set terminal name
+term rxvt-256color
 
 # Tell screen how to set colors. AB = background, AF=foreground
 termcapinfo xterm 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm'
