@@ -458,6 +458,9 @@ export PYSPARK_PYTHON=python3
 # Understand tool
 export PATH=$PATH:/opt/scitools/Understand/current/bin/linux64
 
+# Local cmake
+export PATH=$PATH:$HOME/bin/cmake/bin
+
 # Cruise
 export VAULT_ADDR=https://vault.robot.car:8200
 
