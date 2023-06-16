@@ -130,6 +130,7 @@ export PATH=$HOME/.local/bin:$PATH
 # Emacs settings
 export EMACS_SERVER_FILE=$HOME/.emacs.cache/server/server
 export PATH=$HOME/.cask/bin:$PATH
+alias emacsclients='emacsclient -c -s ~/.emacs.cache/server/server'
 
 # Flexlm settings
 export theHost=`hostname`
