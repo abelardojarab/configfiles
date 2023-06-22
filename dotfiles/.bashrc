@@ -130,7 +130,11 @@ export PATH=$HOME/.local/bin:$PATH
 # Emacs settings
 export EMACS_SERVER_FILE=$HOME/.emacs.cache/server/server
 export PATH=$HOME/.cask/bin:$PATH
-alias emacsclients='emacsclient -c -s ~/.emacs.cache/server/server'
+if [ -f /usr/local/bin/emacsclient ]; then
+  alias emacsclients='/usr/local/bin/emacsclient -c -s ~/.emacs.cache/server/server'
+else
+  alias emacsclients='emacsclient -c -s ~/.emacs.cache/server/server'
+fi
 
 # Flexlm settings
 export theHost=`hostname`
@@ -611,4 +615,3 @@ if [ -f $HOME/workspace/configfiles/dotfiles/ssh-agent-manage.sh ]
 then
   source $HOME/workspace/configfiles/dotfiles/ssh-agent-manage.sh
 fi
-
