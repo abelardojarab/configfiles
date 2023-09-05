@@ -385,7 +385,7 @@ fi
 export PATH=$PATH:/home/nv/bin
 
 # Xtensa tools
-export LM_LICENSE_FILE=$LM_LICENSE_FILE:8085@10.210.1.38:5280@10.210.1.38:8093@10.210.1.38
+export LM_LICENSE_FILE=$LM_LICENSE_FILE:27000@gcp-xtensa-01
 XPLORERVER=9.0.17
 TOOLCHAIN=RI-2021.7
 export XTENSA_ROOT=${HOME}/workspace/my26-dsp-efpga-support/xtensa
@@ -402,6 +402,14 @@ export GTAGSLIBPATH=$HOME/.gtags/
 export GTAGSTHROUGH=true
 export GTAGSLABEL=exuberant-ctags
 export GTAGSFORCECPP=1
+
+funcs()
+{
+         local cur
+         cur=${COMP_WORDS[COMP_CWORD]}
+         COMPREPLY=(`global -c $cur`)
+}
+complete -F funcs global
 
 # Go
 export PATH=$HOME/go/bin:$PATH
