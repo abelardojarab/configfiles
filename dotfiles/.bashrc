@@ -133,7 +133,11 @@ export PATH=$HOME/.cask/bin:$PATH
 if [ -f /usr/local/bin/emacsclient ]; then
   alias emacsclients='/usr/local/bin/emacsclient -c -s ~/.emacs.cache/server/server'
 else
-  alias emacsclients='emacsclient -c -s ~/.emacs.cache/server/server'
+  if [ -f /usr/bin/emacsclient ]; then
+    alias emacsclients='/usr/bin/emacsclient -c -s ~/.emacs.cache/server/server'
+  else
+    alias emacsclients='emacsclient -c -s ~/.emacs.cache/server/server'
+  fi
 fi
 
 # Flexlm settings
