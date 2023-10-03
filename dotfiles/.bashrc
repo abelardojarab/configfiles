@@ -130,7 +130,15 @@ export PATH=$HOME/.local/bin:$PATH
 # Emacs settings
 export EMACS_SERVER_FILE=$HOME/.emacs.cache/server/server
 export PATH=$HOME/.cask/bin:$PATH
-alias emacsclients='emacsclient -c -s ~/.emacs.cache/server/server'
+if [ -f /usr/local/bin/emacsclient ]; then
+  alias emacsclients='/usr/local/bin/emacsclient -c -s ~/.emacs.cache/server/server'
+else
+  if [ -f /usr/bin/emacsclient ]; then
+    alias emacsclients='/usr/bin/emacsclient -c -s ~/.emacs.cache/server/server'
+  else
+    alias emacsclients='emacsclient -c -s ~/.emacs.cache/server/server'
+  fi
+fi
 
 # Flexlm settings
 export theHost=`hostname`
@@ -381,7 +389,7 @@ fi
 export PATH=$PATH:/home/nv/bin
 
 # Xtensa tools
-export LM_LICENSE_FILE=$LM_LICENSE_FILE:8085@10.210.1.38:5280@10.210.1.38:8093@10.210.1.38
+export LM_LICENSE_FILE=$LM_LICENSE_FILE:27000@gcp-xtensa-01
 XPLORERVER=9.0.17
 TOOLCHAIN=RI-2021.7
 export XTENSA_ROOT=${HOME}/workspace/my26-dsp-efpga-support/xtensa
@@ -398,6 +406,14 @@ export GTAGSLIBPATH=$HOME/.gtags/
 export GTAGSTHROUGH=true
 export GTAGSLABEL=exuberant-ctags
 export GTAGSFORCECPP=1
+
+funcs()
+{
+         local cur
+         cur=${COMP_WORDS[COMP_CWORD]}
+         COMPREPLY=(`global -c $cur`)
+}
+complete -F funcs global
 
 # Go
 export PATH=$HOME/go/bin:$PATH
@@ -611,4 +627,3 @@ if [ -f $HOME/workspace/configfiles/dotfiles/ssh-agent-manage.sh ]
 then
   source $HOME/workspace/configfiles/dotfiles/ssh-agent-manage.sh
 fi
-
