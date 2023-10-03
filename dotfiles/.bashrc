@@ -304,7 +304,11 @@ export PATH=/opt/Matlab/current/bin:$PATH
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/matlab.dat
 
 # Altera settings
-export QUARTUS_VERSION=20.3
+if [ `hostname` = "ubuntu01" ]; then
+  export QUARTUS_VERSION=17.1
+else
+  export QUARTUS_VERSION=20.3
+fi
 if [ -d /opt/intelFPGA_pro/$QUARTUS_VERSION ]; then
   export QUARTUS_64BIT=1
   export QUARTUS_ROOT=/opt/intelFPGA_pro/$QUARTUS_VERSION
