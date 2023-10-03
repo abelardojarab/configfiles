@@ -1,0 +1,12 @@
+# Altera accelerator board
+export OPAE_PLATFORM_ROOT=/opt/intelFPGA_pro/17.1/hld/board/pac/pac_a10_1.2_pv
+export OPAE_PLATFORM_FPGA_FAMILY=A10
+export AOCL_BOARD_PACKAGE_ROOT=/opt/intelFPGA_pro/17.1/hld/board/pac/pac_a10_1.2_pv
+export LD_LIBRARY_PATH=$AOCL_BOARD_PACKAGE_ROOT/linux64/lib:$LD_LIBRARY_PATH
+
+# The following settings are interpreted by EMACS, do not remove them.
+# Local Variables:
+# mode: shell-script
+# fill-column: 80
+# coding: utf-8
+# End:
