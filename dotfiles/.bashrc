@@ -518,6 +518,9 @@ fi
 # Snap
 export PATH=/snap/bin:$PATH
 
+# Flatpak
+export PATH=$PATH:/var/lib/flatpak/exports/bin
+
 # Local settings
 if [ -f $HOME/.bashrc_local ]; then
   source ~/.bashrc_local
