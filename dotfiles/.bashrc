@@ -397,7 +397,8 @@ fi
 export PATH=$PATH:/home/nv/bin
 
 # Xtensa tools
-export LM_LICENSE_FILE=$LM_LICENSE_FILE:27000@gcp-xtensa-01
+export LM_LICENSE_FILE=$HOME/flexlm/xtensa.lic:27000@gcp-xtensa-01:$LM_LICENSE_FILE
+export LM_LICENSE_FILE=$HOME/workspace/cruise/cruise/build/rules/xtensa/cruise_q7_fusa_Xm_dune_q7_ECCAC70B.lic:$LM_LICENSE_FILE
 XPLORERVER=9.0.17
 TOOLCHAIN=RI-2021.7
 export XTENSA_ROOT=${HOME}/workspace/my26-dsp-efpga-support/xtensa
