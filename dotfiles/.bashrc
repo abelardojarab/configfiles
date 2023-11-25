@@ -286,7 +286,7 @@ fi
 
 # Modelsim settings
 export QUESTASIM_VERSION=10.7c
-if [ -d MTI_HOME=/opt/mentor/questasim/$QUESTASIM_VERSION/modeltech ]; then
+if [ -d /opt/mentor/questasim/$QUESTASIM_VERSION/modeltech ]; then
   export MTI_HOME=/opt/mentor/questasim/$QUESTASIM_VERSION/modeltech
   export PATH=$MTI_HOME/bin:$PATH
   export LM_LICENSE_FILE=$HOME/flexlm/modelsim.dat:$LM_LICENSE_FILE:
