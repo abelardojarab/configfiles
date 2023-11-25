@@ -308,15 +308,22 @@ export PATH=/opt/Matlab/current/bin:$PATH
 export LM_LICENSE_FILE=$LM_LICENSE_FILE:$HOME/flexlm/matlab.dat
 
 # Altera settings
-if [ `hostname` = "ubuntu01" ]; then
-  export QUARTUS_VERSION=17.1
-else
-  if [ `hostname` = "ubuntu07" ]; then
-    export QUARTUS_VERSION=17.1
-  else
-    export QUARTUS_VERSION=20.3
-  fi
-fi
+host=`hostname`
+
+case $host in
+  "ubuntu01")
+	export QUARTUS_VERSION=20.3
+	;;
+  "ubuntu07")
+	export QUARTUS_VERSION=20.3
+	;;
+  "ubuntu06")
+	export QUARTUS_VERSION=21.2
+	;;
+  *)
+	export QUARTUS_VERSION=21.2
+	;;
+esac
 if [ -d /opt/intelFPGA_pro/$QUARTUS_VERSION ]; then
   export QUARTUS_64BIT=1
   export QUARTUS_ROOT=/opt/intelFPGA_pro/$QUARTUS_VERSION
@@ -639,3 +646,7 @@ if [ -f $HOME/workspace/configfiles/dotfiles/ssh-agent-manage.sh ]
 then
   source $HOME/workspace/configfiles/dotfiles/ssh-agent-manage.sh
 fi
+
+export INTELFPGAOCLSDKROOT="/opt/intelFPGA_pro/21.2/hld"
+
+export QSYS_ROOTDIR="/opt/intelFPGA_pro/21.2/qsys/bin"
