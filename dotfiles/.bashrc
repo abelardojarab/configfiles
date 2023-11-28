@@ -312,7 +312,7 @@ host=`hostname`
 
 case $host in
   "ubuntu01")
-	export QUARTUS_VERSION=20.3
+	export QUARTUS_VERSION=21.2
 	;;
   "ubuntu07")
 	export QUARTUS_VERSION=20.3
@@ -385,8 +385,10 @@ if [ -d /opt/intel/system_studio_$INTEL_OCL_SDK_VERSION/opencl-sdk ]; then
 fi
 
 # Perforce
+export P4_VERSION=2018.1
+export CCOLLAB_VERSION=13.1.13400
 if [ -d /opt/perforce ]; then
-  export PATH=$PATH:/opt/perforce/p4-2018.1/bin
+  export PATH=$PATH:/opt/perforce/p4-$P4_VERSION/bin
   export P4CLIENT=abelardojara-nvcpu
   export P4EDITOR=vim
   export P4PORT=p4hw:2001
@@ -394,7 +396,7 @@ if [ -d /opt/perforce ]; then
   export P4DIFF
 
   # ccollab
-  export PATH=$PATH:/opt/perforce/ccollab-cmdline.13.1.13400
+  export PATH=$PATH:/opt/perforce/ccollab-cmdline.$CCOLLAB_VERSION
 fi
 
 # as2
@@ -404,8 +406,6 @@ fi
 export PATH=$PATH:/home/nv/bin
 
 # Xtensa tools
-export LM_LICENSE_FILE=$HOME/flexlm/xtensa.lic:27000@gcp-xtensa-01:$LM_LICENSE_FILE
-export LM_LICENSE_FILE=$HOME/workspace/cruise/cruise/build/rules/xtensa/cruise_q7_fusa_Xm_dune_q7_ECCAC70B.lic:$LM_LICENSE_FILE
 XPLORERVER=9.0.17
 TOOLCHAIN=RI-2021.7
 export XTENSA_ROOT=${HOME}/workspace/my26-dsp-efpga-support/xtensa
@@ -417,6 +417,9 @@ export XTENSA_SYSTEM=${XTENSA_ROOT}/XtDevTools/install/tools/${TOOLCHAIN}-linux/
 export XTENSA_CORE=Xm_dune_q7
 export XTENSA_CONFIG_PATH=${XTENSA_ROOT}/XtDevTools/install/builds/RI-2021.7-linux/${XTENSA_CORE}/
 
+export LM_LICENSE_FILE=$HOME/flexlm/xtensa.lic:27000@gcp-xtensa-01:$LM_LICENSE_FILE
+export LM_LICENSE_FILE=$HOME/workspace/cruise/cruise/build/rules/xtensa/cruise_q7_fusa_Xm_dune_q7_ECCAC70B.lic:$LM_LICENSE_FILE
+
 # Set up general GTAGS location
 export GTAGSLIBPATH=$HOME/.gtags/
 export GTAGSTHROUGH=true
@@ -425,9 +428,9 @@ export GTAGSFORCECPP=1
 
 funcs()
 {
-         local cur
-         cur=${COMP_WORDS[COMP_CWORD]}
-         COMPREPLY=(`global -c $cur`)
+  local cur
+  cur=${COMP_WORDS[COMP_CWORD]}
+  COMPREPLY=(`global -c $cur`)
 }
 complete -F funcs global
 
@@ -647,6 +650,3 @@ then
   source $HOME/workspace/configfiles/dotfiles/ssh-agent-manage.sh
 fi
 
-export INTELFPGAOCLSDKROOT="/opt/intelFPGA_pro/21.2/hld"
-
-export QSYS_ROOTDIR="/opt/intelFPGA_pro/21.2/qsys/bin"
