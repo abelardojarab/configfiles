@@ -196,6 +196,7 @@ if [ -d /usr/local/cuda-$CUDA_VERSION ]; then
   export CUDA_TOOLKIT_ROOT_DIR=$CUDADIR
   export LD_LIBRARY_PATH=$CUDADIR/lib64:$LD_LIBRARY_PATH
 fi
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/x86_64-linux-gnu
 
 # Cadence settings
 export CDS_VERSION=IC618
