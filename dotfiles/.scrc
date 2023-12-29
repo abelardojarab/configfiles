@@ -1,4 +1,10 @@
 set craction = 1
 set numeric
 set color
+set mouse
 set !optimize
+color 1 = @black;@white
+
+format 5 = "^D%e %b"
+format 6 = "^D%H:%M"
+format 7 = "$#,0.&"
