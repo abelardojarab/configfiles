@@ -1,0 +1,180 @@
+#!/bin/bash
+# Welcome to your Cruise Shells initialization script.
+# This script runs every time Cruise Shells creates a new machine for you. It
+# only runs once, and not on subsequent SSH connections (see
+# http://go/cruise-shells-lifecycle for more info).
+#
+# By default, we provide common configurations used at Cruise that can simply be
+# uncommented to use. However, this script remains yours to customize and
+# maintain. The only requirement is that this file exists even if empty.
+#
+# The script will run before your SSH session connects. It runs in the context
+# of your user ($USER) with your home directory as the present working
+# directory.
+#
+# Stdout and Stderr are saved to “~/.cruise-shells/logs/pre-ssh-ready.log”, and
+# “~/.cruise-shells/logs/pre-ssh-ready.err” respecfully. When there are error
+# all output is additionally sent to your SSH sessions stderr.
+#
+# For more information, visit
+# http://go/cruise-shells-init
+
+# ------------------------------------------------------------------------------
+# SETUP TIMEZONE
+# ------------------------------------------------------------------------------
+echo SETUP TIMEZONE...
+sudo timedatectl set-timezone America/Los_Angeles
+
+# ------------------------------------------------------------------------------
+# SETUP DOCKER GROUP
+# ------------------------------------------------------------------------------
+echo SETUP DOCKER GROUP...
+sudo usermod -aG docker $USER
+sudo systemctl restart docker
+
+# ------------------------------------------------------------------------------
+# WARM UP GIT PROMPT FOR Cruise/Cruise REPO
+# Ensure path to cruise/cruise repo is correct.
+# ------------------------------------------------------------------------------
+#git -C /root/cruise diff --no-ext-diff --quiet
+#git -C /root/cruise diff --no-ext-diff --cached --quiet
+
+# ------------------------------------------------------------------------------
+# SETUP ZSH
+# Uncomment the lines below to configure Zsh as your default shell.
+# ------------------------------------------------------------------------------
+#echo SETUP Zsh...
+#sudo chsh -s /bin/zsh $USER
+
+sudo snap install nvim --classic
+
+sudo snap install ripgrep --classic
+
+sudo snap install code --classic
+
+sudo snap install tmux --classic
+
+sudo snap install rustup --classic
+
+sudo snap install btop
+
+sudo snap install slack
+
+# sudo snap install pycharm-professional --classic
+
+# sudo snap install clion --classic
+
+sudo snap install sublime-text --classic
+
+sudo snap install gitkraken --classic
+
+sudo snap install universal-ctags
+
+sudo npm install -g tree-sitter-cli
+
+# Add repositories
+sudo apt install apt-transport-https curl gnupg -y
+wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | sudo tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null
+echo 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ focal main' | sudo tee /etc/apt/sources.list.d/kitware.list >/dev/null
+
+rm -rf llvm.sh*
+wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+wget https://apt.llvm.org/llvm.sh
+chmod +x llvm.sh
+sudo ./llvm.sh 20
+
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo bash - 
+sudo apt-get install -y nodejs
+
+curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor >bazel-archive-keyring.gpg
+sudo mv bazel-archive-keyring.gpg /usr/share/keyrings
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/bazel-archive-keyring.gpg] https://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
+
+sudo add-apt-repository -y ppa:kelleyk/emacs
+sudo add-apt-repository -y ppa:git-core/ppa
+sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+sudo add-apt-repository -y ppa:ubuntuhandbook1/emacs
+sudo add-apt-repository -y ppa:jonathonf/vim
+sudo add-apt-repository -y ppa:npalix/coccinelle
+sudo apt-get update
+
+# add launchpad's ppa to apt
+sudo apt-get install -y software-properties-common
+sudo apt install -y --allow-change-held-packages gcc-11 g++-11 gfortran-11 libgccjit-11-dev
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 40 --slave /usr/bin/g++ g++ /usr/bin/g++-11 --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-11
+
+sudo apt install -y --allow-change-held-packages gcc-13 g++-13 gfortran-13 libgccjit-13-dev
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 50 --slave /usr/bin/g++ g++ /usr/bin/g++-13 --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-13
+
+sudo apt install -y --allow-change-held-packages clang clangd clang-tidy clang-format libc++-dev
+sudo apt install -y clang-20 clangd-20 clang-tidy-20 clang-format-20 libc++-20-dev
+sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-20 40 --slave /usr/bin/clang++ clang++ /usr/bin/clang++-20 --slave /usr/bin/clang-format clang-format /usr/bin/clang-format-20 --slave /usr/bin/clangd clangd /usr/bin/clangd-20 --slave /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-20
+
+# install packages
+sudo apt install -y --allow-change-held-packages firefox
+sudo apt install -y vim emacs28-nativecomp global exuberant-ctags libtree-sitter0 bear
+sudo apt install -y --allow-change-held-packages git git-lfs bazel
+sudo apt install -y --allow-change-held-packages mlocate neofetch pandoc fzf newsboat multitime feh \
+	 finch plantuml libjpeg-progs gnupg2 pass gdb netcat ncdu gnuplot tig shellcheck cppcheck tree coccinelle \
+	 libvterm-dev tmux screen libenchant-2-dev enchant-2 ffmpeg imagemagick net-tools tilix meld git-lfs
+sudo apt install -y --allow-change-held-packages cmake cmake-curses-gui ninja-build
+sudo apt install -y --allow-change-held-packages ansible python3-pip python3-virtualenv python3-venv pydf ipython3 \
+	 python3-numpy python3-matplotlib python3-jsonschema python3-pycodestyle python3-pandas pylint flake8 \
+	 python3-yapf black python3-jupyter-core python3-jupyter-console python3-autopep8 black
+sudo apt install -y --allow-change-held-packages build-essential libgccjit-10-dev libgtk-3-dev libgnutls28-dev libtiff5-dev libgif-dev libjpeg-dev libpng-dev libxpm-dev libncurses-dev texinfo pdfgrep sshpass autossh
+sudo apt install -y --allow-change-held-packages pkg-config libturbojpeg0-dev libfreetype6-dev libfontconfig1-dev libx11-dev libxinerama-dev libxcursor-dev mesa-common-dev libglu1-mesa-dev libxrandr-dev
+sudo apt install -y --allow-change-held-packages lzop u-boot-tools net-tools bison flex libssl-dev libncurses5-dev libncursesw5-dev chrpath xz-utils minicom
+
+# Java
+sudo apt install -y openjdk-21-jdk
+
+# Emacs service
+sudo cp /home/abelardo.jaraberroca/workspace/emacs-config/.emacs.d/doxymacs/build/c/doxymacs_parser /usr/local/bin/
+sudo cp /home/abelardo.jaraberroca/workspace/emacs-config/systemd/emacs.service /usr/lib/systemd/user/
+sudo systemctl daemon-reload
+
+# Custom tools
+pushd .
+cd /home/abelardo.jaraberroca/builds/tree-sitter; sudo make install
+popd
+
+pushd .
+cd /home/abelardo.jaraberroca/builds/cppcheck/build; sudo make install
+popd
+
+# ARM tools
+sudo apt install -y gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
+sudo apt install -y qemu-user qemu-user-static gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu binutils-aarch64-linux-gnu-dbg build-essential binfmt-support
+# Linters
+
+# Add Xtensa desktop icon
+pushd .
+sudo mkdir -p /nfs/data/tools/Cadence/xtensa
+cd /nfs/data/tools/Cadence/xtensa
+sudo rm -rf *
+sudo ln -s /home/abelardo.jaraberroca/workspace/my26-dsp-efpga-support/xtensa/Xplorer-9.0.17 .
+sudo ln -s /home/abelardo.jaraberroca/Xplorer-9.0.17-workspaces/workspace ./Xplorer-9.0.17-workspaces
+popd
+
+# Instal VNC Server
+sudo dpkg -i /home/abelardo.jaraberroca/Downloads/VNC-Server-6.6.0-Linux-x64.deb
+sudo vnclicense -add 4RH22-N22QH-U5BUF-9TW8X-WND2A
+sudo systemctl start vncserver-x11-serviced.service
+
+# Set SSH keys
+cp /home/abelardo.jaraberroca/workspace/Documents/authorized_keys /home/abelardo.jaraberroca/.ssh/authorized_keys
+sudo chown abelardo.jaraberroca /home/abelardo.jaraberroca/.ssh/authorized_keys
+autossh -i /home/abelardo.jaraberroca/.ssh/id_rsa -f -N -M 20000 -R 9022:localhost:22 -R 27000:gcp-xtensa-01:27000 -R 5959:localhost:5900 abelardojara@jaraberrocal.readmyblog.org
+
+# Github CLI
+type -p curl >/dev/null || (sudo apt update && sudo apt install curl -y)
+curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+&& sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+&& echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+&& sudo apt update \
+&& sudo apt install gh -y
+
+# start emacs
+# sudo -H -u abelardo.jaraberroca bash -c 'systemctl --user daemon-reload'
+# sudo -H -u abelardo.jaraberroca bash -c 'systemctl --user enable emacs.service'
+# sudo -H -u abelardo.jaraberroca bash -c 'systemctl --user start emacs.service'
