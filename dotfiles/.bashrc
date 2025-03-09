@@ -178,17 +178,17 @@ export GPU_USE_SYNC_OBJECTS=1
 export GPU_MAX_ALLOC_PERCENT=95
 export GPU_SINGLE_ALLOC_PERCENT=100
 
-# CUDA 10.2
-if [ -d /usr/local/cuda-10.2 ]; then
-  export PATH=/usr/local/cuda-10.2/bin:$PATH
-  export CUDADIR=/usr/local/cuda-10.2
+# CUDA 11.3
+if [ -d /usr/local/cuda-11.3 ]; then
+  export PATH=/usr/local/cuda-11.3/bin:$PATH
+  export CUDADIR=/usr/local/cuda-11.3
   export CUDA_HOME=$CUDADIR
   export CUDA_TOOLKIT_ROOT_DIR=$CUDADIR
   export LD_LIBRARY_PATH=$CUDADIR/lib64:$LD_LIBRARY_PATH
 fi
 
-# CUDA 11.2
-export CUDA_VERSION=11.2
+# CUDA 12.2
+export CUDA_VERSION=12.2
 if [ -d /usr/local/cuda-$CUDA_VERSION ]; then
   export CUDADIR=/usr/local/cuda-$CUDA_VERSION
   export PATH=$CUDA_DIR/bin:$PATH
