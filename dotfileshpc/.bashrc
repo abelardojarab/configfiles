@@ -118,7 +118,7 @@ fi
 
 # But I would say below are useful to have:
 # LSF queue bsub alias
-export LSB_DEFAULTPROJECT='PJ33000227'
+export LSB_DEFAULTPROJECT='PJ33000227' # alternatively, PJ10000078HM
 alias bshell='bsub -Is -P PJ7000360 -q PI -R rhe8 -M 8000000 -W 6:0 bash'
 
 # Directory Shortcut
