@@ -1,0 +1,109 @@
+# -*- shell-script -*-
+if [ -z "$PS1" ]; then
+    source /arm/tools/setup/init/bash
+    module load arm/cluster
+fi
+
+# LSF
+if [ -z $LSB_DEFAULTPROJECT ]; then
+    echo "LSB_DEFAULTPROJECT is not set.  It is recommended to set this as appropriate for your work."
+fi
+
+###################################################################
+# NOTE: all modules have been vetted to be compatible on all combinations of rhe7/rhe8 and x86/aarch64
+# if a module is added to the script, is should either be supported on all arch/os combinations or protected by an "if" statement
+###################################################################
+
+# module load gnu/bash/5.2
+
+module load swdev
+# module load arm/clustercfg
+
+# module needed for tests
+module load perl/perl/5.12.3
+module load git/git/2.47.0
+
+# modules needed for the build
+# since cmake >= 3.8, it introduces string(TIMESTAMP, "%s"), a higher version created some warnings when we build project
+module load gnu/cmake/3.22.0
+module load gnu/make/4.3
+
+# need a newer GDB for correct debugging with recent GCC versions
+module load gnu/gdb/14.1
+module load gnu/valgrind/3.17.0
+
+# module needed for clang-format
+module load llvm/clang/19.1.6
+# module needed for Bash formatting
+module load util mvdan/shfmt/3.9.0
+
+# license information
+module load eda
+module load arm/license/production
+
+# EDA tools
+module load arm/socrates/socrates_1.8.2_perfapp_1.2.0
+# module load arm/socrates/socrates_1.9.0
+
+# curl version used for downloading package from artifactory
+# module load util haxx/curl/7.55.1
+module load haxx/curl/7.68.0
+
+# gperftool is required to use tcmalloc lib
+module load util google/gperftools/2.10
+module load Zstandard/zstd/1.5.5
+
+# Tools
+module load pandoc/pandoc/3.1.12.3
+module load sqlite/sqlite3/3.38.5
+module load gnu/tmux/3.5a
+
+# editors
+module load vim/vim/9.1
+module load neovim/neovim/0.10.0
+module load gnu/emacs/29.4
+# module load sublime/sublimetext/4143-1
+
+# Python
+module load python/python/3.10.4
+
+# Global
+module load gnu/global/6.6.9
+module load universal-ctags/ctags/6.0
+
+# GnuPG
+# module load gnu/gnupg/2.2.21
+
+# Node
+module load nodejs/node/20.11.1
+
+# Matlab
+module load mathworks/matlab/R2024b
+
+# Other tools
+module load gnu/ripgrep/14.1.0
+# module load ffmpeg/ffmpeg/4.4.1
+module load doxygen/doxygen/1.9.6
+module load graphviz/graphviz/9.0.0
+# module load jq/jq/1.5
+
+# Libraries
+# module load zeromq/zeromq/4.0.4
+# module load gnome/libvte/0.47.90
+
+# GCC
+module load gnu/gcc/13.1.0
+module load gnu/binutils/2.40
+
+export PATH=$HOME/bin:$HOME/.local/bin:$PATH
+source $HOME/.cargo/env
+
+alias btop='$HOME/bin/btop/bin/btop --utf-force'
+
+parse_git_branch() {
+     git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
+}
+#export PS1="\u@\h \[\e[32m\]\w \[\e[91m\]\$(parse_git_branch)\[\e[00m\]$ "
+# export PS1="\[\e[33m\]\u@\h \[\e[32m\]\w \[\e[91m\]\$(parse_git_branch)\[\e[00m\]$ "
+export PS1="\[\e[33m\]\u@\h \[\e[32m\]\w \[\e[34m\]\$(parse_git_branch)\[\e[00m\]$ "
+
