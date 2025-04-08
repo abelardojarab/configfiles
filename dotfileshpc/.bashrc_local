@@ -100,6 +100,15 @@ source $HOME/.cargo/env
 
 alias btop='$HOME/bin/btop/bin/btop --utf-force'
 
+export OPENSSL_ROOT=$HOME/opt/openssl-1.1.1w
+export PATH=$OPENSSL_ROOT/bin:$PATH
+export LD_LIBRARY_PATH=$OPENSSL_ROOT/lib:$LD_LIBRARY_PATH
+
+export PATH=$HOME/opt/krb5-1.20.1/bin:$PATH
+export LD_LIBRARY_PATH=$HOME/opt/krb5-1.20.1/lib:$HOME/opt/openssl-1.1.1w/lib:$LD_LIBRARY_PATH
+
+export PATH=$HOME/opt/bison-3.8.2/bin:$PATH
+
 parse_git_branch() {
      git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
 }
