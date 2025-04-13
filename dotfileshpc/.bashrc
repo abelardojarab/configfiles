@@ -2,24 +2,24 @@
 #  For information on ARMs infrastructure refer to the training document:
 #  http://wiki.arm.com/Sysadmin/ClusterEnvironmentTraining
 #  modulesinfrastructuretraining.pptx
-####################################### 
-#
-# => USER SET => LD_LIBRARY_PATH 
-# export LD_LIBRARY_PATH=<user setting> 
-# - user setting will be appended to $LD_LIBRARY_PATH 
-####################################### 
-#
-# => USER SET => PATH 
-# export PATH=<user settings> 
-# - user setting will be appended to $PATH 
 #######################################
-# 
+#
+# => USER SET => LD_LIBRARY_PATH
+# export LD_LIBRARY_PATH=<user setting>
+# - user setting will be appended to $LD_LIBRARY_PATH
+#######################################
+#
+# => USER SET => PATH
+# export PATH=<user settings>
+# - user setting will be appended to $PATH
+#######################################
+#
 # => STANDARD shell init & cluster access
 #######################################
 source /arm/tools/setup/init/bash
 module load arm/cluster
 #
-# => BEGIN CUSTOMIZATION 
+# => BEGIN CUSTOMIZATION
 #######################################
 
 # Source global definitions
@@ -116,17 +116,13 @@ if which powerline-daemon &>/dev/null; then
   . /usr/share/powerline/bash/powerline.sh
 fi
 
-# But I would say below are useful to have:
 # LSF queue bsub alias
 export LSB_DEFAULTPROJECT='PJ33000227' # alternatively, PJ10000078HM
 alias bshell='bsub -Is -P PJ7000360 -q PI -R rhe8 -M 8000000 -W 6:0 bash'
 
 # Directory Shortcut
-# alias - no space allowed
 alias cdscratch='cd /arm/scratch/abejar01'
 alias cdsepnp='cd /projects/flow/pnp/users/abejar01'
-
-
 
 source $HOME/.bashrc_local
 . "$HOME/.cargo/env"
