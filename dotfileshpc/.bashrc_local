@@ -34,6 +34,7 @@ module load gnu/valgrind/3.17.0
 
 # module needed for clang-format
 module load llvm/clang/19.1.6
+
 # module needed for Bash formatting
 module load util mvdan/shfmt/3.9.0
 
@@ -116,7 +117,5 @@ export PATH=$HOME/opt/bison-3.8.2/bin:$PATH
 parse_git_branch() {
      git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
 }
-#export PS1="\u@\h \[\e[32m\]\w \[\e[91m\]\$(parse_git_branch)\[\e[00m\]$ "
-# export PS1="\[\e[33m\]\u@\h \[\e[32m\]\w \[\e[91m\]\$(parse_git_branch)\[\e[00m\]$ "
 export PS1="\[\e[33m\]\u@\h \[\e[32m\]\w \[\e[34m\]\$(parse_git_branch)\[\e[00m\]$ "
 
