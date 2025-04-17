@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  heimdall:
+    image: linuxserver/heimdall
+    container_name: heimdall
+    restart: unless-stopped
+    ports:
+      - "7888:80"
+    environment:
+      - PUID=501
+      - PGID=501
+    volumes:
+      - ~/containers/heimdall:/config
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --cleanup --label-enable
+
+  portainer:
+    image: portainer/portainer-ce
+    container_name: portainer
+    restart: unless-stopped
+    ports:
+      - "9010:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ~/containers/portainer:/data
+
+  guacd:
+    image: guacamole/guacd
+    container_name: guacd
+    restart: unless-stopped
+    networks:
+      - guacnet
+
+  guacamole:
+    image: guacamole/guacamole
+    container_name: guacamole
+    restart: unless-stopped
+    ports:
+      - "8190:8080"
+    environment:
+      - GUACD_HOSTNAME=guacd
+      - MYSQL_HOST=192.168.3.2
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=guacamole_db
+      - MYSQL_USER=guacuser
+      - MYSQL_PASSWORD=guacpass
+    networks:
+      - guacnet
+
+  calibre-web:
+    image: linuxserver/calibre-web
+    container_name: calibre-web
+    restart: unless-stopped
+    ports:
+      - "8084:8083"
+    environment:
+      - PUID=501
+      - PGID=501
+    volumes:
+      - ~/containers/calibre-web:/config
+      - ~/Calibre Library:/books
+
+networks:
+  guacnet:
+    driver: bridge
