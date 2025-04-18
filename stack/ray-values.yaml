@@ -1,7 +1,7 @@
 rayClusterConfig:
   image:
     repository: rayproject/ray
-    tag: "2.9.0"
+    tag: "2.42.1"
 
   headGroupSpec:
     serviceType: NodePort
