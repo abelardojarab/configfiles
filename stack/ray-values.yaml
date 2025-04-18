@@ -1,21 +1,42 @@
-rayClusterConfig:
-  image:
-    repository: rayproject/ray
-    tag: "2.42.1"
+image:
+  repository: rayproject/ray
+  tag: "2.42.1"
 
-  headGroupSpec:
-    serviceType: NodePort
+headGroupSpec:
+  serviceType: NodePort  # Enables access from outside cluster
+  rayStartParams:
+    num-cpus: "0"
+    dashboard-host: "0.0.0.0"
+    node-ip-address: "0.0.0.0"
+  template:
+    spec:
+      nodeSelector:
+        arch: amd64
+        node-type: server
+      containers:
+        - name: ray-head
+          resources:
+            requests:
+              cpu: "2"
+              memory: "4Gi"
+            limits:
+              cpu: "4"
+              memory: "8Gi"
+
+workerGroupSpecs:
+  - groupName: worker-group
+    replicas: 8
+    minReplicas: 1
+    maxReplicas: 8
     rayStartParams:
-      num-cpus: "1" # Recommended: Allocate at least 1 CPU
-      dashboard-host: "0.0.0.0"
-      # node-ip-address: "0.0.0.0" # Recommended: Remove this line
+      num-cpus: "4"
     template:
       spec:
         nodeSelector:
           arch: amd64
           node-type: server
         containers:
-          - name: ray-head
+          - name: ray-worker
             resources:
               requests:
                 cpu: "2"
@@ -24,23 +45,3 @@ rayClusterConfig:
                 cpu: "4"
                 memory: "8Gi"
 
-  workerGroupSpecs:
-    - groupName: worker-group
-      minReplicas: 1
-      maxReplicas: 8
-      rayStartParams:
-        num-cpus: "4"
-      template:
-        spec:
-          nodeSelector:
-            arch: amd64
-            node-type: server
-          containers:
-            - name: ray-worker
-              resources:
-                requests:
-                  cpu: "2"
-                  memory: "4Gi"
-                limits:
-                  cpu: "4"
-                  memory: "8Gi"
