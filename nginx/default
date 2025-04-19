@@ -364,12 +364,16 @@ server {
         autoindex on;
         autoindex_exact_size off;
         dav_methods PUT DELETE MKCOL COPY MOVE;
-        # dav_ext_methods PROPFIND OPTIONS;
-        # dav_access      user:rw group:rw all:r;
+        dav_ext_methods PROPFIND OPTIONS;
+        dav_access      user:rw group:rw all:r;
 
         create_full_put_path on;
+
         auth_basic "Restricted Content";
         auth_basic_user_file /var/www/.htpasswd;
+
+        # Add explicit try_files directive
+        try_files $uri $uri/ =404;
     }
 
     # Calibreweb
@@ -599,8 +603,8 @@ server {
         proxy_set_header Connection 'upgrade';
         proxy_cache_bypass $http_upgrade;
 
-        auth_basic "Restricted Content";
-        auth_basic_user_file /var/www/.htpasswd;
+        # auth_basic "Restricted Content";
+        # auth_basic_user_file /var/www/.htpasswd;
     }
 
     # Elasticsearch
