@@ -14,7 +14,7 @@
 #
 
 upstream php8 {
-    server unix:/run/php/php8.3-fpm.sock;
+    server unix:/run/php/php8.4-fpm.sock;
 }
 
 upstream php7 {
@@ -313,9 +313,24 @@ server {
 
     # Zabbix
     location /zabbix {
-        alias       /usr/share/zabbix/;
-        index       index.php;
-        error_page  403 404 502 503 504  /zabbix/index.php;
+        alias /usr/share/zabbix/;
+        index index.php;
+
+        location ~ ^/zabbix/(.+\.php)$ {
+            alias /usr/share/zabbix/$1;
+            fastcgi_pass unix:/run/php/php8.4-fpm.sock;  # Update to match your PHP version/socket
+            fastcgi_index index.php;
+            fastcgi_param SCRIPT_FILENAME $request_filename;
+            fastcgi_param  PHP_VALUE  "display_errors=Off \n error_reporting=E_ALL & ~E_DEPRECATED & ~E_NOTICE & ~E_WARNING";
+            include fastcgi_params;
+        }
+
+        location ~ ^/zabbix/(.+\.(jpg|jpeg|gif|png|css|js|ico|svg|ttf|woff|woff2|eot))$ {
+            alias /usr/share/zabbix/$1;
+            access_log off;
+            log_not_found off;
+            expires 30d;
+        }
     }
 
     # Webdav
@@ -373,7 +388,7 @@ server {
         auth_basic_user_file /var/www/.htpasswd;
 
         # Add explicit try_files directive
-        try_files $uri $uri/ =404;
+        # try_files $uri $uri/ =404;
     }
 
     # Calibreweb
@@ -829,6 +844,25 @@ server {
 
 }
 
+# Registry subdomain
+server {
+    listen 443 ssl;
+    server_name registry.jaraberrocal.readmyblog.org;
+
+    location /v2/ {
+        proxy_pass http://localhost:5000;
+        auth_basic "Private Docker Registry";
+        auth_basic_user_file /var/www/.htpasswd;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    ssl_certificate /etc/letsencrypt/live/registry.jaraberrocal.readmyblog.org/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/registry.jaraberrocal.readmyblog.org/privkey.pem; # managed by Certbot
+}
 
 server {
     if ($host = www.jaraberrocal.readmyblog.org) {
@@ -846,8 +880,4 @@ server {
 
     server_name jaraberrocal.readmyblog.org www.jaraberrocal.readmyblog.org;
     return 404; # managed by Certbot
-
-
-
-
 }
