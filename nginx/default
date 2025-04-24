@@ -318,7 +318,7 @@ server {
 
         location ~ ^/zabbix/(.+\.php)$ {
             alias /usr/share/zabbix/$1;
-            fastcgi_pass unix:/run/php/php8.4-fpm.sock;  # Update to match your PHP version/socket
+            fastcgi_pass unix:/run/php/php8.3-fpm.sock;  # Update to match your PHP version/socket
             fastcgi_index index.php;
             fastcgi_param SCRIPT_FILENAME $request_filename;
             fastcgi_param  PHP_VALUE  "display_errors=Off \n error_reporting=E_ALL & ~E_DEPRECATED & ~E_NOTICE & ~E_WARNING";
@@ -646,7 +646,7 @@ server {
 
     # Jupyter
     location /notebook/ {
-        proxy_pass http://jupyter/notebook/;
+        proxy_pass http://localhost:8888/notebook/;
 
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
