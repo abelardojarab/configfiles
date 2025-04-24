@@ -67,6 +67,22 @@ services:
       - ~/containers/calibre-web:/config
       - ~/Calibre Library:/books
 
+  nextcloud:
+    image: nextcloud:31
+    container_name: nextcloud
+    restart: unless-stopped
+    ports:
+      - "8890:80"
+    environment:
+      - MYSQL_PASSWORD=qitlrtsx
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_HOST=192.168.3.2
+    volumes:
+      - ~/containers/nextcloud/html:/var/www/html
+      - ~/containers/nextcloud/config:/var/www/html/config
+      - ~/containers/nextcloud/data:/var/www/html/data
+
 networks:
   guacnet:
     driver: bridge
