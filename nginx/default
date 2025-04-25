@@ -711,6 +711,10 @@ server {
         proxy_read_timeout 90;
         client_max_body_size 2G;
     }
+
+    location /nextcloud/nextcloud/ {
+        return 301 $scheme://$host/nextcloud/;
+    }
 }
 
 # Registry subdomain
