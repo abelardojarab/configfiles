@@ -433,7 +433,7 @@ ${NO_COLOR}"
 }
 export PROMPT_COMMAND=set_prompt
 
-# Merge in shared history maintenance (kept your behavior)
+# Merge in shared history maintenance
 export PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"
 
 # vscode terminal default editor
