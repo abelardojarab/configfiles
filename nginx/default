@@ -72,23 +72,13 @@ upstream cockpit-ws {
 }
 
 server {
-
-    root /var/www/html;
-
-    # Add index.php to the list if you are using PHP
-    index index.html index.htm index.nginx-debian.html index.php;
-
-    server_name jaraberrocal.readmyblog.org www.jaraberrocal.readmyblog.org;
-    return 301 https://jaraberrocal.readmyblog.org$request_uri;
-}
-
-server {
     root /var/www/html;
     autoindex off;
     index index.php;
 
     listen 443 ssl default_server;
     listen [::]:443 ssl default_server;
+    http2 on;
 
     server_name jaraberrocal.readmyblog.org;
 
@@ -155,7 +145,7 @@ server {
     add_header Strict-Transport-Security max-age=31536000;
 
     # Challenges
-    location ^~ ./well-known/pki-validation/ {
+    location ^~ /.well-known/pki-validation/ {
         # No HTTP authentication
         allow all;
 
@@ -169,12 +159,12 @@ server {
     # Hide /pki-challenge subdirectory and return 404 on all requests.
     # It is somewhat more secure than letting Nginx return 403.
     # Ending slash is important!
-    location = .well-known/pki-validation/ {
+    location = /.well-known/pki-validation/ {
         return 404;
     }
 
     # Challenges
-    location ^~ ./well-known/acme-challenge/ {
+    location ^~ /.well-known/acme-challenge/ {
         # No HTTP authentication
         allow all;
 
@@ -188,7 +178,7 @@ server {
     # Hide /acme-challenge subdirectory and return 404 on all requests.
     # It is somewhat more secure than letting Nginx return 403.
     # Ending slash is important!
-    location = .well-known/acme-challenge/ {
+    location = /.well-known/acme-challenge/ {
         return 404;
     }
 
