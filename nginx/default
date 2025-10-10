@@ -22,53 +22,53 @@ upstream php7 {
 }
 
 upstream heimdall {
-   server        127.0.0.1:7888;
+    server 127.0.0.1:7888;
 }
 
 upstream mariadb {
-   server        127.0.0.1:8095;
+    server 127.0.0.1:8095;
 }
 
 upstream portainer {
-   server       127.0.0.1:9010;
+    server 127.0.0.1:9010;
 }
 
 upstream code-server {
-   server       127.0.0.1:8085;
+    server 127.0.0.1:8085;
 }
 
 upstream drawio {
-   server       127.0.0.1:8087;
+    server 127.0.0.1:8087;
 }
 
 upstream teamcity {
-    server       127.0.0.1:8112 fail_timeout=0;
-    keepalive    32;
+    server 127.0.0.1:8112 fail_timeout=0;
+    keepalive 32;
 }
 
 upstream jira {
-    server       127.0.0.1:8181 fail_timeout=0;
-    keepalive    32;
+    server 127.0.0.1:8181 fail_timeout=0;
+    keepalive 32;
 }
 
 upstream artifactory {
-    server       127.0.0.1:8081 fail_timeout=0;
-    keepalive    32;
+    server 127.0.0.1:8081 fail_timeout=0;
+    keepalive 32;
 }
 
 upstream notebook {
-    server       127.0.0.1:8888 fail_timeout=0;
-    keepalive    32;
+    server 127.0.0.1:8888 fail_timeout=0;
+    keepalive 32;
 }
 
 upstream gitlab {
-    server       127.0.0.1:2443 fail_timeout=0;
-    keepalive    32;
+    server 127.0.0.1:2443 fail_timeout=0;
+    keepalive 32;
 }
 
 upstream cockpit-ws {
-    server       127.0.0.1:9090 fail_timeout=0;
-    keepalive    32;
+    server 127.0.0.1:9090 fail_timeout=0;
+    keepalive 32;
 }
 
 # Rate limiting zones
@@ -88,7 +88,7 @@ server {
     server_name jaraberrocal.readmyblog.org;
 
     access_log /var/log/nginx/ssl_access.log;
-    error_log  /var/log/nginx/ssl_error.log;
+    error_log /var/log/nginx/ssl_error.log;
 
     # Add index.php to the list if you are using PHP
     index index.html index.htm index.nginx-debian.html index.php;
@@ -103,7 +103,7 @@ server {
     # SSL settings
     ssl_certificate /etc/letsencrypt/live/jaraberrocal.readmyblog.org/fullchain.pem; # managed by Certbot
     ssl_certificate_key /etc/letsencrypt/live/jaraberrocal.readmyblog.org/privkey.pem; # managed by Certbot
-    ssl_session_timeout  5m;
+    ssl_session_timeout 5m;
     ssl_protocols TLSv1.2 TLSv1.3;
 
     # Security headers
@@ -128,14 +128,14 @@ server {
     ssl_session_tickets on;
 
     # Redirect server error pages to the static page /50x.html
-    error_page 500 502 503 504  /50x.html;
+    error_page 500 502 503 504 /50x.html;
 
     # If they come here using HTTP, bounce them to the correct scheme
     error_page 497 https://$server_name:$server_port$request_uri;
 
     # Location of 50x.html
     location = /50x.html {
-        root   /usr/share/nginx/html;
+        root /usr/share/nginx/html;
     }
 
     # add global x-content-type-options header
@@ -183,7 +183,7 @@ server {
         # Current specification requires "text/plain" or no content header at all.
         # It seems that "text/plain" is a safe option.
         default_type "text/plain";
-   }
+    }
 
     # Hide /acme-challenge subdirectory and return 404 on all requests.
     # It is somewhat more secure than letting Nginx return 403.
@@ -210,8 +210,15 @@ server {
     # ============================================
 
     # Cache images
-    location = /favicon.ico { log_not_found off; access_log off; }
-    location = /robots.txt { log_not_found off; access_log off; allow all; }
+    location = /favicon.ico {
+        log_not_found off;
+        access_log off;
+    }
+    location = /robots.txt {
+        log_not_found off;
+        access_log off;
+        allow all;
+    }
 
     # Deny all attempts to access hidden files such as .htaccess, .htpasswd, .DS_Store (Mac).
     location ~ /\.ht {
@@ -242,8 +249,8 @@ server {
 
     # Webdav
     location ~ \.(_.*|DS_Store|Spotlight-V100|TemporaryItems|Trashes|hidden|localized)$ {
-        access_log  off;
-        error_log   off;
+        access_log off;
+        error_log off;
 
         if ($request_method = PUT) {
             return 403;
@@ -264,7 +271,7 @@ server {
 
         limit_except GET PROPFIND OPTIONS {
             allow 192.168.0.0/16;
-            deny  all;
+            deny all;
         }
     }
 
@@ -277,7 +284,7 @@ server {
 
         limit_except GET PROPFIND OPTIONS {
             allow 192.168.0.0/16;
-            deny  all;
+            deny all;
         }
     }
 
@@ -287,7 +294,7 @@ server {
         autoindex_exact_size off;
         dav_methods PUT DELETE MKCOL COPY MOVE;
         dav_ext_methods PROPFIND OPTIONS;
-        dav_access      user:rw group:rw all:r;
+        dav_access user:rw group:rw all:r;
 
         create_full_put_path on;
 
@@ -308,10 +315,10 @@ server {
         # time out settings
         fastcgi_read_timeout 120;
 
-        if ($request_uri ~ "^system.*"){
+        if ($request_uri ~ "^system.*") {
             rewrite ^/joomla/(.*)$ /joomla/index.php?/$1 last;
         }
-        if (!-e $request_filename){
+        if (!-e $request_filename) {
             rewrite ^/joomla/(.*)$ /joomla/index.php?/$1 last;
         }
     }
@@ -321,10 +328,10 @@ server {
         proxy_pass https://127.0.0.1:2443/gitlab/;
 
         # Use remote real IP, add $server_port to remove port number
-        proxy_set_header   Host             $host:$server_port;
-        proxy_set_header   X-Real-IP        $remote_addr;
-        proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
-        proxy_set_header  X-Forwarded-Proto $scheme;
+        proxy_set_header Host $host:$server_port;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
 
         # Use websockets
         proxy_http_version 1.1;
@@ -335,13 +342,13 @@ server {
     # SonarQube
     location /sonarqube {
         proxy_pass http://127.0.0.1:9191/sonarqube;
-        proxy_cookie_path        ~*^/.* "/; secure";
+        proxy_cookie_path ~*^/.* "/; secure";
 
         # Use remote real IP
-        proxy_set_header  Host $host:$server_port;
-        proxy_set_header  X-Real-IP $remote_addr;
-        proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header  X-Forwarded-Proto $scheme;
+        proxy_set_header Host $host:$server_port;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
 
         # Use websockets
         proxy_http_version 1.1;
@@ -362,10 +369,10 @@ server {
         sendfile off;
 
         # Use remote real IP
-        proxy_set_header   Host                 $host:$server_port;
-        proxy_set_header   X-Real-IP            $remote_addr;
-        proxy_set_header   X-Forwarded-For      $proxy_add_x_forwarded_for;
-        proxy_set_header   X-Forwarded-Proto    $scheme;
+        proxy_set_header Host $host:$server_port;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
 
         # Use websockets
         proxy_http_version 1.1;
@@ -373,17 +380,17 @@ server {
         proxy_set_header Connection "upgrade";
 
         # Set maximum upload size
-        client_max_body_size       10m;
-        client_body_buffer_size    128k;
+        client_max_body_size 10m;
+        client_body_buffer_size 128k;
 
-        proxy_connect_timeout      90;
-        proxy_send_timeout         90;
-        proxy_read_timeout         3600;
+        proxy_connect_timeout 90;
+        proxy_send_timeout 90;
+        proxy_read_timeout 3600;
         proxy_max_temp_file_size 0;
 
-        proxy_buffer_size          4k;
-        proxy_buffers              4 32k;
-        proxy_busy_buffers_size    64k;
+        proxy_buffer_size 4k;
+        proxy_buffers 4 32k;
+        proxy_busy_buffers_size 64k;
         proxy_temp_file_write_size 64k;
     }
 
@@ -398,7 +405,7 @@ server {
             fastcgi_pass unix:/run/php/php8.4-fpm.sock;
             fastcgi_index index.php;
             fastcgi_param SCRIPT_FILENAME $request_filename;
-            fastcgi_param  PHP_VALUE  "display_errors=Off \n error_reporting=E_ALL & ~E_DEPRECATED & ~E_NOTICE & ~E_WARNING";
+            fastcgi_param PHP_VALUE "display_errors=Off \n error_reporting=E_ALL & ~E_DEPRECATED & ~E_NOTICE & ~E_WARNING";
             include fastcgi_params;
         }
 
@@ -433,19 +440,19 @@ server {
 
     # Artifactory
     location /artifactory/ {
-        proxy_buffers            4 256k;
-        proxy_busy_buffers_size  256k;
-        proxy_read_timeout       900;
+        proxy_buffers 4 256k;
+        proxy_busy_buffers_size 256k;
+        proxy_read_timeout 900;
 
         # Paths
-        proxy_cookie_path        ~*^/.* /;
-        proxy_pass               http://localhost:8081/artifactory/;
+        proxy_cookie_path ~*^/.* /;
+        proxy_pass http://localhost:8081/artifactory/;
 
         # Use remote real IP
-        proxy_set_header  Host $host:$server_port;
-        proxy_set_header  X-Real-IP $remote_addr;
-        proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header  X-Forwarded-Proto $scheme;
+        proxy_set_header Host $host:$server_port;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
 
         # No buffering to temp files, it fails for large downloads
         proxy_max_temp_file_size 0;
@@ -456,12 +463,12 @@ server {
 
     location /ui/ {
         proxy_read_timeout 900;
-        proxy_cookie_path  ~*^/.* /;
-        proxy_pass         http://localhost:8082/ui/;
-        proxy_set_header   Host $host:$server_port;
-        proxy_set_header   X-Real-IP $remote_addr;
-        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_cookie_path ~*^/.* /;
+        proxy_pass http://localhost:8082/ui/;
+        proxy_set_header Host $host:$server_port;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
     }
 
     # Jira
@@ -469,10 +476,10 @@ server {
         proxy_pass http://localhost:8181;
 
         # Use remote real IP
-        proxy_set_header  Host $host:$server_port;
-        proxy_set_header  X-Real-IP $remote_addr;
-        proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header  X-Forwarded-Proto $scheme;
+        proxy_set_header Host $host:$server_port;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
 
         client_max_body_size 10M;
         proxy_buffers 4 256k;
@@ -544,7 +551,7 @@ server {
 
     # Elasticsearch
     location ~ ^/es(.*) {
-        rewrite /es/(.*) /$1  break;
+        rewrite /es/(.*) /$1 break;
 
         # Deny Nodes Shutdown API
         if ($request_filename ~ "_shutdown") {
@@ -618,9 +625,9 @@ server {
 
         # Remote the port from proxy redirect
         # proxy_set_header   Host              $host:$server_port;
-        proxy_set_header   X-Real-IP         $remote_addr;
-        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
-        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
 
         proxy_set_header X-Forwarded-Host $host;
         proxy_set_header X-Forwarded-Server $host;
@@ -633,13 +640,13 @@ server {
 
         proxy_buffering off;
 
-        proxy_max_temp_file_size   0;
-        proxy_connect_timeout      90;
-        proxy_send_timeout         90;
-        proxy_read_timeout         90;
-        proxy_buffer_size          128k;
-        proxy_buffers              32 32k;
-        proxy_busy_buffers_size    256k;
+        proxy_max_temp_file_size 0;
+        proxy_connect_timeout 90;
+        proxy_send_timeout 90;
+        proxy_read_timeout 90;
+        proxy_buffer_size 128k;
+        proxy_buffers 32 32k;
+        proxy_busy_buffers_size 256k;
         proxy_temp_file_write_size 256k;
     }
 
@@ -650,7 +657,7 @@ server {
     # Kubernetes dashboard
     location /kubernetes/ {
         proxy_pass http://localhost:8001;
-        rewrite  ^/kubernetes/(.*)  /$1 break;
+        rewrite ^/kubernetes/(.*) /$1 break;
 
         proxy_ssl_certificate /etc/kubernetes/pki/front-proxy-client.crt;
         proxy_ssl_certificate_key /etc/kubernetes/pki/front-proxy-client.key;
@@ -665,11 +672,11 @@ server {
 
     # Calibreweb
     location /calibre-web {
-        proxy_pass              http://localhost:8084;
-        proxy_set_header        Host            $http_host;
-        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header        X-Scheme        $scheme;
-        proxy_set_header        X-Script-Name   /calibre-web;
+        proxy_pass http://localhost:8084;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Scheme $scheme;
+        proxy_set_header X-Script-Name /calibre-web;
     }
 
     # Filebrowser
@@ -680,10 +687,10 @@ server {
         proxy_pass http://localhost:8484;
 
         # Remote the port from proxy redirect
-        proxy_set_header   Host              $host:$server_port;
-        proxy_set_header   X-Real-IP         $remote_addr;
-        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
-        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_set_header Host $host:$server_port;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
 
         # WebSocket support
         proxy_http_version 1.1;
@@ -697,18 +704,18 @@ server {
 
     # Code server
     location /code-server/ {
-       proxy_http_version 1.1;
-       proxy_set_header Upgrade $http_upgrade;
-       proxy_set_header Connection "upgrade";
-       proxy_pass http://code-server/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_pass http://code-server/;
     }
 
     # Drawio
     location /drawio/ {
-       proxy_http_version 1.1;
-       proxy_set_header Upgrade $http_upgrade;
-       proxy_set_header Connection "upgrade";
-       proxy_pass http://drawio/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_pass http://drawio/;
     }
 
     # Portainer
@@ -773,12 +780,14 @@ server {
 server {
     if ($host = www.jaraberrocal.readmyblog.org) {
         return 301 https://$host$request_uri;
-    } # managed by Certbot
+    }
+    # managed by Certbot
 
 
     if ($host = jaraberrocal.readmyblog.org) {
         return 301 https://$host$request_uri;
-    } # managed by Certbot
+    }
+    # managed by Certbot
 
 
     listen 80 default_server;
