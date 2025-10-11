@@ -1,3 +1,3 @@
 class { 'nodejs':
-    repo_url_suffix => '14.x',
+    repo_url_suffix => '22.x',
 }
