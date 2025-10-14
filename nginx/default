@@ -42,6 +42,10 @@ upstream drawio {
     server 127.0.0.1:8087;
 }
 
+upstream mlflow {
+    server 127.0.0.1:5002;
+}
+
 upstream teamcity {
     server 127.0.0.1:8112 fail_timeout=0;
     keepalive 32;
@@ -248,6 +252,8 @@ server {
     # WebDAV Locations
     # ============================================
 
+    client_max_body_size 0;
+
     # Webdav
     location ~ \.(_.*|DS_Store|Spotlight-V100|TemporaryItems|Trashes|hidden|localized)$ {
         access_log off;
@@ -338,6 +344,17 @@ server {
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
+
+        # LFS needs streaming (chunked request bodies)
+        client_max_body_size 0;
+        proxy_request_buffering off;
+        proxy_buffering off;
+        proxy_max_temp_file_size 0;
+
+        # Long pushes
+        proxy_read_timeout 3600;
+        proxy_connect_timeout 3600;
+        proxy_send_timeout 3600;
     }
 
     # SonarQube
@@ -705,10 +722,14 @@ server {
 
     # Code server
     location /code-server/ {
+        proxy_pass http://code-server/;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
-        proxy_pass http://code-server/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
     }
 
     # Drawio
@@ -717,6 +738,9 @@ server {
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
         proxy_pass http://drawio/;
+
+        # auth_basic "Restricted Content";
+        # auth_basic_user_file /var/www/.htpasswd;
     }
 
     # Portainer
@@ -740,6 +764,13 @@ server {
         proxy_set_header Connection "";
         proxy_pass http://localhost:8190/guacamole/;
         proxy_buffering off;
+    }
+
+    location /mlflow/ {
+        proxy_pass http://mlflow/;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
     }
 
     # Nextcloud
