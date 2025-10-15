@@ -1,4 +1,5 @@
-# ~/.bashrc — improved
+# ~/.bashrc
+# shellcheck shell=bash
 # shellcheck disable=SC1090
 
 # Only for interactive shells
@@ -30,7 +31,6 @@ command -v lesspipe >/dev/null 2>&1 && eval "$(SHELL=/bin/sh lesspipe)"
 _path_prepend() {
   local d="$1" v="${2:-PATH}"
   [[ -d "$d" ]] || return 0
-  # Split on ':' and test membership
   local current sep=":"
   current="${!v}${sep}"
   case "${sep}${current}" in
@@ -48,31 +48,35 @@ _export_unique_append() {
   eval "export ${var}=\"\${${var}:+\${${var}}:}${add}\""
 }
 
-#### Colors ############################################
-Black="\[\033[0;30m\]";   Red="\[\033[0;31m\]";     BRed="\[\033[1;31m\]"
-Green="\[\033[0;32m\]";   BGreen="\[\033[1;32m\]";  Yellow="\[\033[0;33m\]"
-BYellow="\[\033[1;33m\]"; Cyan="\[\033[0;36m\]";    Gray="\[\033[1;30m\]"
-White="\[\033[0;37m\]";   Blue="\[\033[0;34m\]";    NO_COLOR="\[\033[0m\]"
-
-# Cute glyphs
-LIGHTNING_BOLT="⚡"; UP_ARROW="↑"; DOWN_ARROW="↓"; UD_ARROW="↕"
-FF_ARROW="→"; RECYCLE="♺"; MIDDOT="•"; PLUSMINUS="±"
+#### Colors used in PS1 ########################################################
+BRed="\[\033[1;31m\]"
+Green="\[\033[0;32m\]"
+Yellow="\[\033[0;33m\]"
+Cyan="\[\033[0;36m\]"
+White="\[\033[0;37m\]"
+Blue="\[\033[0;34m\]"
+NO_COLOR="\[\033[0m\]"
 SEP=""
 
 #### Core aliases ##############################################################
 # ls colors
 if command -v dircolors >/dev/null 2>&1; then
-  test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+  if [[ -r ~/.dircolors ]]; then
+    eval "$(dircolors -b ~/.dircolors)"
+  else
+    eval "$(dircolors -b)"
+  fi
   export LS_COLORS='di=34:ln=36:so=0:pi=0:ex=32:bd=0:cd=0:su=0:sg=0:tw=34:ow=34:'
   alias ls='ls --color=auto'
-  alias grep='grep --color=auto'; alias fgrep='fgrep --color=auto'; alias egrep='egrep --color=auto'
+  alias grep='grep --color=auto'
+  alias fgrep='fgrep --color=auto'
+  alias egrep='egrep --color=auto'
 fi
 alias ll='ls -alF'; alias la='ls -A'; alias l='ls -CF'
 
 # Tools
-alias gpg='gpg2'
-# NOTE: --insecure disables TLS verification; keep only if you’re sure.
-alias curl='curl --insecure'
+alias gpg='gpg'  # modern distros ship gpg v2 as 'gpg'
+alias curl='curl --insecure'  # DANGEROUS: Disables TLS verification!
 
 # rsync helpers
 alias rsynccopy="rsync --partial --progress --append --rsh=ssh -r -h "
@@ -88,8 +92,11 @@ alias psudo='sudo -E env "PATH=$PATH LD_LIBRARY_PATH=$LD_LIBRARY_PATH"'
 
 show-empty-folders() { find . -depth -type d -empty; }
 
-# Bash completion
-if ! shopt -oq posix && [[ -f /etc/bash_completion ]]; then . /etc/bash_completion; fi
+# Bash completion (optional)
+if ! shopt -oq posix && [[ -f /etc/bash_completion ]]; then
+  # shellcheck disable=SC1091
+  . /etc/bash_completion
+fi
 
 #### Environment / tooling #####################################################
 export SW="$HOME/sw"
@@ -119,7 +126,8 @@ fi
 export EMACS_SERVER_FILE="$HOME/.emacs.cache/server/server"
 
 # Licenses — keep list unique as we append many vendors
-export theHost="$(hostname)"
+theHost="$(hostname)"
+export theHost
 _export_unique_append LM_LICENSE_FILE "47323@localhost"
 
 # Java (prefer newer if present)
@@ -148,7 +156,7 @@ export GPU_USE_SYNC_OBJECTS=1
 export GPU_MAX_ALLOC_PERCENT=95
 export GPU_SINGLE_ALLOC_PERCENT=100
 
-# CUDA 11.3 (correct LIB + HOME)
+# CUDA 11.3
 if [[ -d /usr/local/cuda-11.3 ]]; then
   export CUDADIR=/usr/local/cuda-11.3
   _path_prepend "$CUDADIR/bin"
@@ -156,7 +164,7 @@ if [[ -d /usr/local/cuda-11.3 ]]; then
   export CUDA_HOME="$CUDADIR" CUDA_TOOLKIT_ROOT_DIR="$CUDADIR"
 fi
 
-# CUDA 12.2 (fix: used wrong var name $CUDA_DIR -> $CUDADIR)
+# CUDA 12.2 (wins if present)
 export CUDA_VERSION=12.2
 if [[ -d "/usr/local/cuda-$CUDA_VERSION" ]]; then
   export CUDADIR="/usr/local/cuda-$CUDA_VERSION"
@@ -166,14 +174,12 @@ if [[ -d "/usr/local/cuda-$CUDA_VERSION" ]]; then
 fi
 _export_unique_append LD_LIBRARY_PATH "/usr/lib/x86_64-linux-gnu"
 
-# (… your EDA / FPGA / toolchain blocks, kept but with typos fixed below …)
-
-#### Cadence (unchanged behavior) #############################################
+#### Cadence (unchanged behavior, corrected vars) ##############################
 export CDS_VERSION=IC618
 if [[ -d "/opt/cadence/installs/$CDS_VERSION" ]]; then
   export CDS_AUTO_64BIT=NONE
   export CDSROOT="/opt/cadence/installs/$CDS_VERSION"
-  export CDSHOME="$CDS_ROOT" CDS_ROOT="$CDS_ROOT"  # keep legacy vars
+  export CDSHOME="$CDSROOT" CDS_ROOT="$CDSROOT"  # keep legacy vars
   export BASIC_LIB_PATH="$CDSROOT/tools/dfII/etc/cdslib/basic"
   export ANALOG_LIB_PATH="$CDSROOT/tools/dfII/etc/cdslib/artist/analogLib/"
   export CDS_LIC_FILE=27000@localhost
@@ -205,7 +211,7 @@ if [[ -d "/opt/ansys/Totem/14.1.b2" ]]; then
   _export_unique_append LM_LICENSE_FILE "$HOME/flexlm/apache.dat"
 fi
 
-#### Synopsys ###############################################################
+#### Synopsys ##################################################################
 export SYNOPSYS=/opt/synopsys
 _export_unique_append SNPSLMD_LICENSE_FILE "$HOME/flexlm/synopsys.dat"
 _export_unique_append LM_LICENSE_FILE "$HOME/flexlm/synopsys.dat"
@@ -251,7 +257,7 @@ if [[ -d "/opt/mentor/questasim/$QUESTASIM_VERSION/modeltech" ]]; then
   export MTI_VCO_MODE=64 COMP64=1
 fi
 
-#### Precision (fix: typo in var and paths) ###################################
+#### Precision #################################################################
 export PRECISION_VERSION=2019.1
 if [[ -d "/opt/mentor/precision/$PRECISION_VERSION" ]]; then
   _path_prepend "/opt/mentor/precision/$PRECISION_VERSION/bin"
@@ -357,7 +363,7 @@ export DLRM_DIR="$HOME/workspace/dlrm"
 export OMP_NUM_THREADS=32
 export MODEL_DIR=../../model
 export DATA_DIR=./fake_criteo
-ulimit -n 8192
+ulimit -n 8192 2>/dev/null || true
 
 # Poppy SSH
 export POPPY_DIRECT_CONNECT=t
@@ -382,15 +388,21 @@ export SPARK_MASTER_HOST='192.168.3.2'
 export SPARK_WORKER_CORES=2 SPARK_WORKER_INSTANCES=2 SPARK_WORKER_MEMORY=2g
 export PYSPARK_DRIVER_PYTHON="jupyter" PYSPARK_DRIVER_PYTHON_OPTS="notebook" PYSPARK_PYTHON=python3
 
-# GTAGS completion
-export GTAGSLIBPATH="$HOME/.gtags/" GTAGSTHROUGH=true GTAGSLABEL=exuberant-ctags GTAGSFORCECPP=1
-funcs(){ local cur; cur=${COMP_WORDS[COMP_CWORD]}; COMPREPLY=( $(global -c "$cur") ); }
+# GTAGS completion (ShellCheck-friendly)
+funcs() {
+  local cur
+  cur=${COMP_WORDS[COMP_CWORD]}
+  mapfile -t COMPREPLY < <(global -c "$cur")
+}
 complete -F funcs global
 
 # Guix
 _path_prepend "$HOME/.config/guix/current/bin"
 export INFOPATH="$HOME/.config/guix/current/share/info:${INFOPATH}"
-if [[ -d $HOME/.guix-profile ]]; then . "$HOME/.guix-profile/etc/profile"; fi
+if [[ -d $HOME/.guix-profile ]]; then
+  # shellcheck disable=SC1091
+  . "$HOME/.guix-profile/etc/profile"
+fi
 [[ ! -d $HOME/.guix-profile/share/emacs ]] && unset EMACSLOADPATH
 
 # Snap / Flatpak
@@ -398,17 +410,30 @@ _path_prepend "/snap/bin"
 _path_prepend "/var/lib/flatpak/exports/bin"
 
 # Local override
-[[ -f "$HOME/.bashrc_local" ]] && . "$HOME/.bashrc_local"
-
-# TERM (dedup, avoid double sets)
-if [[ -f /usr/share/terminfo/x/xterm-256color || -f /usr/lib/terminfo/x/xterm-256color ]]; then
-  export TERM="xterm-256color"
-else
-  export TERM="xterm"
+if [[ -f "$HOME/.bashrc_local" ]]; then
+  # shellcheck disable=SC1091
+  . "$HOME/.bashrc_local"
 fi
 
-#### Prompt (kept your style, small fixes) #####################################
+# TERM / truecolor (prefer tmux-256color inside tmux)
+if [[ -n "$TMUX" ]]; then
+  if infocmp tmux-256color >/dev/null 2>&1; then
+    export TERM=tmux-256color
+  else
+    export TERM=screen-256color
+  fi
+else
+  if [[ -f /usr/share/terminfo/x/xterm-256color || -f /usr/lib/terminfo/x/xterm-256color ]]; then
+    export TERM=xterm-256color
+  else
+    export TERM=xterm
+  fi
+fi
+export COLORTERM=truecolor
+
+#### Prompt ####################################################################
 set_prompt() {
+  # shellcheck disable=SC2154
   export PS1="\
 ${Blue}[\t] \
 ${Green}\u@\h \
@@ -433,13 +458,14 @@ ${NO_COLOR}"
 }
 export PROMPT_COMMAND=set_prompt
 
-# Merge in shared history maintenance
+# Shared history maintenance (append to PROMPT_COMMAND)
 export PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"
 
 # vscode terminal default editor
 [[ -n "$VSCODE_IPC_HOOK_CLI" ]] && export EDITOR="code -w"
 
 # ssh-agent helper
-[[ -f "$HOME/workspace/configfiles/dotfiles/ssh-agent-manage.sh" ]] && \
+if [[ -f "$HOME/workspace/configfiles/dotfiles/ssh-agent-manage.sh" ]]; then
+  # shellcheck disable=SC1091
   . "$HOME/workspace/configfiles/dotfiles/ssh-agent-manage.sh"
-
+fi
