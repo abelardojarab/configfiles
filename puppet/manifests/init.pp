@@ -1,11 +1,15 @@
 node default {
     include services
     include devel
+    include scripts
     include docker
     include kubernetes
     include python3
-    include virtualization
-    include nodejs
+    include pips
     include golang
-    include tools
+    include nodejs
+    include nodes
+    # include virtualisation
+    # include tools
+    include accounts
 }
