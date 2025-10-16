@@ -34,7 +34,7 @@ class tools {
   apt::ppa { 'ppa:ubuntuhandbook1/emacs':
   } ->
 
-  package { [ "emacs28-nativecomp", "exuberant-ctags", "global", "libtree-sitter0", "libtree-sitter-dev" ]:
+  package { [ "emacs28-nativecomp" ]:
     ensure => installed,
   }
 
