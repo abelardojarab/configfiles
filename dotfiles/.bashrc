@@ -397,11 +397,48 @@ else
     FD_CMD=""
 fi
 
+# ==== Detect commands (FreeBSD vs Linux compatibility) ====
+
+# Detect fd command
+if command -v fdfind >/dev/null 2>&1; then
+    FD_CMD="fdfind"
+elif command -v fd >/dev/null 2>&1; then
+    FD_CMD="fd"
+else
+    FD_CMD=""
+fi
+
+# Detect bat command
+if command -v batcat >/dev/null 2>&1; then
+    BAT_CMD="batcat"
+elif command -v bat >/dev/null 2>&1; then
+    BAT_CMD="bat"
+else
+    BAT_CMD=""
+fi
+
 # ==== Basic fd aliases ====
 if [ -n "$FD_CMD" ]; then
     alias ff="$FD_CMD --type f --hidden --exclude .git"
     alias fdir="$FD_CMD --type d --hidden --exclude .git"
 fi
+
+# ==== Helper function for bat preview ====
+_bat_preview() {
+    if [ -n "$BAT_CMD" ]; then
+        echo "$BAT_CMD --color=always --style=numbers --line-range=:100 {}"
+    else
+        echo "head -100 {}"
+    fi
+}
+
+_bat_preview_highlight() {
+    if [ -n "$BAT_CMD" ]; then
+        echo "$BAT_CMD --color=always --style=numbers --highlight-line {2} {1}"
+    else
+        echo "head -100 {1}"
+    fi
+}
 
 # ==== Global GTAGS Configuration ====
 
@@ -482,29 +519,86 @@ gtir() {
     [ -n "$selected" ] && global -x -r "$selected"
 }
 
-# File finder using fd with bat preview
+# Both (definition + references)
+gtib() {
+    _gtags_init || return 1
+    local selected
+    selected=$(global -c | fzf --height=40%)
+    [ -z "$selected" ] && return
+
+    echo "=== Definition ==="
+    global -x -d "$selected"
+    echo -e "\n=== References ==="
+    global -x -r "$selected"
+}
+
+# File finder using fd with bat preview (alternative - cd approach)
 gfile() {
     _gtags_init || return 1
     local selected preview_cmd
 
-    if command -v bat >/dev/null 2>&1; then
-        preview_cmd="bat --color=always --style=numbers --line-range=:100 {}"
+    if [ -n "$BAT_CMD" ]; then
+        preview_cmd="$BAT_CMD --color=always --style=numbers --line-range=:100 {}"
     else
         preview_cmd="head -100 {}"
     fi
 
     if [ -n "$FD_CMD" ]; then
-        # Use fd if available (faster)
-        selected=$($FD_CMD --type f . "$GTAGSROOT" | \
-            sed "s|^$GTAGSROOT/||" | \
+        # Use fd - run from GTAGSROOT
+        selected=$(cd "$GTAGSROOT" && $FD_CMD --type f --follow . | \
             fzf --preview "$preview_cmd" --height=60% --header="Find file")
     else
         # Fall back to global -P
-        selected=$(global -P | \
+        selected=$(cd "$GTAGSROOT" && global -P | \
             fzf --preview "$preview_cmd" --height=60% --header="Find file")
     fi
 
     [ -n "$selected" ] && echo "$GTAGSROOT/$selected"
+}
+
+# Content search with ripgrep + fzf + bat
+ggrep() {
+    _gtags_init || return 1
+    if [ $# -eq 0 ]; then
+        echo "Usage: ggrep <pattern>"
+        return 1
+    fi
+
+    local preview_cmd
+    preview_cmd=$(_bat_preview_highlight)
+
+    if command -v rg >/dev/null 2>&1; then
+        # Use ripgrep (much faster) - follow symlinks
+        (cd "$GTAGSROOT" && rg --follow --line-number --color=always "$1" | \
+            fzf --ansi --delimiter=: \
+                --preview "$preview_cmd" \
+                --preview-window='right:60%' \
+                --height=60%)
+    else
+        # Fall back to global
+        global -x -g "$1" | \
+            fzf --preview "echo {}" --height=60%
+    fi
+}
+
+# Interactive grep (type pattern interactively)
+ggrepi() {
+    _gtags_init || return 1
+
+    if command -v rg >/dev/null 2>&1 && [ -n "$BAT_CMD" ]; then
+        (cd "$GTAGSROOT" && \
+            rg --follow --line-number --color=always . | \
+            fzf --ansi --query="$*" \
+                --bind="change:reload:rg --follow --line-number --color=always {q} || true" \
+                --delimiter=: \
+                --preview="$BAT_CMD --color=always --style=numbers --highlight-line {2} {1}" \
+                --preview-window='right:60%' \
+                --height=60% \
+                --header="Interactive grep (type to search)")
+    else
+        echo "Requires ripgrep and bat/batcat for interactive mode"
+        return 1
+    fi
 }
 
 # Find file by name (fuzzy)
@@ -512,15 +606,10 @@ gfind() {
     _gtags_init || return 1
     local query="$*"
     local selected preview_cmd
-
-    if command -v bat >/dev/null 2>&1; then
-        preview_cmd="bat --color=always --style=numbers --line-range=:50 {}"
-    else
-        preview_cmd="head -50 {}"
-    fi
+    preview_cmd=$(_bat_preview)
 
     if [ -n "$FD_CMD" ]; then
-        selected=$($FD_CMD --type f . "$GTAGSROOT" | \
+        selected=$($FD_CMD --type f --follow . "$GTAGSROOT" | \
             sed "s|^$GTAGSROOT/||" | \
             fzf --query="$query" \
                 --preview "$preview_cmd" \
@@ -549,39 +638,21 @@ grecent() {
     _gtags_init || return 1
     local days="${1:-7}"
     local preview_cmd
-
-    if command -v bat >/dev/null 2>&1; then
-        preview_cmd="bat --color=always --style=numbers --line-range=:50 {}"
-    else
-        preview_cmd="head -50 {}"
-    fi
+    preview_cmd=$(_bat_preview)
 
     if [ -n "$FD_CMD" ]; then
-        $FD_CMD --type f --changed-within "${days}d" . "$GTAGSROOT" | \
+        $FD_CMD --type f --follow --changed-within "${days}d" . "$GTAGSROOT" | \
             sed "s|^$GTAGSROOT/||" | \
             fzf --preview "$preview_cmd" \
                 --height=60% \
                 --header="Files modified in last $days days"
     else
-        find "$GTAGSROOT" -type f -mtime -"$days" | \
+        find "$GTAGSROOT" -follow -type f -mtime -"$days" | \
             sed "s|^$GTAGSROOT/||" | \
             fzf --preview "$preview_cmd" \
                 --height=60% \
                 --header="Files modified in last $days days"
     fi
-}
-
-# Both (definition + references)
-gtib() {
-    _gtags_init || return 1
-    local selected
-    selected=$(global -c | fzf --height=40%)
-    [ -z "$selected" ] && return
-
-    echo "=== Definition ==="
-    global -x -d "$selected"
-    echo -e "\n=== References ==="
-    global -x -r "$selected"
 }
 
 # ==== Auto-completion ====
