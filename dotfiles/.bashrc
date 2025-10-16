@@ -388,13 +388,184 @@ export SPARK_MASTER_HOST='192.168.3.2'
 export SPARK_WORKER_CORES=2 SPARK_WORKER_INSTANCES=2 SPARK_WORKER_MEMORY=2g
 export PYSPARK_DRIVER_PYTHON="jupyter" PYSPARK_DRIVER_PYTHON_OPTS="notebook" PYSPARK_PYTHON=python3
 
-# GTAGS completion (ShellCheck-friendly)
-funcs() {
-  local cur
-  cur=${COMP_WORDS[COMP_CWORD]}
-  mapfile -t COMPREPLY < <(global -c "$cur")
+# ==== Global GTAGS Configuration ====
+
+# Single directory for both code symlinks and GTAGS database
+export GTAGSROOT="$HOME/.gtags"
+
+# Use exuberant-ctags parser
+export GTAGSLABEL=ctags
+
+# Initialize ~/.gtags directory and GTAGS database
+_gtags_init() {
+    if [ ! -d "$GTAGSROOT" ]; then
+        echo "Creating $GTAGSROOT..."
+        mkdir -p "$GTAGSROOT"
+        echo "Add your source symlinks to $GTAGSROOT, then run: gupdate"
+    fi
+
+    if [ ! -f "$GTAGSROOT/GTAGS" ]; then
+        if [ -z "$(ls -A "$GTAGSROOT" 2>/dev/null)" ]; then
+            echo "⚠️  $GTAGSROOT is empty. Add symlinks to your source code first!"
+            echo "Example: ln -s /usr/src/sys $GTAGSROOT/freebsd-sys"
+            return 1
+        fi
+        echo "Generating GTAGS in $GTAGSROOT (this may take a while)..."
+        (cd "$GTAGSROOT" && gtags --gtagslabel=ctags)
+        echo "✓ GTAGS created successfully!"
+    fi
 }
-complete -F funcs global
+
+# Update/regenerate GTAGS
+gupdate() {
+    if [ ! -d "$GTAGSROOT" ]; then
+        _gtags_init
+        return
+    fi
+
+    if [ ! -f "$GTAGSROOT/GTAGS" ]; then
+        echo "Generating initial GTAGS..."
+        (cd "$GTAGSROOT" && gtags -c --gtagslabel=ctags)
+    else
+        echo "Updating GTAGS..."
+        (cd "$GTAGSROOT" && global -u)
+    fi
+    echo "✓ GTAGS updated!"
+}
+
+# Force full regeneration
+gregenerate() {
+    echo "Regenerating GTAGS from scratch..."
+    rm -f "$GTAGSROOT/GTAGS" "$GTAGSROOT/GRTAGS" "$GTAGSROOT/GPATH"
+    (cd "$GTAGSROOT" && gtags -c --gtagslabel=ctags)
+    echo "✓ Done!"
+}
+
+# ==== TUI Functions ====
+
+# Definitions
+gti() {
+    _gtags_init || return 1
+    local selected
+    selected=$(global -c | fzf --preview 'global -x {}' --preview-window=right:60% --height=40%)
+    [ -n "$selected" ] && global -x "$selected"
+}
+
+# References
+gtir() {
+    _gtags_init || return 1
+    local selected
+    selected=$(global -c | fzf --preview 'global -x -r {}' --preview-window=right:60% --height=40%)
+    [ -n "$selected" ] && global -x -r "$selected"
+}
+
+# Both (definition + references)
+gtib() {
+    _gtags_init || return 1
+    local selected
+    selected=$(global -c | fzf --height=40%)
+    [ -z "$selected" ] && return
+
+    echo "=== Definition ==="
+    global -x -d "$selected"
+    echo -e "\n=== References ==="
+    global -x -r "$selected"
+}
+
+ggrep() {
+    _gtags_init || return 1
+    if [ $# -eq 0 ]; then
+        echo "Usage: ggrep <pattern>"
+        return 1
+    fi
+    global -x -g "$1" | fzf --preview 'echo {}' --height=40%
+}
+
+gfile() {
+    _gtags_init || return 1
+    local selected
+    selected=$(global -P | fzf --preview 'head -50 {}' --height=40%)
+    [ -n "$selected" ] && echo "$selected"
+}
+
+# ==== Launch gtags-cscope TUI ====
+# gtags-cscope wrapper
+gcs() {
+    if [ ! -f "$GTAGSROOT/GTAGS" ]; then
+        echo "No GTAGS found. Run 'gupdate' first!"
+        return 1
+    fi
+    (cd "$GTAGSROOT" && gtags-cscope "$@")
+}
+
+# Quick gtags-cscope queries
+gcsfind() {
+    if [ ! -f "$GTAGSROOT/GTAGS" ]; then
+        echo "No GTAGS found. Run 'gupdate' first!"
+        return 1
+    fi
+
+    if [ $# -lt 2 ]; then
+        echo "Usage: gcsfind {def|ref|call|caller|grep|file} <pattern>"
+        return 1
+    fi
+
+    local cmd="$1"
+    shift
+    local pattern="$*"
+
+    case $cmd in
+        def)    (cd "$GTAGSROOT" && gtags-cscope -d -L1 "$pattern") ;;  # Find definition
+        ref)    (cd "$GTAGSROOT" && gtags-cscope -d -L0 "$pattern") ;;  # Find symbol
+        call)   (cd "$GTAGSROOT" && gtags-cscope -d -L2 "$pattern") ;; # Functions called by
+        caller) (cd "$GTAGSROOT" && gtags-cscope -d -L3 "$pattern") ;; # Functions calling this
+        grep)   (cd "$GTAGSROOT" && gtags-cscope -d -L4 "$pattern") ;; # Text search
+        file)   (cd "$GTAGSROOT" && gtags-cscope -d -L7 "$pattern") ;; # Find file
+        *)
+            echo "Unknown command: $cmd"
+            echo "Usage: gcsfind {def|ref|call|caller|grep|file} <pattern>"
+            return 1
+            ;;
+    esac
+}
+
+# With auto-completion
+_gcsfind_complete() {
+    local cur prev
+    cur=${COMP_WORDS[COMP_CWORD]}
+    prev=${COMP_WORDS[COMP_CWORD-1]}
+
+    # First argument: command type
+    if [ $COMP_CWORD -eq 1 ]; then
+        COMPREPLY=($(compgen -W "def ref call caller grep file" -- "$cur"))
+    # Second argument: symbol/pattern completion
+    elif [ $COMP_CWORD -eq 2 ] && [ "$prev" != "grep" ] && [ "$prev" != "file" ]; then
+        mapfile -t COMPREPLY < <(global -c "$cur" 2>/dev/null)
+    fi
+}
+complete -F _gcsfind_complete gcsfind
+
+# ==== Auto-completion ====
+_global_complete() {
+    local cur
+    cur=${COMP_WORDS[COMP_CWORD]}
+    mapfile -t COMPREPLY < <(global -c "$cur" 2>/dev/null)
+}
+
+_gfile_complete() {
+    local cur
+    cur=${COMP_WORDS[COMP_CWORD]}
+    mapfile -t COMPREPLY < <(global -P "$cur" 2>/dev/null)
+}
+
+complete -F _global_complete global gti
+complete -F _gfile_complete gfile
+complete -o default ggrep
+
+# Aliases
+alias gdef='global -d'
+alias gref='global -r'
+complete -F _global_complete gdef gref
 
 # Guix
 _path_prepend "$HOME/.config/guix/current/bin"
