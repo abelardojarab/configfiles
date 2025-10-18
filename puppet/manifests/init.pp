@@ -10,6 +10,6 @@ node default {
     include nodejs
     include nodes
     # include virtualisation
-    # include tools
+    # include ppas
     include accounts
 }

@@ -2,7 +2,6 @@ include apt
 
 class python3 {
   apt::ppa { 'ppa:deadsnakes/ppa': } ~> Class['apt::update']
-  apt::ppa { 'ppa:ubuntuhandbook1/octave': } ~> Class['apt::update']
 
   package { [
     'pylint','flake8','python3-yapf','python3-sqlalchemy',
@@ -20,11 +19,13 @@ class python3 {
     'python3-cffi','python3-jupyter-core','python3-jupyter-client',
     'python3-zeroconf','python3-regex','python3-serial',
     'python3-pomegranate','python3-networkx','python3-testresources',
-    # pick the notebook package that exists on your Ubuntu:
+
+    # pick the notebook package
     'python3-notebook',
+
     # if we want multiple interpreters from deadsnakes:
     # 'python3.9','python3.9-venv','python3.9-full',
-    # 'python3.10','python3.10-venv',
+    # 'python3.10','python3.10-venv', 'python3.10-full',
   ]:
     ensure => installed,
     require => [ Class['apt::update'] ],
@@ -70,13 +71,5 @@ class python3 {
   # }
 
   # Define shared Python dist-packages directory
-  $python_dist_packages = "/usr/lib/python3/dist-packages"
-
-  # Ensure symlinks for Python 3.8 `.so` files exist for Python 3.9
-  # exec { 'symlink-python38-so-files-to-39':
-  #   command => "find ${python_dist_packages} -name '*.cpython-38-*.so' -exec sh -c 'ln -sf {} ${python_dist_packages}/$(basename {} | sed s/cpython-38/cpython-39/)' \\;",
-  #   unless  => "find ${python_dist_packages} -name '*.cpython-39-*.so' | grep -q .",
-  #   path    => ['/bin', '/usr/bin'],
-  # }
-
+  # $python_dist_packages = "/usr/lib/python3/dist-packages"
 }
