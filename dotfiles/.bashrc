@@ -359,6 +359,11 @@ if [[ -d "$HOME/.pyenv" ]]; then
 fi
 
 # Rustup
+# We need update to use git-lfs over SSH
+# (. /etc/lsb-release &&
+# curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh |
+# sudo env os=ubuntu dist="${DISTRIB_CODENAME}" bash)
+# curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 if [[ -d "$HOME/.cargo" ]]; then
   . "$HOME/.cargo/env"
 fi
