@@ -358,6 +358,11 @@ if [[ -d "$HOME/.pyenv" ]]; then
   eval "$(pyenv init -)"
 fi
 
+# Rustup
+if [[ -d "$HOME/.cargo" ]]; then
+  . "$HOME/.cargo/env"
+fi
+
 # Other vars
 export DLRM_DIR="$HOME/workspace/dlrm"
 export OMP_NUM_THREADS=32
@@ -749,3 +754,4 @@ if [[ -f "$HOME/workspace/configfiles/dotfiles/ssh-agent-manage.sh" ]]; then
   # shellcheck disable=SC1091
   . "$HOME/workspace/configfiles/dotfiles/ssh-agent-manage.sh"
 fi
+
