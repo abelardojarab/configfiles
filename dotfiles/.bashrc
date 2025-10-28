@@ -174,6 +174,26 @@ if [[ -d "/usr/local/cuda-$CUDA_VERSION" ]]; then
 fi
 _export_unique_append LD_LIBRARY_PATH "/usr/lib/x86_64-linux-gnu"
 
+#### OpenSSL ####
+for openssl_dir in /usr/local/openssl-*; do
+  if [ -d "$openssl_dir/bin" ]; then
+    case ":$PATH:" in
+      *":$openssl_dir/bin:"*) : ;;  # already in PATH
+      *) export PATH="$openssl_dir/bin:$PATH" ;;
+    esac
+
+    # Ensure libraries are found at runtime
+    if [ -d "$openssl_dir/lib" ]; then
+       case ":${LD_LIBRARY_PATH:-}:" in
+         *":$openssl_dir/lib:"*) : ;;
+         *) export LD_LIBRARY_PATH="$openssl_dir/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" ;;
+       esac
+    fi
+
+    break
+  fi
+done
+
 #### Cadence (unchanged behavior, corrected vars) ##############################
 export CDS_VERSION=IC618
 if [[ -d "/opt/cadence/installs/$CDS_VERSION" ]]; then
