@@ -167,6 +167,18 @@ services:
     volumes:
       - ~/containers/wordpress/db:/var/lib/mysql
 
+  adminer:
+    image: adminer:latest
+    container_name: adminer
+    restart: unless-stopped
+    ports:
+      - "8095:8080"
+    environment:
+      # optional: improves perf for big schemas
+      - ADMINER_DEFAULT_SERVER=192.168.3.2
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
+
 networks:
   guacnet:
     driver: bridge
