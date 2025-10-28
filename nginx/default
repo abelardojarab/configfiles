@@ -248,6 +248,23 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
+    # This block only matches /blog and anything under it
+    location ^~ /blog/ {
+        alias /var/www/html/wordpress/;
+        index index.php index.html;
+
+        # Pretty permalinks under /blog/*
+        try_files $uri $uri/ /blog/index.php?$args;
+
+        location ~ \.php$ {
+            include fastcgi_params;
+            fastcgi_param SCRIPT_FILENAME $request_filename;
+            fastcgi_pass unix:/run/php/php8.4-fpm.sock;
+            # or: fastcgi_pass 127.0.0.1:9000;
+            fastcgi_index index.php;
+        }
+    }
+
     # ============================================
     # WebDAV Locations
     # ============================================
@@ -267,6 +284,12 @@ server {
 
     location ~ \.metadata_never_index$ {
         return 200 "Don't index this drive, Finder!";
+    }
+
+    location /rental {
+        alias /var/www/html/rental;
+        index index.html;
+        try_files $uri $uri/ /rental/index.html;
     }
 
     location /webdav {
