@@ -686,6 +686,10 @@ alias gdef='global -d'
 alias gref='global -r'
 complete -F _global_complete gdef gref
 
+# TSAN
+export TSAN_OPTIONS="halt_on_error=1:abort_on_error=1:die_after_fork=0"
+export ASAN_OPTIONS=abort_on_error=1:detect_leaks=0
+
 # Guix
 _path_prepend "$HOME/.config/guix/current/bin"
 export INFOPATH="$HOME/.config/guix/current/share/info:${INFOPATH}"
