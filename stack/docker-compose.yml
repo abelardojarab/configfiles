@@ -78,6 +78,10 @@ services:
       - MYSQL_DATABASE=nextcloud
       - MYSQL_USER=nextcloud
       - MYSQL_HOST=192.168.3.2
+      - NEXTCLOUD_TRUSTED_DOMAINS=jaraberrocal.readmyblog.org
+      - OVERWRITEPROTOCOL=https
+      - OVERWRITECLIURL=https://jaraberrocal.readmyblog.org/nextcloud
+      - OVERWRITEWEBROOT=/nextcloud
     volumes:
       - ~/containers/nextcloud/html:/var/www/html
       - ~/containers/nextcloud/config:/var/www/html/config
