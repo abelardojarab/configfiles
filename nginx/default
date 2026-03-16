@@ -795,6 +795,30 @@ server {
     location /nextcloud/nextcloud/ {
         return 301 $scheme://$host/nextcloud/;
     }
+
+    location /wordpress/ {
+        alias /var/www/html/wordpress/;
+        index index.php;
+        try_files $uri $uri/ /wordpress/index.php$is_args$args;
+
+        location ~ \.php$ {
+            include fastcgi_params;
+            fastcgi_pass unix:/run/php/php8.4-fpm.sock;
+            fastcgi_param SCRIPT_FILENAME $request_filename;
+        }
+    }
+
+    location /blog/ {
+        alias /var/www/html/wordpress/;
+        index index.php;
+        try_files $uri $uri/ /blog/index.php$is_args$args;
+
+        location ~ \.php$ {
+            include fastcgi_params;
+            fastcgi_pass unix:/run/php/php8.4-fpm.sock;
+            fastcgi_param SCRIPT_FILENAME $request_filename;
+        }
+    }
 }
 
 # Registry subdomain
