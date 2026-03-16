@@ -39,12 +39,14 @@ services:
   guacamole:
     image: guacamole/guacamole
     container_name: guacamole
+    depends_on:
+      - guacd
     restart: unless-stopped
     ports:
       - "8190:8080"
     environment:
       - GUACD_HOSTNAME=guacd
-      - MYSQL_HOST=192.168.3.2
+      - MYSQL_HOSTNAME=192.168.3.2
       - MYSQL_PORT=3306
       - MYSQL_DATABASE=guacamole_db
       - MYSQL_USER=guacuser
@@ -157,3 +159,8 @@ services:
 networks:
   guacnet:
     driver: bridge
+  host_bridge:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: docker0
+
