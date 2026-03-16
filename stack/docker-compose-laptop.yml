@@ -5,14 +5,13 @@ services:
     ports:
       - "127.0.0.1:8080:8080"
     environment:
-      # Run as your macOS user inside the container
       - DOCKER_USER=${USER}
+      - PASSWORD=qitlrtsx
     user: "${UID:-1000}:${GID:-1000}"
     volumes:
       # Persist code-server config
       - "${HOME}/.config:/home/ajaraberrocal/.config"
       - "${HOME}/.local:/home/ajaraberrocal/.local"
-      # Mount your full macOS home under /home/coder/home
       - "${HOME}:/home/ajaraberrocal"
       - "/var/run/docker.sock:/var/run/docker.sock"
     restart: unless-stopped
