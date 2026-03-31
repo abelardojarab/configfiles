@@ -1,8 +1,8 @@
 # -*-conf-*-
 #
 
-# the following two lines give a two-line status, with the current window highlighted
-hardstatus alwayslastline '%{= wk} %-w%{+b wk}%50> %n* %t %{= wk}%+w%< %{= wk}%-=%D %m/%d/%y | %C:%s %A | %1`%{-} %2`%{-}'
+# Status line
+hardstatus alwayslastline
 hardstatus string '%{= kG}[%{G}%H%? %1`%?%{g}][%= %{= kw}%-w%{+b yk} %n*%t%?(%u)%? %{-}%+w %=%{g}][%{B}%m/%d %{W}%C%A%{g}]'
 
 # format activity message
@@ -17,8 +17,6 @@ mousetrack on
 # if we accidentally hangup, don't be all attached when we come back.
 autodetach on
 
-# huge scrollback buffer
-defscrollback 5000
 
 # to clear the screen after closing some programs
 altscreen on
@@ -31,7 +29,7 @@ terminfo rxvt-unicode 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm'
 defbce on
 
 # set terminal name
-term rxvt-256color
+term screen-256color
 
 # Tell screen how to set colors. AB = background, AF=foreground
 termcapinfo xterm 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm'
@@ -45,15 +43,8 @@ termcapinfo xterm|xterms|xs|rxvt ti@:te@
 # have screen update terminal emulators titlebar
 defhstatus "screen ^E (^Et) | $USER@^EH"
 
-# terminfo and termcap for nice 256 color terminal
-# allow bold colors - necessary for some reason
-attrcolor b ".I"
-
 # nicer shell title
 shelltitle "$ |Console"
-
-# erase background with current bg color
-defbce "on"
 
 # Do not show startup message
 startup_message off
