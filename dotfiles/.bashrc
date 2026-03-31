@@ -133,7 +133,6 @@ _export_unique_append LM_LICENSE_FILE "47323@localhost"
 # Java (prefer newer if present)
 if [[ -d /usr/lib/jvm/java-17-oracle ]]; then
   export JAVA_HOME=/usr/lib/jvm/java-17-oracle
-  export CLASSPATH=".:$JAVA_HOME/lib/tools.jar:$JAVA_HOME/lib/dt.jar"
 elif [[ -d /usr/lib/jvm/java-9-oracle ]]; then
   export JAVA_HOME=/usr/lib/jvm/java-9-oracle
 fi
@@ -397,15 +396,6 @@ _path_prepend "$SPARK_HOME/bin"
 export SPARK_MASTER_HOST='192.168.3.2'
 export SPARK_WORKER_CORES=2 SPARK_WORKER_INSTANCES=2 SPARK_WORKER_MEMORY=2g
 export PYSPARK_DRIVER_PYTHON="jupyter" PYSPARK_DRIVER_PYTHON_OPTS="notebook" PYSPARK_PYTHON=python3
-
-# ==== Detect fd command (FreeBSD vs Linux) ====
-if command -v fdfind >/dev/null 2>&1; then
-    FD_CMD="fdfind"
-elif command -v fd >/dev/null 2>&1; then
-    FD_CMD="fd"
-else
-    FD_CMD=""
-fi
 
 # ==== Detect commands (FreeBSD vs Linux compatibility) ====
 
