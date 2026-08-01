@@ -4,11 +4,11 @@ Documentation=man:emacs(1) info:Emacs
 
 [Service]
 Type=forking
-ExecStart=/usr/local/bin/emacs --daemon
-ExecStop=/usr/local/bin/emacsclient --eval "(progn (setq kill-emacs-hook nil) (kill-emacs))"
+ExecStart=/usr/bin/emacs --daemon
+ExecStop=/usr/bin/emacsclient --eval "(progn (setq kill-emacs-hook nil) (kill-emacs))"
 Restart=on-failure
-Environment=DISPLAY=:%i
-Environment=SSH_AUTH_SOCK=/run/user/501/keyring/ssh
+Environment=DISPLAY=:0
+Environment=SSH_AUTH_SOCK=%t/keyring/ssh
 TimeoutStartSec=0
 
 [Install]
