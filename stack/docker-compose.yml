@@ -1,4 +1,42 @@
 services:
+  librechat-mongodb:
+    image: mongo:8.0.20
+    container_name: librechat-mongodb
+    restart: unless-stopped
+    command: mongod --noauth
+    volumes:
+      - ~/containers/librechat/mongodb:/data/db
+
+  librechat:
+    image: registry.librechat.ai/danny-avila/librechat-dev:latest
+    container_name: librechat
+    restart: unless-stopped
+    user: "501:501"
+    depends_on:
+      - librechat-mongodb
+      - vllm
+    ports:
+      - "3080:3080"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=3080
+      - MONGO_URI=mongodb://librechat-mongodb:27017/LibreChat
+      - DOMAIN_CLIENT=https://jaraberrocal.readmyblog.org/librechat
+      - DOMAIN_SERVER=https://jaraberrocal.readmyblog.org/librechat
+      - ALLOW_REGISTRATION=false
+      - ALLOW_EMAIL_LOGIN=true
+      - SEARCH=false
+      - CREDS_KEY=ccc1e562df3904c8dd316d8cc426ba02a71f12d19bd54201b5bee9d0475a03f0
+      - CREDS_IV=5d797dd0be8c670df1384dd6b2dbcdf0
+      - JWT_SECRET=ae246ea3499c911bda5d85254a9f313681781fca2dbd3b2030665b219dc61ca2
+      - JWT_REFRESH_SECRET=fbc13972aabe4a14e54fdad62004084129e82f2a23608f56187518a630748116
+    volumes:
+      - ~/containers/librechat/images:/app/client/public/images
+      - ~/containers/librechat/uploads:/app/uploads
+      - ~/containers/librechat/logs:/app/logs
+      - ~/containers/librechat/data:/app/data
+      - ~/containers/librechat/librechat.yaml:/app/librechat.yaml:ro
+
   heimdall:
     image: linuxserver/heimdall
     container_name: heimdall
@@ -159,6 +197,56 @@ services:
       - AWS_ACCESS_KEY_ID=admin
       - AWS_SECRET_ACCESS_KEY=miniopassword
       - MLFLOW_S3_ENDPOINT_URL=http://minio:9000
+
+  vllm:
+    image: vllm/vllm-openai:v0.27.1-cu129
+    container_name: vllm
+    restart: unless-stopped
+    runtime: nvidia
+    ipc: host
+    ports:
+      - "8000:8000"
+    environment:
+      # Model's TP-relevant dim (16) isn't divisible by 3, so TP must be
+      # 1/2/4/8/16. Pin to the two matching L4s (GPU 0 and 2) and leave
+      # the RTX 4090 (GPU 1, already has ~3.8GB used by another process)
+      # out of the pool entirely.
+      - NVIDIA_VISIBLE_DEVICES=0,2
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - CUDA_DEVICE_ORDER=PCI_BUS_ID
+      - HUGGINGFACE_HUB_CACHE=/models
+      - HF_HOME=/models
+      # Ada-generation GPUs (40-series/L4/L40) lack NVLink and often have
+      # unreliable PCIe P2P, which makes NCCL hang or fail during TP init.
+      - NCCL_P2P_DISABLE=1
+      - NCCL_IB_DISABLE=1
+    volumes:
+      - /media/disk3/ollama/vllm-models:/models
+    command: >
+      --model Qwen/Qwen3.8-27B-FP8
+      --served-model-name qwen3.8-27b
+      --max-model-len 16384
+      --tensor-parallel-size 2
+      --gpu-memory-utilization 0.85
+      --max-num-seqs 8
+      --enable-auto-tool-choice
+      --tool-call-parser qwen3_xml
+      --speculative-config '{"method": "mtp", "num_speculative_tokens": 3}'
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    restart: unless-stopped
+    depends_on:
+      - vllm
+    ports:
+      - "8091:8080"
+    environment:
+      - OPENAI_API_BASE_URL=http://vllm:8000/v1
+      - OPENAI_API_KEY=not-needed
+      - ENABLE_OLLAMA_API=false
+    volumes:
+      - ~/containers/open-webui:/app/backend/data
 
 networks:
   guacnet:
