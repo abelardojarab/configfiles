@@ -790,6 +790,53 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
+    # OpenHands used to be served at /openhands/; redirect old
+    # links/bookmarks to the current /canvas/ location below.
+    location /openhands/canvas {
+        return 301 /canvas/;
+    }
+
+    # OpenHands
+    # agent-canvas hardcodes "/canvas" as its base path (assets, router
+    # basename, and route-matching all assume it), independent of the
+    # AGENT_CANVAS_BASE_PATH env var in places. Serving it at /canvas/
+    # here — matching docker-compose's AGENT_CANVAS_BASE_PATH=/canvas —
+    # avoids needing any path rewriting.
+    location /canvas/ {
+        auth_basic "Restricted Content";
+        auth_basic_user_file /var/www/.htpasswd;
+
+        proxy_pass http://localhost:8093;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # agent-canvas's frontend calls its own backend API at bare root paths
+    # (/api/*, /server_info, /health, ...) regardless of AGENT_CANVAS_BASE_PATH
+    # — that setting only controls where the frontend page itself is served.
+    # Without this, those calls fall through to the default location (Heimdall)
+    # and fail. NOTE: these are fairly generic path names claimed at the
+    # domain root — if another service ever needs /api/, /health, /docs, etc.
+    # at the root, this will collide and need to be revisited.
+    location ~ ^/(api|server_info|alive|health|ready|sockets|docs|redoc|openapi\.json)(/.*)?$ {
+        auth_basic "Restricted Content";
+        auth_basic_user_file /var/www/.htpasswd;
+
+        proxy_pass http://localhost:8093;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
     # Nextcloud
     location /nextcloud/ {
         proxy_pass http://localhost:8890/;

@@ -3,4 +3,5 @@ fzf
 .uuid
 .DS*
 Fonts/.uuid
+stack/.env
 
