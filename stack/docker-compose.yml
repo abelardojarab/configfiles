@@ -179,6 +179,16 @@ services:
     restart: unless-stopped
     ports:
       - "8890:80"
+    # The host's /etc/hosts maps jaraberrocal.readmyblog.org to a
+    # host-specific loopback IP (127.2.1.1) that only makes sense in the
+    # host's own network namespace. Inside this container Docker's embedded
+    # DNS forwards to that same resolver chain, so self-checks (WebDAV,
+    # .mjs, ocs/ocm-provider, heartbeat) tried to connect to 127.2.1.1 from
+    # inside the container's netns, where nothing listens -> connection
+    # refused. Pin it straight to the host gateway instead, where nginx is
+    # actually listening.
+    extra_hosts:
+      - "jaraberrocal.readmyblog.org:host-gateway"
     environment:
       - MYSQL_PASSWORD=qitlrtsx
       - MYSQL_DATABASE=nextcloud
@@ -343,6 +353,37 @@ services:
       - OLLAMA_BASE_URL=http://192.168.3.123:11434
     volumes:
       - ~/containers/open-webui:/app/backend/data
+
+  onlyoffice-documentserver:
+    image: onlyoffice/documentserver:9.4.0.1
+    container_name: onlyoffice-documentserver
+    restart: unless-stopped
+    ports:
+      # Bound to localhost only — reached through nginx at /onlyoffice/,
+      # matching every other app in this stack (mlflow, drawio, portainer…).
+      - "127.0.0.1:8096:80"
+    # Document Server calls back into Nextcloud (https://.../nextcloud/...)
+    # to fetch/save documents. Same host-gateway fix as the nextcloud
+    # service — without it this container inherits the host's /etc/hosts
+    # loopback alias for the domain and the callback connection is refused.
+    extra_hosts:
+      - "jaraberrocal.readmyblog.org:host-gateway"
+    environment:
+      - JWT_ENABLED=true
+      - JWT_SECRET=${ONLYOFFICE_JWT_SECRET}
+      - JWT_HEADER=Authorization
+    volumes:
+      - ~/containers/onlyoffice/data:/var/www/onlyoffice/Data
+      - ~/containers/onlyoffice/logs:/var/log/onlyoffice
+      - ~/containers/onlyoffice/lib:/var/lib/onlyoffice
+      - ~/containers/onlyoffice/db:/var/lib/postgresql
+      - ~/containers/onlyoffice/fonts:/usr/share/fonts/truetype/custom
+    healthcheck:
+      test: ["CMD-SHELL", "/usr/bin/curl -f http://localhost/healthcheck || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
 
   minecraft-bedrock:
     image: itzg/minecraft-bedrock-server
