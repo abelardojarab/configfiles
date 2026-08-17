@@ -265,6 +265,23 @@ services:
       - AWS_ACCESS_KEY_ID=admin
       - AWS_SECRET_ACCESS_KEY=miniopassword
       - MLFLOW_S3_ENDPOINT_URL=http://minio:9000
+      # nginx proxies with `proxy_set_header Host $host`, so the tracking
+      # server sees the public domain as the Host header. MLflow 3.5+'s
+      # built-in DNS-rebinding protection only allows localhost/private-IP
+      # hosts by default and rejects that with "Invalid Host header -
+      # possible DNS rebinding attack detected" — explicitly allow it.
+      # Setting this env var replaces MLflow's default allow-list entirely
+      # (localhost/127.0.0.1/private-IP patterns), so keep those alongside
+      # the public domain or local/internal access (health checks, direct
+      # curl to 127.0.0.1:5002) breaks too.
+      - MLFLOW_SERVER_ALLOWED_HOSTS=jaraberrocal.readmyblog.org,jaraberrocal.readmyblog.org:*,localhost,localhost:*,127.0.0.1,127.0.0.1:*
+
+  adminer:
+    image: adminer:latest
+    container_name: adminer
+    restart: unless-stopped
+    ports:
+      - "8094:8080"
 
   vllm:
     image: vllm/vllm-openai:v0.27.1-cu129
