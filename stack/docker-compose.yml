@@ -263,7 +263,7 @@ services:
       --default-artifact-root s3://mlflow/
     environment:
       - AWS_ACCESS_KEY_ID=admin
-      - AWS_SECRET_ACCESS_KEY=miniopassword
+      - AWS_SECRET_ACCESS_KEY=qitlrtsx
       - MLFLOW_S3_ENDPOINT_URL=http://minio:9000
       # nginx proxies with `proxy_set_header Host $host`, so the tracking
       # server sees the public domain as the Host header. MLflow 3.5+'s
