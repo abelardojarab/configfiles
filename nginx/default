@@ -46,6 +46,10 @@ upstream mlflow {
     server 127.0.0.1:5002;
 }
 
+upstream onlyoffice {
+    server 127.0.0.1:8096;
+}
+
 upstream teamcity {
     server 127.0.0.1:8112 fail_timeout=0;
     keepalive 32;
@@ -748,6 +752,27 @@ server {
         # auth_basic_user_file /var/www/.htpasswd;
     }
 
+    # OnlyOffice Document Server. No auth_basic here: the Nextcloud (or
+    # other) app server calls back into this endpoint directly to fetch/save
+    # documents, and JWT_SECRET (docker-compose) is what actually secures the
+    # API — a login prompt would just break those server-to-server calls.
+    # X-Forwarded-Host carries the /onlyoffice suffix so the editor's own
+    # generated asset/callback URLs come back through this subpath instead
+    # of resolving to the domain root (see ONLYOFFICE's Nextcloud proxying
+    # guide: https://helpcenter.onlyoffice.com/docs/installation/docs-nextcloud-proxy.aspx).
+    location /onlyoffice/ {
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host $http_host/onlyoffice;
+        client_max_body_size 100M;
+        proxy_pass http://onlyoffice/;
+    }
+
     # Portainer
     location /portainer/ {
         proxy_http_version 1.1;
@@ -857,7 +882,15 @@ server {
     }
 
     # Nextcloud
-    location /nextcloud/ {
+    # ^~ is required: without it, nginx's regex `location ~ \.php$` block
+    # above (meant for the locally-served wordpress/blog/joomla sites) wins
+    # over this plain prefix match for any Nextcloud URL ending in .php —
+    # which includes remote.php (WebDAV/CalDAV/CardDAV), status.php,
+    # index.php, ocs/v2.php, and richdocuments'/onlyoffice's own proxy.php
+    # callbacks. Those were all silently 404ing before this fix, since nginx
+    # tried to serve them as local files instead of proxying to the
+    # container. guacamole's location below already uses this pattern.
+    location ^~ /nextcloud/ {
         proxy_pass http://localhost:8890/;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
