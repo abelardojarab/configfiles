@@ -344,6 +344,17 @@ services:
     volumes:
       - ~/containers/open-webui:/app/backend/data
 
+  minecraft-bedrock:
+    image: itzg/minecraft-bedrock-server
+    container_name: bedrock
+    restart: unless-stopped
+    ports:
+      - "19132:19132/udp"
+    environment:
+      - EULA=TRUE
+    volumes:
+      - ~/containers/minecraft-bedrock:/data
+
 networks:
   guacnet:
     driver: bridge
