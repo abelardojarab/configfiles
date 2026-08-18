@@ -109,6 +109,8 @@ services:
     image: linuxserver/heimdall
     container_name: heimdall
     restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     ports:
       - "7888:80"
     environment:
@@ -129,6 +131,8 @@ services:
     image: portainer/portainer-ce
     container_name: portainer
     restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     ports:
       - "9010:9000"
     volumes:
@@ -207,6 +211,8 @@ services:
     image: linuxserver/code-server
     container_name: code-server
     restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     ports:
       - "8085:8443"
     environment:
@@ -225,6 +231,8 @@ services:
     image: jgraph/drawio
     container_name: drawio
     restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     ports:
       - "8087:8080"
     environment:
@@ -290,6 +298,8 @@ services:
     image: adminer:latest
     container_name: adminer
     restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     ports:
       - "8094:8080"
 
@@ -335,6 +345,21 @@ services:
       --enable-auto-tool-choice
       --tool-call-parser qwen3_xml
       --speculative-config '{"method": "mtp", "num_speculative_tokens": 3}'
+
+  litellm-claude-proxy:
+    image: ghcr.io/berriai/litellm:main-stable
+    container_name: litellm-claude-proxy
+    restart: unless-stopped
+    depends_on:
+      - vllm
+    ports:
+      - "4001:4000"
+    environment:
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
+    volumes:
+      - ~/containers/litellm/config.yaml:/app/config.yaml:ro
+      - ~/containers/litellm/custom_callbacks.py:/app/custom_callbacks.py:ro
+    command: ["--config", "/app/config.yaml", "--port", "4000"]
 
   open-webui:
     image: ghcr.io/open-webui/open-webui:main
