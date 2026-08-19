@@ -20,7 +20,9 @@ services:
     volumes:
       - ~/containers/openhands:/home/openhands/.openhands
       - ~/agent-projects:/projects
-      - ~/workspace:/projects/workspace
+      # Same absolute path as code-server's workspace mount, so paths an
+      # agent writes/reports line up with what code-server (and you) see.
+      - ~/workspace:/home/abelardojarab/workspace
       # Docker control: full host-level docker socket. Equivalent to root on
       # the host — anything that can reach this socket can escalate via a
       # privileged container. Accepted tradeoff per user request.
@@ -31,6 +33,27 @@ services:
       - /run/user/501/keyring/ssh:/ssh-agent.sock
       - ~/.ssh/known_hosts:/home/openhands/.ssh/known_hosts:ro
       - ~/.ssh/config:/home/openhands/.ssh/config:ro
+
+  chat-bridge:
+    build: ./chat-bridge
+    container_name: chat-bridge
+    restart: unless-stopped
+    depends_on:
+      - openhands
+    environment:
+      - OPENHANDS_BASE_URL=http://openhands:8000
+      - OPENHANDS_WORKSPACE=/projects/workspace
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_ALLOWED_CHAT_IDS=${TELEGRAM_ALLOWED_CHAT_IDS}
+      - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN}
+      - DISCORD_ALLOWED_CHANNEL_IDS=${DISCORD_ALLOWED_CHANNEL_IDS}
+    volumes:
+      # Read-only: the bridge only needs to authenticate to openhands, not
+      # write anything back into its state dir. uid/gid 10001 (baked into
+      # the chat-bridge image) matches this file's owner so it's readable
+      # without loosening its 600 permissions.
+      - ~/containers/openhands/agent-canvas/api-key.txt:/run/secrets/openhands-api-key:ro
+      - ~/containers/chat-bridge:/data
 
   librechat-mongodb:
     image: mongo:8.0.20
@@ -119,6 +142,17 @@ services:
     volumes:
       - ~/containers/heimdall:/config
 
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: uptime-kuma
+    restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    ports:
+      - "3011:3001"
+    volumes:
+      - ~/containers/uptime-kuma:/app/data
+
   watchtower:
     image: containrrr/watchtower
     container_name: watchtower
@@ -138,6 +172,93 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ~/containers/portainer:/data
+
+  authentik-db:
+    image: postgres:16-alpine
+    container_name: authentik-db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 5s
+    environment:
+      - POSTGRES_DB=authentik
+      - POSTGRES_USER=authentik
+      - POSTGRES_PASSWORD=${AUTHENTIK_PG_PASS}
+    volumes:
+      - ~/containers/authentik/database:/var/lib/postgresql/data
+
+  authentik-redis:
+    image: redis:alpine
+    container_name: authentik-redis
+    restart: unless-stopped
+    command: --save 60 1 --loglevel warning
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 3s
+    volumes:
+      - ~/containers/authentik/redis:/data
+
+  authentik-server:
+    image: ghcr.io/goauthentik/server:${AUTHENTIK_TAG:-2024.10.4}
+    container_name: authentik-server
+    restart: unless-stopped
+    command: server
+    depends_on:
+      - authentik-db
+      - authentik-redis
+    environment:
+      - AUTHENTIK_SECRET_KEY=${AUTHENTIK_SECRET_KEY}
+      - AUTHENTIK_REDIS__HOST=authentik-redis
+      - AUTHENTIK_POSTGRESQL__HOST=authentik-db
+      - AUTHENTIK_POSTGRESQL__USER=authentik
+      - AUTHENTIK_POSTGRESQL__NAME=authentik
+      - AUTHENTIK_POSTGRESQL__PASSWORD=${AUTHENTIK_PG_PASS}
+      # nginx terminates TLS in front of this; authentik only needs to be
+      # reachable over plain http on the docker network / localhost.
+      - AUTHENTIK_DISABLE_STARTUP_ANALYTICS=true
+      # Break-glass akadmin login (only takes effect while the instance has
+      # no users yet) + the value the abelardojara blueprint reads.
+      - AUTHENTIK_BOOTSTRAP_EMAIL=${AUTHENTIK_BOOTSTRAP_EMAIL}
+      - AUTHENTIK_BOOTSTRAP_PASSWORD=${AUTHENTIK_BOOTSTRAP_PASSWORD}
+      - AUTHENTIK_ABELARDOJARA_PASSWORD=${AUTHENTIK_ABELARDOJARA_PASSWORD}
+    volumes:
+      - ~/containers/authentik/media:/media
+      - ~/containers/authentik/templates:/templates
+      - ~/containers/authentik/blueprints/local:/blueprints/local
+    ports:
+      # nginx (host) reaches the embedded outpost through this, same
+      # localhost-published pattern as heimdall/portainer/mlflow/etc.
+      - "127.0.0.1:9011:9000"
+
+  authentik-worker:
+    image: ghcr.io/goauthentik/server:${AUTHENTIK_TAG:-2024.10.4}
+    container_name: authentik-worker
+    restart: unless-stopped
+    command: worker
+    depends_on:
+      - authentik-db
+      - authentik-redis
+    environment:
+      - AUTHENTIK_SECRET_KEY=${AUTHENTIK_SECRET_KEY}
+      - AUTHENTIK_REDIS__HOST=authentik-redis
+      - AUTHENTIK_POSTGRESQL__HOST=authentik-db
+      - AUTHENTIK_POSTGRESQL__USER=authentik
+      - AUTHENTIK_POSTGRESQL__NAME=authentik
+      - AUTHENTIK_POSTGRESQL__PASSWORD=${AUTHENTIK_PG_PASS}
+      - AUTHENTIK_BOOTSTRAP_EMAIL=${AUTHENTIK_BOOTSTRAP_EMAIL}
+      - AUTHENTIK_BOOTSTRAP_PASSWORD=${AUTHENTIK_BOOTSTRAP_PASSWORD}
+      - AUTHENTIK_ABELARDOJARA_PASSWORD=${AUTHENTIK_ABELARDOJARA_PASSWORD}
+    volumes:
+      - ~/containers/authentik/media:/media
+      - ~/containers/authentik/templates:/templates
+      - ~/containers/authentik/certs:/certs
+      - ~/containers/authentik/blueprints/local:/blueprints/local
 
   guacd:
     image: guacamole/guacd
@@ -424,8 +545,4 @@ services:
 networks:
   guacnet:
     driver: bridge
-  host_bridge:
-    driver: bridge
-    driver_opts:
-      com.docker.network.bridge.name: docker0
 
