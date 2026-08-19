@@ -830,12 +830,14 @@ server {
     }
 
     # Portainer
-    # Authentik forward-auth temporarily removed (no proxy provider/
-    # application set up yet in the admin UI -- re-add the auth_request +
-    # error_page @goauthentik_proxy_signin pair here once that exists;
-    # this container has full docker.sock access (root-equivalent on the
-    # host) so it shouldn't stay open long-term).
+    # Behind Authentik forward-auth -- provider/application set up via the
+    # local/portainer.yaml blueprint (mode forward_single, bound to the
+    # embedded outpost). This container has full docker.sock access
+    # (root-equivalent on the host), hence gating it.
     location /portainer/ {
+        auth_request     /outpost.goauthentik.io/auth/nginx;
+        error_page 401 = @goauthentik_proxy_signin;
+
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -843,6 +845,9 @@ server {
     }
 
     location /portainer/api/websocket/ {
+        auth_request     /outpost.goauthentik.io/auth/nginx;
+        error_page 401 = @goauthentik_proxy_signin;
+
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
