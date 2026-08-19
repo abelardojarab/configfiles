@@ -264,6 +264,8 @@ services:
     image: guacamole/guacd
     container_name: guacd
     restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     networks:
       - guacnet
 
@@ -273,6 +275,8 @@ services:
     depends_on:
       - guacd
     restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     ports:
       - "8190:8080"
     environment:
@@ -289,6 +293,8 @@ services:
     image: linuxserver/calibre-web
     container_name: calibre-web
     restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     ports:
       - "8084:8083"
     environment:
@@ -389,6 +395,8 @@ services:
     image: burakince/mlflow:latest  # This image includes psycopg2
     container_name: mlflow
     restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     ports:
       - "5002:5002"
     depends_on:
@@ -471,6 +479,8 @@ services:
     image: ghcr.io/berriai/litellm:main-stable
     container_name: litellm-claude-proxy
     restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     depends_on:
       - vllm
     ports:
@@ -535,6 +545,8 @@ services:
     image: itzg/minecraft-bedrock-server
     container_name: bedrock
     restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     ports:
       - "19132:19132/udp"
     environment:
