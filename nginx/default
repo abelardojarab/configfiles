@@ -38,6 +38,14 @@ upstream code-server {
     server 127.0.0.1:8085;
 }
 
+upstream authentik {
+    server 127.0.0.1:9011;
+}
+
+upstream uptime-kuma {
+    server 127.0.0.1:3011;
+}
+
 upstream drawio {
     server 127.0.0.1:8087;
 }
@@ -773,7 +781,60 @@ server {
         proxy_pass http://onlyoffice/;
     }
 
+    # ============================================
+    # Authentik forward-auth (embedded outpost)
+    # ============================================
+    # Shared endpoints used by any location below that opts into
+    # forward-auth via the "auth_request /outpost.goauthentik.io/auth/nginx"
+    # + "error_page 401 = @goauthentik_proxy_signin" pair. Add that pair to
+    # a location to put it behind Authentik instead of (or in addition to)
+    # auth_basic. Requires nginx built with ngx_http_auth_request_module
+    # (standard in nginx-full/nginx-extras; confirm with `nginx -V`).
+    location /outpost.goauthentik.io {
+        proxy_pass              http://authentik/outpost.goauthentik.io;
+        proxy_set_header        Host $host;
+        proxy_set_header        X-Original-URL $scheme://$http_host$request_uri;
+        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header        X-Forwarded-Proto $scheme;
+        add_header              Set-Cookie $auth_cookie;
+        auth_request_set        $auth_cookie $upstream_http_set_cookie;
+        proxy_pass_request_body off;
+        proxy_set_header        Content-Length "";
+    }
+
+    location @goauthentik_proxy_signin {
+        internal;
+        add_header Set-Cookie $auth_cookie;
+        return 302 /outpost.goauthentik.io/start?rd=$request_uri;
+    }
+
+    # Authentik's own login/admin UI is NOT served here -- authentik emits
+    # root-relative redirects/asset links (e.g. /flows/-/default/...) that
+    # break under any path prefix, so it gets its own vhost instead: see the
+    # auth.jaraberrocal.readmyblog.org server{} block below.
+
+    # Uptime Kuma
+    # NOTE: Uptime Kuma doesn't officially support being served under an
+    # arbitrary subpath -- if the dashboard's assets 404 or sockets refuse
+    # to connect, drop this location and instead give it its own server{}
+    # block on a subdomain (same pattern as the registry.* server below).
+    location /uptime-kuma/ {
+        proxy_pass http://uptime-kuma/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
     # Portainer
+    # Authentik forward-auth temporarily removed (no proxy provider/
+    # application set up yet in the admin UI -- re-add the auth_request +
+    # error_page @goauthentik_proxy_signin pair here once that exists;
+    # this container has full docker.sock access (root-equivalent on the
+    # host) so it shouldn't stay open long-term).
     location /portainer/ {
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
@@ -947,9 +1008,38 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
-
     ssl_certificate /etc/letsencrypt/live/registry.jaraberrocal.readmyblog.org/fullchain.pem; # managed by Certbot
     ssl_certificate_key /etc/letsencrypt/live/registry.jaraberrocal.readmyblog.org/privkey.pem; # managed by Certbot
+
+}
+
+# Authentik gets its own vhost -- it only works served from the root of a
+# (sub)domain (see note above the removed /authentik/ location upstream).
+# Point auth.jaraberrocal.readmyblog.org's DNS record at this host, then run:
+#   sudo certbot --nginx -d auth.jaraberrocal.readmyblog.org
+# which will fill in the ssl_certificate directives and add the :443
+# server block / http->https redirect automatically.
+server {
+    server_name auth.jaraberrocal.readmyblog.org;
+
+    location / {
+        proxy_pass http://authentik;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    listen 443 ssl; # managed by Certbot
+    listen [::]:443 ssl ipv6only=on; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/auth.jaraberrocal.readmyblog.org/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/auth.jaraberrocal.readmyblog.org/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
 }
 
 server {
@@ -973,3 +1063,17 @@ server {
 }
 
 # vim: ft=nginx
+
+server {
+    if ($host = auth.jaraberrocal.readmyblog.org) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    listen 80;
+    listen [::]:80;
+    server_name auth.jaraberrocal.readmyblog.org;
+    return 404; # managed by Certbot
+
+
+}
