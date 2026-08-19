@@ -55,6 +55,18 @@ services:
       - ~/containers/openhands/agent-canvas/api-key.txt:/run/secrets/openhands-api-key:ro
       - ~/containers/chat-bridge:/data
 
+  searxng:
+    image: docker.io/searxng/searxng:latest
+    container_name: searxng
+    restart: unless-stopped
+    # No published ports: reachable only by name (http://searxng:8080) from
+    # other containers on stack_default -- librechat's and openhands' MCP
+    # search tool, not the public internet.
+    environment:
+      - SEARXNG_BASE_URL=http://searxng:8080/
+    volumes:
+      - ~/containers/searxng:/etc/searxng
+
   librechat-mongodb:
     image: mongo:8.0.20
     container_name: librechat-mongodb
@@ -108,6 +120,10 @@ services:
     environment:
       - HOST=0.0.0.0
       - PORT=3080
+      # HOME=/ for uid 501 in this image -> npm defaults its cache to the
+      # unwritable /.npm, which breaks every npx-launched MCP server (fetch,
+      # search). Point it at /tmp instead, writable by any uid.
+      - NPM_CONFIG_CACHE=/tmp/npm-cache
       - MONGO_URI=mongodb://librechat-mongodb:27017/LibreChat
       - DOMAIN_CLIENT=https://jaraberrocal.readmyblog.org/librechat
       - DOMAIN_SERVER=https://jaraberrocal.readmyblog.org/librechat
