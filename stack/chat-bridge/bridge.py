@@ -98,14 +98,40 @@ class OpenHandsClient:
         resp = await self._client.get(f"/api/conversations/{conversation_id}")
         return resp.status_code == 200
 
+    async def _ensure_conversation(self, store: ConversationStore, chat_key: str) -> str:
+        conversation_id = store.get(chat_key)
+        if conversation_id is None or not await self._conversation_is_valid(conversation_id):
+            conversation_id = await self._create_conversation()
+            store.set(chat_key, conversation_id)
+            log.info("chat=%s -> new conversation %s", chat_key, conversation_id)
+        return conversation_id
+
+    async def switch_model(self, store: ConversationStore, chat_key: str, profile_name: str) -> str:
+        """Switch chat_key's conversation to a named LLM profile (see /api/profiles)."""
+        async with self._lock_for(chat_key):
+            conversation_id = await self._ensure_conversation(store, chat_key)
+            resp = await self._client.post(
+                f"/api/conversations/{conversation_id}/switch_profile",
+                json={"profile_name": profile_name},
+            )
+            if resp.status_code == 404:
+                return f"No such profile '{profile_name}'. Use /model to list available profiles."
+            resp.raise_for_status()
+            return f"Switched to profile '{profile_name}'."
+
+    async def list_profiles(self) -> str:
+        resp = await self._client.get("/api/profiles")
+        resp.raise_for_status()
+        data = resp.json()
+        lines = [f"- {p['name']} ({p['model']})" for p in data.get("profiles", [])]
+        active = data.get("active_profile")
+        header = f"Available profiles (server default: {active}):"
+        return "\n".join([header, *lines, "", "Usage: /model <name>"])
+
     async def ask(self, store: ConversationStore, chat_key: str, text: str) -> str:
         """Send `text` into the conversation mapped to chat_key, wait for the reply."""
         async with self._lock_for(chat_key):
-            conversation_id = store.get(chat_key)
-            if conversation_id is None or not await self._conversation_is_valid(conversation_id):
-                conversation_id = await self._create_conversation()
-                store.set(chat_key, conversation_id)
-                log.info("chat=%s -> new conversation %s", chat_key, conversation_id)
+            conversation_id = await self._ensure_conversation(store, chat_key)
 
             send_resp = await self._client.post(
                 f"/api/conversations/{conversation_id}/events",
@@ -137,18 +163,42 @@ def chunk(text: str, size: int) -> list[str]:
     return [text[i : i + size] for i in range(0, len(text), size)] or [""]
 
 
+async def handle_model_command(client: OpenHandsClient, store: ConversationStore, chat_key: str, arg: str) -> str:
+    """`/model` with no argument lists profiles; `/model <name>` switches this chat to it."""
+    arg = arg.strip()
+    if not arg:
+        return await client.list_profiles()
+    return await client.switch_model(store, chat_key, arg)
+
+
 async def run_telegram(client: OpenHandsClient, store: ConversationStore):
     from telegram import Update
     from telegram.constants import ChatAction
-    from telegram.ext import ApplicationBuilder, ContextTypes, MessageHandler, filters
+    from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters
+
+    def _allowed(chat_id: int) -> bool:
+        if TELEGRAM_ALLOWED_CHAT_IDS and chat_id not in TELEGRAM_ALLOWED_CHAT_IDS:
+            log.warning("Telegram: dropping message from unlisted chat_id=%s", chat_id)
+            return False
+        return True
+
+    async def on_model(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        chat = update.effective_chat
+        message = update.effective_message
+        if chat is None or message is None or not _allowed(chat.id):
+            return
+        arg = " ".join(context.args) if context.args else ""
+        try:
+            reply = await handle_model_command(client, store, f"telegram:{chat.id}", arg)
+        except Exception:
+            log.exception("Telegram: /model failed")
+            reply = "(/model call failed -- see chat-bridge logs)"
+        await message.reply_text(reply)
 
     async def on_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         chat = update.effective_chat
         message = update.effective_message
-        if chat is None or message is None or not message.text:
-            return
-        if TELEGRAM_ALLOWED_CHAT_IDS and chat.id not in TELEGRAM_ALLOWED_CHAT_IDS:
-            log.warning("Telegram: dropping message from unlisted chat_id=%s", chat.id)
+        if chat is None or message is None or not message.text or not _allowed(chat.id):
             return
 
         await context.bot.send_chat_action(chat_id=chat.id, action=ChatAction.TYPING)
@@ -162,6 +212,7 @@ async def run_telegram(client: OpenHandsClient, store: ConversationStore):
             await message.reply_text(part)
 
     app = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
+    app.add_handler(CommandHandler("model", on_model))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, on_message))
 
     async with app:
@@ -198,6 +249,17 @@ async def run_discord(client: OpenHandsClient, store: ConversationStore):
             log.warning("Discord: dropping message from unlisted channel_id=%s", message.channel.id)
             return
         if not message.content:
+            return
+
+        if message.content.startswith("/model"):
+            arg = message.content[len("/model"):].strip()
+            try:
+                reply = await handle_model_command(client, store, f"discord:{message.channel.id}", arg)
+            except Exception:
+                log.exception("Discord: /model failed")
+                reply = "(/model call failed -- see chat-bridge logs)"
+            for part in chunk(reply, 1900):
+                await message.channel.send(part)
             return
 
         async with message.channel.typing():

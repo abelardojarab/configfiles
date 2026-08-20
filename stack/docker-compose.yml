@@ -113,6 +113,7 @@ services:
       - librechat-mongodb
       - vllm
       - rag_api
+      - cli-proxy-api
       # vllm:
       #   condition: service_healthy
     ports:
@@ -136,6 +137,7 @@ services:
       - JWT_REFRESH_SECRET=fbc13972aabe4a14e54fdad62004084129e82f2a23608f56187518a630748116
       - GOOGLE_KEY=${GOOGLE_KEY}
       - ANTHROPIC_KEY=${ANTHROPIC_KEY}
+      - CLI_PROXY_API_KEY=${CLI_PROXY_API_KEY}
       - RAG_API_URL=http://rag_api:8000
     volumes:
       - ~/containers/librechat/images:/app/client/public/images
@@ -504,14 +506,46 @@ services:
       - "com.centurylinklabs.watchtower.enable=true"
     depends_on:
       - vllm
+      - cli-proxy-api
     ports:
       - "4001:4000"
     environment:
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
+      - CLI_PROXY_API_KEY=${CLI_PROXY_API_KEY}
     volumes:
       - ~/containers/litellm/config.yaml:/app/config.yaml:ro
       - ~/containers/litellm/custom_callbacks.py:/app/custom_callbacks.py:ro
     command: ["--config", "/app/config.yaml", "--port", "4000"]
+
+  # Wraps a Gemini CLI Code Assist Enterprise OAuth session as an
+  # OpenAI-compatible endpoint that litellm-claude-proxy routes to.
+  # https://github.com/router-for-me/CLIProxyAPI
+  # First-time setup: this build's `--help` has no standalone gemini-login
+  # flag -- Gemini/Code Assist auth goes through Google Antigravity's shared
+  # OAuth backend instead. Run `docker exec cli-proxy-api /CLIProxyAPI/CLIProxyAPI
+  # -antigravity-login -no-browser`, then open the printed URL and sign in
+  # with the Code Assist Enterprise account.
+  cli-proxy-api:
+    image: eceasy/cli-proxy-api:latest
+    container_name: cli-proxy-api
+    restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    ports:
+      - "8317:8317"
+      # OAuth loopback callback ports used only during `--login`, one per
+      # supported provider (Gemini/Codex/Claude/Grok) -- kept published so
+      # the login flow works without editing compose each time.
+      - "18085:8085"  # host 8085 already taken by code-server
+      - "1455:1455"
+      - "54545:54545"
+      - "51121:51121"
+      - "11451:11451"
+    volumes:
+      - ~/containers/cli-proxy-api/config.yaml:/CLIProxyAPI/config.yaml
+      - ~/containers/cli-proxy-api/auth:/root/.cli-proxy-api
+      - ~/containers/cli-proxy-api/logs:/CLIProxyAPI/logs
+      - ~/containers/cli-proxy-api/plugins:/CLIProxyAPI/plugins
 
   open-webui:
     image: ghcr.io/open-webui/open-webui:main
@@ -527,7 +561,7 @@ services:
       - OPENAI_API_BASE_URL=http://vllm:8000/v1
       - OPENAI_API_KEY=not-needed
       - ENABLE_OLLAMA_API=true
-      - OLLAMA_BASE_URL=http://192.168.3.123:11434
+      - OLLAMA_BASE_URL=http://192.168.3.13:11434
     volumes:
       - ~/containers/open-webui:/app/backend/data
 
