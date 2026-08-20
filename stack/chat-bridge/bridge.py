@@ -6,6 +6,12 @@ Every inbound message is sent into that conversation with run=True, the
 bridge polls execution_status until the agent goes idle, then relays
 agent_final_response back to the chat.
 
+Commands: /model [name] (list/switch LLM profile), /status (non-blocking
+conversation status -- works even mid-run), /restart (stop + forget this
+chat's conversation so the next message starts fresh). /status and /restart
+deliberately skip the per-chat lock ask() holds, so they still respond while
+a turn is slow or stuck.
+
 Anyone who can message the bot can make the orchestrator run shell
 commands, read/write the mounted workspace, and reach the docker socket
 it has access to. ALLOWED_TELEGRAM_CHAT_IDS / ALLOWED_DISCORD_CHANNEL_IDS
@@ -61,6 +67,12 @@ class ConversationStore:
     def set(self, key: str, conversation_id: str) -> None:
         self._data[key] = conversation_id
         self._path.write_text(json.dumps(self._data))
+
+    def pop(self, key: str) -> str | None:
+        conversation_id = self._data.pop(key, None)
+        if conversation_id is not None:
+            self._path.write_text(json.dumps(self._data))
+        return conversation_id
 
 
 class OpenHandsClient:
@@ -127,6 +139,56 @@ class OpenHandsClient:
         active = data.get("active_profile")
         header = f"Available profiles (server default: {active}):"
         return "\n".join([header, *lines, "", "Usage: /model <name>"])
+
+    async def status(self, store: ConversationStore, chat_key: str) -> str:
+        """Report this chat's conversation state without waiting on it.
+
+        Deliberately does not take the per-chat lock (unlike ask/switch_model)
+        so it still answers while a slow/stuck ask() is holding that lock --
+        that's the whole point of a status check.
+        """
+        conversation_id = store.get(chat_key)
+        if conversation_id is None:
+            return "No conversation yet for this chat -- send a message to start one."
+
+        resp = await self._client.get(f"/api/conversations/{conversation_id}")
+        if resp.status_code == 404:
+            return "The stored conversation no longer exists -- it'll be recreated on your next message."
+        resp.raise_for_status()
+        data = resp.json()
+
+        execution_status = data.get("execution_status", "unknown")
+        metrics = data.get("stats", {}).get("usage_to_metrics", {}).get("default", {})
+        model = metrics.get("model_name", "unknown")
+        prompt_tokens = metrics.get("accumulated_token_usage", {}).get("prompt_tokens", 0)
+        latencies = metrics.get("response_latencies", [])
+        last_latency = latencies[-1]["latency"] if latencies else None
+
+        lines = [
+            f"status: {execution_status}",
+            f"model: {model}",
+            f"accumulated prompt tokens: {prompt_tokens:,}",
+        ]
+        if last_latency is not None:
+            lines.append(f"last turn latency: {last_latency:.1f}s")
+        if execution_status == "running":
+            lines.append("still working -- use /restart if you want to abandon this and start fresh.")
+        return "\n".join(lines)
+
+    async def restart(self, store: ConversationStore, chat_key: str) -> str:
+        """Stop and forget this chat's conversation; the next message starts a new one.
+
+        Does not take the per-chat lock -- must work even while a stuck ask()
+        is holding it, otherwise /restart could never interrupt a stuck run.
+        """
+        conversation_id = store.pop(chat_key)
+        if conversation_id is None:
+            return "No conversation to restart -- your next message will start a fresh one anyway."
+        try:
+            await self._client.post(f"/api/conversations/{conversation_id}/goal/stop")
+        except Exception:
+            log.exception("Failed to stop conversation %s before restart", conversation_id)
+        return "Stopped and forgot this chat's conversation. Your next message starts a fresh one."
 
     async def ask(self, store: ConversationStore, chat_key: str, text: str) -> str:
         """Send `text` into the conversation mapped to chat_key, wait for the reply."""
@@ -195,6 +257,30 @@ async def run_telegram(client: OpenHandsClient, store: ConversationStore):
             reply = "(/model call failed -- see chat-bridge logs)"
         await message.reply_text(reply)
 
+    async def on_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        chat = update.effective_chat
+        message = update.effective_message
+        if chat is None or message is None or not _allowed(chat.id):
+            return
+        try:
+            reply = await client.status(store, f"telegram:{chat.id}")
+        except Exception:
+            log.exception("Telegram: /status failed")
+            reply = "(/status call failed -- see chat-bridge logs)"
+        await message.reply_text(reply)
+
+    async def on_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        chat = update.effective_chat
+        message = update.effective_message
+        if chat is None or message is None or not _allowed(chat.id):
+            return
+        try:
+            reply = await client.restart(store, f"telegram:{chat.id}")
+        except Exception:
+            log.exception("Telegram: /restart failed")
+            reply = "(/restart call failed -- see chat-bridge logs)"
+        await message.reply_text(reply)
+
     async def on_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         chat = update.effective_chat
         message = update.effective_message
@@ -211,8 +297,16 @@ async def run_telegram(client: OpenHandsClient, store: ConversationStore):
         for part in chunk(reply, 4000):
             await message.reply_text(part)
 
-    app = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
+    # concurrent_updates: PTB's default (SimpleUpdateProcessor,
+    # max_concurrent_updates=1) processes updates strictly one at a time, so
+    # /status or /restart sent while on_message is still awaiting a slow
+    # ask() would sit queued behind it and never run -- defeating the point
+    # of a status check. status()/restart() skip OpenHandsClient's own
+    # per-chat lock for the same reason; this is the other half of that fix.
+    app = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).concurrent_updates(8).build()
     app.add_handler(CommandHandler("model", on_model))
+    app.add_handler(CommandHandler("status", on_status))
+    app.add_handler(CommandHandler("restart", on_restart))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, on_message))
 
     async with app:
@@ -258,6 +352,26 @@ async def run_discord(client: OpenHandsClient, store: ConversationStore):
             except Exception:
                 log.exception("Discord: /model failed")
                 reply = "(/model call failed -- see chat-bridge logs)"
+            for part in chunk(reply, 1900):
+                await message.channel.send(part)
+            return
+
+        if message.content.startswith("/status"):
+            try:
+                reply = await client.status(store, f"discord:{message.channel.id}")
+            except Exception:
+                log.exception("Discord: /status failed")
+                reply = "(/status call failed -- see chat-bridge logs)"
+            for part in chunk(reply, 1900):
+                await message.channel.send(part)
+            return
+
+        if message.content.startswith("/restart"):
+            try:
+                reply = await client.restart(store, f"discord:{message.channel.id}")
+            except Exception:
+                log.exception("Discord: /restart failed")
+                reply = "(/restart call failed -- see chat-bridge logs)"
             for part in chunk(reply, 1900):
                 await message.channel.send(part)
             return

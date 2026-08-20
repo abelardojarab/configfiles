@@ -1,6 +1,7 @@
 services:
   openhands:
-    image: ghcr.io/openhands/agent-canvas:1.13.0
+    build: ./openhands
+    image: stack-openhands:1.13.0-uv
     container_name: openhands
     restart: unless-stopped
     runtime: nvidia
@@ -490,12 +491,18 @@ services:
       timeout: 10s
       retries: 10
       start_period: 300s
+    # kv-cache-memory-bytes replaces gpu-memory-utilization (the latter is
+    # ignored once this is set): 0.85 utilization left ~2.63GiB/GPU for KV
+    # cache (max 1.66x concurrency at 65536 tokens) while 21.26/22.03GiB was
+    # actually free at startup. vLLM's own startup log suggested this exact
+    # value (4.89GiB/GPU) to fully use what's free -- ~1.86x more KV cache
+    # for the same weights, no quality tradeoff. 2026-08-20.
     command: >
       --model Qwen/Qwen3.8-27B-FP8
       --served-model-name qwen3.8-27b
       --max-model-len 65536
       --tensor-parallel-size 2
-      --gpu-memory-utilization 0.85
+      --kv-cache-memory-bytes 5249842688
       --max-num-seqs 4
       --kv-cache-dtype fp8
       --enable-prefix-caching
