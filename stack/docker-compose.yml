@@ -143,6 +143,11 @@ services:
       - ~/containers/librechat/logs:/app/logs
       - ~/containers/librechat/data:/app/data
       - ~/containers/librechat/librechat.yaml:/app/librechat.yaml:ro
+      # Scoped for the filesystem MCP server only -- not the whole home dir,
+      # since this container is exposed on the public domain. Mounted at the
+      # same in-container path as OpenHands' workspace mount so paths shown
+      # in tool output are consistent between the two apps.
+      - ~/workspace:/home/abelardojarab/workspace
 
   heimdall:
     image: linuxserver/heimdall

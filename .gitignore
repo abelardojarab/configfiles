@@ -4,4 +4,5 @@ fzf
 .DS*
 Fonts/.uuid
 stack/.env
+.aider*
 
