@@ -5,4 +5,5 @@ fzf
 Fonts/.uuid
 stack/.env
 .aider*
+*.html
 
