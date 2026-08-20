@@ -23,7 +23,7 @@ services:
       - ~/agent-projects:/projects
       # Same absolute path as code-server's workspace mount, so paths an
       # agent writes/reports line up with what code-server (and you) see.
-      - ~/workspace:/home/abelardojarab/workspace
+      - ~/workspace:/home/abelardojara/workspace
       # Docker control: full host-level docker socket. Equivalent to root on
       # the host — anything that can reach this socket can escalate via a
       # privileged container. Accepted tradeoff per user request.
@@ -155,7 +155,7 @@ services:
       # since this container is exposed on the public domain. Mounted at the
       # same in-container path as OpenHands' workspace mount so paths shown
       # in tool output are consistent between the two apps.
-      - ~/workspace:/home/abelardojarab/workspace
+      - ~/workspace:/home/abelardojara/workspace
 
   heimdall:
     image: linuxserver/heimdall
@@ -381,7 +381,7 @@ services:
     volumes:
        - /var/run/docker.sock:/var/run/docker.sock
        - ~/containers/code-server/config:/config
-       - ~/workspace:/home/abelardojarab/workspace
+       - ~/workspace:/home/abelardojara/workspace
 
   drawio:
     image: jgraph/drawio
