@@ -59,9 +59,13 @@ services:
     image: docker.io/searxng/searxng:latest
     container_name: searxng
     restart: unless-stopped
-    # No published ports: reachable only by name (http://searxng:8080) from
-    # other containers on stack_default -- librechat's and openhands' MCP
-    # search tool, not the public internet.
+    # Reachable by name (http://searxng:8080) from other containers on
+    # stack_default -- librechat's and openhands' MCP search tool. Also
+    # published on 127.0.0.1:8081 (loopback only, not the public internet) so
+    # host-side processes -- the mcp-searxng server spawned directly by the
+    # claude-* wrappers via npx -- can reach it too.
+    ports:
+      - "127.0.0.1:8081:8080"
     environment:
       - SEARXNG_BASE_URL=http://searxng:8080/
     volumes:
