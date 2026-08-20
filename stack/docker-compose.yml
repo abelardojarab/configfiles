@@ -142,6 +142,7 @@ services:
       - GOOGLE_KEY=${GOOGLE_KEY}
       - ANTHROPIC_KEY=${ANTHROPIC_KEY}
       - CLI_PROXY_API_KEY=${CLI_PROXY_API_KEY}
+      - GITHUB_PERSONAL_ACCESS_TOKEN=${GITHUB_PERSONAL_ACCESS_TOKEN}
       - RAG_API_URL=http://rag_api:8000
     volumes:
       - ~/containers/librechat/images:/app/client/public/images
