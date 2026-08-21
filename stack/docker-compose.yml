@@ -72,6 +72,111 @@ services:
     volumes:
       - ~/containers/searxng:/etc/searxng
 
+  # Firecrawl (self-hosted): JS-rendering web scraper/crawler with structured
+  # extraction, for pages the plain "fetch" MCP server can't handle (no JS
+  # execution there). Its own /v2/search endpoint is wired to the searxng
+  # container above via SEARXNG_ENDPOINT so it doesn't need a separate paid
+  # search API key. 5 containers (queue: redis+rabbitmq+postgres, plus
+  # playwright for rendering, plus the api itself) -- see
+  # https://github.com/firecrawl/firecrawl/blob/main/docker-compose.yaml,
+  # adapted here to join stack_default (so it can reach searxng by name)
+  # instead of its own isolated network, and to use prebuilt GHCR images
+  # instead of building from a cloned repo.
+  firecrawl-redis:
+    image: redis:alpine
+    container_name: firecrawl-redis
+    restart: unless-stopped
+    command: redis-server --bind 0.0.0.0
+    volumes:
+      - ~/containers/firecrawl/redis:/data
+
+  firecrawl-rabbitmq:
+    image: rabbitmq:3-management
+    container_name: firecrawl-rabbitmq
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_running"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  firecrawl-postgres:
+    # Firecrawl's job-queue backend (their "nuq" queue, postgres-backed by
+    # default -- the alternative is an experimental FoundationDB backend,
+    # not used here). DB/user must stay "postgres" (not renamed) -- their
+    # own 010-nuq.sql init script does `CREATE EXTENSION pg_cron`, which
+    # pg_cron only allows inside a database literally named "postgres";
+    # renaming it made that statement fail and skip the rest of the nuq
+    # schema migration entirely (confirmed 2026-08-21: firecrawl-api's
+    # workers errored "relation nuq.queue_scrape does not exist" until
+    # this was reverted to match upstream's default).
+    image: ghcr.io/firecrawl/nuq-postgres:latest
+    container_name: firecrawl-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${FIRECRAWL_POSTGRES_PASSWORD}
+      - POSTGRES_DB=postgres
+    volumes:
+      - ~/containers/firecrawl/postgres:/var/lib/postgresql/data
+
+  firecrawl-playwright:
+    image: ghcr.io/firecrawl/playwright-service:latest
+    container_name: firecrawl-playwright
+    restart: unless-stopped
+    environment:
+      - PORT=3000
+      - MAX_CONCURRENT_PAGES=10
+
+  firecrawl-api:
+    image: ghcr.io/firecrawl/firecrawl:latest
+    container_name: firecrawl-api
+    restart: unless-stopped
+    depends_on:
+      firecrawl-redis:
+        condition: service_started
+      firecrawl-playwright:
+        condition: service_started
+      firecrawl-rabbitmq:
+        condition: service_healthy
+      firecrawl-postgres:
+        condition: service_started
+    ports:
+      # Loopback-only, same pattern as searxng above -- reachable by name
+      # (http://firecrawl-api:3002) from other containers on stack_default,
+      # and by host-side processes (the claude-* wrappers' firecrawl MCP
+      # server, spawned directly on the host) via 127.0.0.1.
+      - "127.0.0.1:3092:3002"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=3002
+      - ENV=local
+      - REDIS_URL=redis://firecrawl-redis:6379
+      - REDIS_RATE_LIMIT_URL=redis://firecrawl-redis:6379
+      - PLAYWRIGHT_MICROSERVICE_URL=http://firecrawl-playwright:3000/scrape
+      - NUQ_RABBITMQ_URL=amqp://firecrawl-rabbitmq:5672
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${FIRECRAWL_POSTGRES_PASSWORD}
+      - POSTGRES_DB=postgres
+      - POSTGRES_HOST=firecrawl-postgres
+      - POSTGRES_PORT=5432
+      # No Supabase -- skips the whole auth/billing subsystem, firecrawl-api
+      # accepts requests with no API key at all (see stack/.env for why the
+      # MCP config's FIRECRAWL_API_KEY is just a placeholder, not checked).
+      - USE_DB_AUTHENTICATION=false
+      - BULL_AUTH_KEY=${FIRECRAWL_BULL_AUTH_KEY}
+      - NUM_WORKERS_PER_QUEUE=8
+      - CRAWL_CONCURRENT_REQUESTS=10
+      - MAX_CONCURRENT_JOBS=5
+      - BROWSER_POOL_SIZE=5
+      # searxng already running above (internal-only on stack_default) --
+      # gives Firecrawl's /v2/search a local, keyless search backend instead
+      # of requiring SearchApi/Google.
+      - SEARXNG_ENDPOINT=http://searxng:8080
+      - LOGGING_LEVEL=INFO
+    command: node dist/src/harness.js --start-docker
+
   librechat-mongodb:
     image: mongo:8.0.20
     container_name: librechat-mongodb
