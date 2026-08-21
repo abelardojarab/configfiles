@@ -6,11 +6,19 @@ Every inbound message is sent into that conversation with run=True, the
 bridge polls execution_status until the agent goes idle, then relays
 agent_final_response back to the chat.
 
-Commands: /model [name] (list/switch LLM profile), /status (non-blocking
-conversation status -- works even mid-run), /restart (stop + forget this
-chat's conversation so the next message starts fresh). /status and /restart
-deliberately skip the per-chat lock ask() holds, so they still respond while
-a turn is slow or stuck.
+Commands: /model [name] (list/switch this chat's LLM profile, always prints
+which one is active), /agent [name] (list/switch this chat's agent profile --
+e.g. default vs orchestrator-gemini vs orchestrator-qwen -- always prints
+which one is active), /status (non-blocking conversation status -- works even
+mid-run), /restart (stop + forget this chat's conversation so the next
+message starts fresh). /status and /restart deliberately skip the per-chat
+lock ask() holds, so they still respond while a turn is slow or stuck.
+
+Switching agent profile changes the whole agent/LLM/MCP setup, so /agent
+stops and forgets this chat's current conversation (like /restart) and
+remembers the chosen profile in ConversationStore -- the next message starts
+a fresh conversation launched on that profile. It stays sticky across
+/restart too, until /agent picks something else.
 
 Anyone who can message the bot can make the orchestrator run shell
 commands, read/write the mounted workspace, and reach the docker socket
@@ -54,25 +62,52 @@ def load_api_key() -> str:
 
 
 class ConversationStore:
-    """Persists chat-key -> OpenHands conversation_id across bridge restarts."""
+    """Persists per-chat state (OpenHands conversation_id + chosen agent
+    profile name) across bridge restarts.
+
+    Older state files store a flat chat_key -> conversation_id string; those
+    entries are upgraded to {"conversation_id": ...} in memory on load and
+    rewritten in the new shape on the next save.
+    """
 
     def __init__(self, path: Path):
         self._path = path
         self._path.parent.mkdir(parents=True, exist_ok=True)
-        self._data: dict[str, str] = json.loads(path.read_text()) if path.exists() else {}
+        raw: dict = json.loads(path.read_text()) if path.exists() else {}
+        self._data: dict[str, dict] = {
+            key: (value if isinstance(value, dict) else {"conversation_id": value})
+            for key, value in raw.items()
+        }
 
-    def get(self, key: str) -> str | None:
-        return self._data.get(key)
-
-    def set(self, key: str, conversation_id: str) -> None:
-        self._data[key] = conversation_id
+    def _save(self) -> None:
         self._path.write_text(json.dumps(self._data))
 
-    def pop(self, key: str) -> str | None:
-        conversation_id = self._data.pop(key, None)
+    def get_conversation(self, key: str) -> str | None:
+        return self._data.get(key, {}).get("conversation_id")
+
+    def set_conversation(self, key: str, conversation_id: str) -> None:
+        self._data.setdefault(key, {})["conversation_id"] = conversation_id
+        self._save()
+
+    def pop_conversation(self, key: str) -> str | None:
+        entry = self._data.get(key)
+        if entry is None:
+            return None
+        conversation_id = entry.pop("conversation_id", None)
+        if not entry:
+            self._data.pop(key, None)
         if conversation_id is not None:
-            self._path.write_text(json.dumps(self._data))
+            self._save()
         return conversation_id
+
+    def get_agent_profile(self, key: str) -> str | None:
+        """This chat's explicitly-chosen agent profile name, or None to use
+        the OpenHands server's active_agent_profile_id default."""
+        return self._data.get(key, {}).get("agent_profile")
+
+    def set_agent_profile(self, key: str, name: str) -> None:
+        self._data.setdefault(key, {})["agent_profile"] = name
+        self._save()
 
 
 class OpenHandsClient:
@@ -87,20 +122,38 @@ class OpenHandsClient:
     def _lock_for(self, key: str) -> asyncio.Lock:
         return self._locks.setdefault(key, asyncio.Lock())
 
-    async def _active_agent_profile_id(self) -> str:
+    async def _agent_profiles(self) -> dict:
         resp = await self._client.get("/api/agent-profiles")
         resp.raise_for_status()
-        profile_id = resp.json().get("active_agent_profile_id")
+        return resp.json()
+
+    async def _active_agent_profile_id(self) -> str:
+        data = await self._agent_profiles()
+        profile_id = data.get("active_agent_profile_id")
         if not profile_id:
             raise RuntimeError("No active agent profile configured in agent-canvas")
         return profile_id
 
-    async def _create_conversation(self) -> str:
+    async def _resolve_agent_profile_id(self, store: ConversationStore, chat_key: str) -> str:
+        """This chat's /agent-chosen profile id, or the server default's."""
+        name = store.get_agent_profile(chat_key)
+        if name is None:
+            return await self._active_agent_profile_id()
+        data = await self._agent_profiles()
+        for p in data.get("profiles", []):
+            if p["name"] == name:
+                return p["id"]
+        # Chosen profile got deleted server-side since -- fall back rather
+        # than fail the conversation outright.
+        log.warning("chat=%s: stored agent profile '%s' no longer exists, using server default", chat_key, name)
+        return await self._active_agent_profile_id()
+
+    async def _create_conversation(self, store: ConversationStore, chat_key: str) -> str:
         resp = await self._client.post(
             "/api/conversations",
             json={
                 "workspace": {"kind": "LocalWorkspace", "working_dir": OPENHANDS_WORKSPACE},
-                "agent_profile_id": await self._active_agent_profile_id(),
+                "agent_profile_id": await self._resolve_agent_profile_id(store, chat_key),
             },
         )
         resp.raise_for_status()
@@ -111,12 +164,32 @@ class OpenHandsClient:
         return resp.status_code == 200
 
     async def _ensure_conversation(self, store: ConversationStore, chat_key: str) -> str:
-        conversation_id = store.get(chat_key)
+        conversation_id = store.get_conversation(chat_key)
         if conversation_id is None or not await self._conversation_is_valid(conversation_id):
-            conversation_id = await self._create_conversation()
-            store.set(chat_key, conversation_id)
+            conversation_id = await self._create_conversation(store, chat_key)
+            store.set_conversation(chat_key, conversation_id)
             log.info("chat=%s -> new conversation %s", chat_key, conversation_id)
         return conversation_id
+
+    async def _live_state(self, conversation_id: str) -> tuple[str | None, str | None]:
+        """Best-effort (active_model, active_agent_profile_name) for a live
+        conversation, read straight off its own record rather than guessed
+        from usage-metrics keys (see status()'s comment for why that's
+        unreliable)."""
+        resp = await self._client.get(f"/api/conversations/{conversation_id}")
+        if resp.status_code != 200:
+            return None, None
+        data = resp.json()
+        model = data.get("agent", {}).get("llm", {}).get("model")
+        agent_profile_name = None
+        launched = data.get("launched_agent_profile")
+        if launched:
+            profiles = await self._agent_profiles()
+            agent_profile_name = next(
+                (p["name"] for p in profiles.get("profiles", []) if p["id"] == launched["agent_profile_id"]),
+                launched["agent_profile_id"],
+            )
+        return model, agent_profile_name
 
     async def switch_model(self, store: ConversationStore, chat_key: str, profile_name: str) -> str:
         """Switch chat_key's conversation to a named LLM profile (see /api/profiles)."""
@@ -129,16 +202,67 @@ class OpenHandsClient:
             if resp.status_code == 404:
                 return f"No such profile '{profile_name}'. Use /model to list available profiles."
             resp.raise_for_status()
-            return f"Switched to profile '{profile_name}'."
+            return f"Active model for this chat: {profile_name}"
 
-    async def list_profiles(self) -> str:
+    async def list_profiles(self, store: ConversationStore, chat_key: str) -> str:
         resp = await self._client.get("/api/profiles")
         resp.raise_for_status()
         data = resp.json()
         lines = [f"- {p['name']} ({p['model']})" for p in data.get("profiles", [])]
-        active = data.get("active_profile")
-        header = f"Available profiles (server default: {active}):"
-        return "\n".join([header, *lines, "", "Usage: /model <name>"])
+        server_default = data.get("active_profile")
+
+        conversation_id = store.get_conversation(chat_key)
+        active_model = (await self._live_state(conversation_id))[0] if conversation_id else None
+        active_line = (
+            f"Active model for this chat: {active_model}"
+            if active_model
+            else "No conversation yet for this chat -- your next message starts one on the active agent profile's default model."
+        )
+
+        header = f"Available profiles (server default: {server_default}):"
+        return "\n".join([header, *lines, "", active_line, "Usage: /model <name>"])
+
+    async def switch_agent(self, store: ConversationStore, chat_key: str, profile_name: str) -> str:
+        """Switch chat_key to a named agent profile (see /api/agent-profiles).
+
+        Unlike switch_model, this can't be applied to a live conversation --
+        the agent/LLM/MCP setup is fixed at conversation creation
+        (agent_profile_id). So this stops and forgets the current
+        conversation (same as /restart) and remembers the choice; the next
+        message launches a fresh conversation on the new profile.
+        """
+        async with self._lock_for(chat_key):
+            data = await self._agent_profiles()
+            match = next((p for p in data.get("profiles", []) if p["name"] == profile_name), None)
+            if match is None:
+                return f"No such agent profile '{profile_name}'. Use /agent to list available agent profiles."
+
+            old_conversation_id = store.pop_conversation(chat_key)
+            if old_conversation_id:
+                try:
+                    await self._client.post(f"/api/conversations/{old_conversation_id}/goal/stop")
+                except Exception:
+                    log.exception("Failed to stop conversation %s before agent switch", old_conversation_id)
+
+            store.set_agent_profile(chat_key, profile_name)
+            return f"Active agent for this chat: {profile_name} (next message starts a fresh conversation on it)"
+
+    async def list_agent_profiles(self, store: ConversationStore, chat_key: str) -> str:
+        data = await self._agent_profiles()
+        lines = [f"- {p['name']} (llm: {p['llm_profile_ref']})" for p in data.get("profiles", [])]
+        active_id = data.get("active_agent_profile_id")
+        server_default_name = next(
+            (p["name"] for p in data.get("profiles", []) if p["id"] == active_id), active_id
+        )
+
+        conversation_id = store.get_conversation(chat_key)
+        live_agent_name = (await self._live_state(conversation_id))[1] if conversation_id else None
+        chosen = store.get_agent_profile(chat_key)
+        active_name = live_agent_name or chosen or server_default_name
+
+        header = f"Available agent profiles (server default: {server_default_name}):"
+        active_line = f"Active agent for this chat: {active_name}"
+        return "\n".join([header, *lines, "", active_line, "Usage: /agent <name>"])
 
     async def status(self, store: ConversationStore, chat_key: str) -> str:
         """Report this chat's conversation state without waiting on it.
@@ -147,7 +271,7 @@ class OpenHandsClient:
         so it still answers while a slow/stuck ask() is holding that lock --
         that's the whole point of a status check.
         """
-        conversation_id = store.get(chat_key)
+        conversation_id = store.get_conversation(chat_key)
         if conversation_id is None:
             return "No conversation yet for this chat -- send a message to start one."
 
@@ -158,15 +282,36 @@ class OpenHandsClient:
         data = resp.json()
 
         execution_status = data.get("execution_status", "unknown")
-        metrics = data.get("stats", {}).get("usage_to_metrics", {}).get("default", {})
-        model = metrics.get("model_name", "unknown")
+        model = data.get("agent", {}).get("llm", {}).get("model", "unknown")
+
+        # stats.usage_to_metrics is keyed by the LLM profile's usage_id (e.g.
+        # "gemini-cli-proxy"), not a fixed "default" -- match on model_name
+        # instead of assuming a key, otherwise this silently returns {} (and
+        # thus 0 tokens/no latency) for every profile except literally
+        # "default". Confirmed live 2026-08-21: a gemini-cli-proxy
+        # conversation's usage_to_metrics key was "gemini-cli-proxy".
+        metrics_by_key = data.get("stats", {}).get("usage_to_metrics", {})
+        metrics = next(
+            (m for m in metrics_by_key.values() if m.get("model_name") == model),
+            {},
+        )
         prompt_tokens = metrics.get("accumulated_token_usage", {}).get("prompt_tokens", 0)
         latencies = metrics.get("response_latencies", [])
         last_latency = latencies[-1]["latency"] if latencies else None
 
+        agent_profile_name = None
+        launched = data.get("launched_agent_profile")
+        if launched:
+            profiles = await self._agent_profiles()
+            agent_profile_name = next(
+                (p["name"] for p in profiles.get("profiles", []) if p["id"] == launched["agent_profile_id"]),
+                launched["agent_profile_id"],
+            )
+
         lines = [
             f"status: {execution_status}",
             f"model: {model}",
+            f"agent profile: {agent_profile_name or 'unknown'}",
             f"accumulated prompt tokens: {prompt_tokens:,}",
         ]
         if last_latency is not None:
@@ -180,8 +325,10 @@ class OpenHandsClient:
 
         Does not take the per-chat lock -- must work even while a stuck ask()
         is holding it, otherwise /restart could never interrupt a stuck run.
+        Leaves this chat's /agent-chosen profile (if any) in place -- it's
+        sticky across restarts, only /agent changes it.
         """
-        conversation_id = store.pop(chat_key)
+        conversation_id = store.pop_conversation(chat_key)
         if conversation_id is None:
             return "No conversation to restart -- your next message will start a fresh one anyway."
         try:
@@ -229,8 +376,16 @@ async def handle_model_command(client: OpenHandsClient, store: ConversationStore
     """`/model` with no argument lists profiles; `/model <name>` switches this chat to it."""
     arg = arg.strip()
     if not arg:
-        return await client.list_profiles()
+        return await client.list_profiles(store, chat_key)
     return await client.switch_model(store, chat_key, arg)
+
+
+async def handle_agent_command(client: OpenHandsClient, store: ConversationStore, chat_key: str, arg: str) -> str:
+    """`/agent` with no argument lists agent profiles; `/agent <name>` switches this chat to it."""
+    arg = arg.strip()
+    if not arg:
+        return await client.list_agent_profiles(store, chat_key)
+    return await client.switch_agent(store, chat_key, arg)
 
 
 async def run_telegram(client: OpenHandsClient, store: ConversationStore):
@@ -255,6 +410,19 @@ async def run_telegram(client: OpenHandsClient, store: ConversationStore):
         except Exception:
             log.exception("Telegram: /model failed")
             reply = "(/model call failed -- see chat-bridge logs)"
+        await message.reply_text(reply)
+
+    async def on_agent(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        chat = update.effective_chat
+        message = update.effective_message
+        if chat is None or message is None or not _allowed(chat.id):
+            return
+        arg = " ".join(context.args) if context.args else ""
+        try:
+            reply = await handle_agent_command(client, store, f"telegram:{chat.id}", arg)
+        except Exception:
+            log.exception("Telegram: /agent failed")
+            reply = "(/agent call failed -- see chat-bridge logs)"
         await message.reply_text(reply)
 
     async def on_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -305,6 +473,7 @@ async def run_telegram(client: OpenHandsClient, store: ConversationStore):
     # per-chat lock for the same reason; this is the other half of that fix.
     app = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).concurrent_updates(8).build()
     app.add_handler(CommandHandler("model", on_model))
+    app.add_handler(CommandHandler("agent", on_agent))
     app.add_handler(CommandHandler("status", on_status))
     app.add_handler(CommandHandler("restart", on_restart))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, on_message))
@@ -352,6 +521,17 @@ async def run_discord(client: OpenHandsClient, store: ConversationStore):
             except Exception:
                 log.exception("Discord: /model failed")
                 reply = "(/model call failed -- see chat-bridge logs)"
+            for part in chunk(reply, 1900):
+                await message.channel.send(part)
+            return
+
+        if message.content.startswith("/agent"):
+            arg = message.content[len("/agent"):].strip()
+            try:
+                reply = await handle_agent_command(client, store, f"discord:{message.channel.id}", arg)
+            except Exception:
+                log.exception("Discord: /agent failed")
+                reply = "(/agent call failed -- see chat-bridge logs)"
             for part in chunk(reply, 1900):
                 await message.channel.send(part)
             return
