@@ -11,8 +11,9 @@ which one is active), /agent [name] (list/switch this chat's agent profile --
 e.g. default vs orchestrator-gemini vs orchestrator-qwen -- always prints
 which one is active), /status (non-blocking conversation status -- works even
 mid-run), /restart (stop + forget this chat's conversation so the next
-message starts fresh). /status and /restart deliberately skip the per-chat
-lock ask() holds, so they still respond while a turn is slow or stuck.
+message starts fresh). None of /model, /agent, /status, or /restart take the
+per-chat lock ask() holds, so all four still work as an escape hatch while a
+turn is slow or stuck instead of queuing silently behind it.
 
 Switching agent profile changes the whole agent/LLM/MCP setup, so /agent
 stops and forgets this chat's current conversation (like /restart) and
@@ -115,7 +116,14 @@ class OpenHandsClient:
         self._client = httpx.AsyncClient(
             base_url=OPENHANDS_BASE_URL,
             headers={"X-Session-API-Key": load_api_key()},
-            timeout=30.0,
+            # OpenHands' API goes unresponsive to ALL requests -- not just
+            # the busy conversation's -- for 1-2+ minutes while a turn is
+            # running (observed 2026-08-21: 100s+ stretches with zero log
+            # activity server-side, not a slow-but-progressing call). A flat
+            # 30s timeout turned that normal busy period into hard failures
+            # on /model, /agent, /status. Keep connect fast-failing (a dead
+            # container should error quickly) but give reads real headroom.
+            timeout=httpx.Timeout(connect=10.0, read=90.0, write=30.0, pool=10.0),
         )
         self._locks: dict[str, asyncio.Lock] = {}
 
@@ -192,17 +200,25 @@ class OpenHandsClient:
         return model, agent_profile_name
 
     async def switch_model(self, store: ConversationStore, chat_key: str, profile_name: str) -> str:
-        """Switch chat_key's conversation to a named LLM profile (see /api/profiles)."""
-        async with self._lock_for(chat_key):
-            conversation_id = await self._ensure_conversation(store, chat_key)
-            resp = await self._client.post(
-                f"/api/conversations/{conversation_id}/switch_profile",
-                json={"profile_name": profile_name},
-            )
-            if resp.status_code == 404:
-                return f"No such profile '{profile_name}'. Use /model to list available profiles."
-            resp.raise_for_status()
-            return f"Active model for this chat: {profile_name}"
+        """Switch chat_key's conversation to a named LLM profile (see /api/profiles).
+
+        Deliberately does not take the per-chat lock ask() holds -- same
+        reasoning as status()/restart(): switching model/agent is often
+        exactly what someone reaches for to get *out* of a stuck or slow
+        turn (e.g. one retrying against a rate-limited backend), so it must
+        still work while ask() is holding that lock, not queue silently
+        behind it (observed 2026-08-21: /model and /agent both sat waiting
+        with zero feedback behind a turn stuck on a cooling-down provider).
+        """
+        conversation_id = await self._ensure_conversation(store, chat_key)
+        resp = await self._client.post(
+            f"/api/conversations/{conversation_id}/switch_profile",
+            json={"profile_name": profile_name},
+        )
+        if resp.status_code == 404:
+            return f"No such profile '{profile_name}'. Use /model to list available profiles."
+        resp.raise_for_status()
+        return f"Active model for this chat: {profile_name}"
 
     async def list_profiles(self, store: ConversationStore, chat_key: str) -> str:
         resp = await self._client.get("/api/profiles")
@@ -230,22 +246,25 @@ class OpenHandsClient:
         (agent_profile_id). So this stops and forgets the current
         conversation (same as /restart) and remembers the choice; the next
         message launches a fresh conversation on the new profile.
+
+        Deliberately does not take the per-chat lock ask() holds -- see the
+        comment on switch_model for why: this needs to work as an escape
+        hatch while a turn is stuck, not queue behind it.
         """
-        async with self._lock_for(chat_key):
-            data = await self._agent_profiles()
-            match = next((p for p in data.get("profiles", []) if p["name"] == profile_name), None)
-            if match is None:
-                return f"No such agent profile '{profile_name}'. Use /agent to list available agent profiles."
+        data = await self._agent_profiles()
+        match = next((p for p in data.get("profiles", []) if p["name"] == profile_name), None)
+        if match is None:
+            return f"No such agent profile '{profile_name}'. Use /agent to list available agent profiles."
 
-            old_conversation_id = store.pop_conversation(chat_key)
-            if old_conversation_id:
-                try:
-                    await self._client.post(f"/api/conversations/{old_conversation_id}/goal/stop")
-                except Exception:
-                    log.exception("Failed to stop conversation %s before agent switch", old_conversation_id)
+        old_conversation_id = store.pop_conversation(chat_key)
+        if old_conversation_id:
+            try:
+                await self._client.post(f"/api/conversations/{old_conversation_id}/goal/stop")
+            except Exception:
+                log.exception("Failed to stop conversation %s before agent switch", old_conversation_id)
 
-            store.set_agent_profile(chat_key, profile_name)
-            return f"Active agent for this chat: {profile_name} (next message starts a fresh conversation on it)"
+        store.set_agent_profile(chat_key, profile_name)
+        return f"Active agent for this chat: {profile_name} (next message starts a fresh conversation on it)"
 
     async def list_agent_profiles(self, store: ConversationStore, chat_key: str) -> str:
         data = await self._agent_profiles()
@@ -352,8 +371,14 @@ class OpenHandsClient:
             while elapsed < POLL_TIMEOUT_SECS:
                 await asyncio.sleep(POLL_INTERVAL_SECS)
                 elapsed += POLL_INTERVAL_SECS
-                status_resp = await self._client.get(f"/api/conversations/{conversation_id}")
-                status_resp.raise_for_status()
+                try:
+                    status_resp = await self._client.get(f"/api/conversations/{conversation_id}")
+                    status_resp.raise_for_status()
+                except httpx.TimeoutException:
+                    # A status check timing out means the server is busy
+                    # right now, not that the turn failed -- keep polling
+                    # instead of blowing up the whole ask() over it.
+                    continue
                 status = status_resp.json().get("execution_status")
                 if status in TERMINAL_STATUSES:
                     break
@@ -370,6 +395,20 @@ class OpenHandsClient:
 
 def chunk(text: str, size: int) -> list[str]:
     return [text[i : i + size] for i in range(0, len(text), size)] or [""]
+
+
+async def _safe_call(coro, log_prefix: str, label: str) -> str:
+    """Run a command coroutine, distinguishing "OpenHands is busy" from an
+    actual failure -- see the timeout comment on OpenHandsClient's httpx
+    client for why the former is common and not a real error."""
+    try:
+        return await coro
+    except httpx.TimeoutException:
+        log.warning("%s: OpenHands didn't respond in time (likely still busy with a previous turn)", log_prefix)
+        return f"({label} call timed out -- OpenHands looks busy with a previous turn, try again in a moment)"
+    except Exception:
+        log.exception("%s failed", log_prefix)
+        return f"({label} call failed -- see chat-bridge logs)"
 
 
 async def handle_model_command(client: OpenHandsClient, store: ConversationStore, chat_key: str, arg: str) -> str:
@@ -405,11 +444,10 @@ async def run_telegram(client: OpenHandsClient, store: ConversationStore):
         if chat is None or message is None or not _allowed(chat.id):
             return
         arg = " ".join(context.args) if context.args else ""
-        try:
-            reply = await handle_model_command(client, store, f"telegram:{chat.id}", arg)
-        except Exception:
-            log.exception("Telegram: /model failed")
-            reply = "(/model call failed -- see chat-bridge logs)"
+        reply = await _safe_call(
+            handle_model_command(client, store, f"telegram:{chat.id}", arg),
+            "Telegram: /model", "/model",
+        )
         await message.reply_text(reply)
 
     async def on_agent(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -418,11 +456,10 @@ async def run_telegram(client: OpenHandsClient, store: ConversationStore):
         if chat is None or message is None or not _allowed(chat.id):
             return
         arg = " ".join(context.args) if context.args else ""
-        try:
-            reply = await handle_agent_command(client, store, f"telegram:{chat.id}", arg)
-        except Exception:
-            log.exception("Telegram: /agent failed")
-            reply = "(/agent call failed -- see chat-bridge logs)"
+        reply = await _safe_call(
+            handle_agent_command(client, store, f"telegram:{chat.id}", arg),
+            "Telegram: /agent", "/agent",
+        )
         await message.reply_text(reply)
 
     async def on_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -430,11 +467,10 @@ async def run_telegram(client: OpenHandsClient, store: ConversationStore):
         message = update.effective_message
         if chat is None or message is None or not _allowed(chat.id):
             return
-        try:
-            reply = await client.status(store, f"telegram:{chat.id}")
-        except Exception:
-            log.exception("Telegram: /status failed")
-            reply = "(/status call failed -- see chat-bridge logs)"
+        reply = await _safe_call(
+            client.status(store, f"telegram:{chat.id}"),
+            "Telegram: /status", "/status",
+        )
         await message.reply_text(reply)
 
     async def on_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -442,11 +478,10 @@ async def run_telegram(client: OpenHandsClient, store: ConversationStore):
         message = update.effective_message
         if chat is None or message is None or not _allowed(chat.id):
             return
-        try:
-            reply = await client.restart(store, f"telegram:{chat.id}")
-        except Exception:
-            log.exception("Telegram: /restart failed")
-            reply = "(/restart call failed -- see chat-bridge logs)"
+        reply = await _safe_call(
+            client.restart(store, f"telegram:{chat.id}"),
+            "Telegram: /restart", "/restart",
+        )
         await message.reply_text(reply)
 
     async def on_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -456,11 +491,10 @@ async def run_telegram(client: OpenHandsClient, store: ConversationStore):
             return
 
         await context.bot.send_chat_action(chat_id=chat.id, action=ChatAction.TYPING)
-        try:
-            reply = await client.ask(store, f"telegram:{chat.id}", message.text)
-        except Exception:
-            log.exception("Telegram: orchestrator call failed")
-            reply = "(orchestrator call failed -- see chat-bridge logs)"
+        reply = await _safe_call(
+            client.ask(store, f"telegram:{chat.id}", message.text),
+            "Telegram: orchestrator", "orchestrator",
+        )
 
         for part in chunk(reply, 4000):
             await message.reply_text(part)
@@ -516,52 +550,47 @@ async def run_discord(client: OpenHandsClient, store: ConversationStore):
 
         if message.content.startswith("/model"):
             arg = message.content[len("/model"):].strip()
-            try:
-                reply = await handle_model_command(client, store, f"discord:{message.channel.id}", arg)
-            except Exception:
-                log.exception("Discord: /model failed")
-                reply = "(/model call failed -- see chat-bridge logs)"
+            reply = await _safe_call(
+                handle_model_command(client, store, f"discord:{message.channel.id}", arg),
+                "Discord: /model", "/model",
+            )
             for part in chunk(reply, 1900):
                 await message.channel.send(part)
             return
 
         if message.content.startswith("/agent"):
             arg = message.content[len("/agent"):].strip()
-            try:
-                reply = await handle_agent_command(client, store, f"discord:{message.channel.id}", arg)
-            except Exception:
-                log.exception("Discord: /agent failed")
-                reply = "(/agent call failed -- see chat-bridge logs)"
+            reply = await _safe_call(
+                handle_agent_command(client, store, f"discord:{message.channel.id}", arg),
+                "Discord: /agent", "/agent",
+            )
             for part in chunk(reply, 1900):
                 await message.channel.send(part)
             return
 
         if message.content.startswith("/status"):
-            try:
-                reply = await client.status(store, f"discord:{message.channel.id}")
-            except Exception:
-                log.exception("Discord: /status failed")
-                reply = "(/status call failed -- see chat-bridge logs)"
+            reply = await _safe_call(
+                client.status(store, f"discord:{message.channel.id}"),
+                "Discord: /status", "/status",
+            )
             for part in chunk(reply, 1900):
                 await message.channel.send(part)
             return
 
         if message.content.startswith("/restart"):
-            try:
-                reply = await client.restart(store, f"discord:{message.channel.id}")
-            except Exception:
-                log.exception("Discord: /restart failed")
-                reply = "(/restart call failed -- see chat-bridge logs)"
+            reply = await _safe_call(
+                client.restart(store, f"discord:{message.channel.id}"),
+                "Discord: /restart", "/restart",
+            )
             for part in chunk(reply, 1900):
                 await message.channel.send(part)
             return
 
         async with message.channel.typing():
-            try:
-                reply = await client.ask(store, f"discord:{message.channel.id}", message.content)
-            except Exception:
-                log.exception("Discord: orchestrator call failed")
-                reply = "(orchestrator call failed -- see chat-bridge logs)"
+            reply = await _safe_call(
+                client.ask(store, f"discord:{message.channel.id}", message.content),
+                "Discord: orchestrator", "orchestrator",
+            )
 
         for part in chunk(reply, 1900):
             await message.channel.send(part)
