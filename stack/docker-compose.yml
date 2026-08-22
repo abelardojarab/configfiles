@@ -43,7 +43,14 @@ services:
       - openhands
     environment:
       - OPENHANDS_BASE_URL=http://openhands:8000
-      - OPENHANDS_WORKSPACE=/projects/workspace
+      # Must live under openhands' /home/abelardojara/workspace mount -- that's
+      # the only root its filesystem MCP server is scoped to (deliberately,
+      # see stack/README or chat history: LibreChat is publicly exposed, so
+      # that tool doesn't get the whole $HOME). The old /projects/workspace
+      # was outside that root, so every list_directory/read_text_file call
+      # the bridge's own agent made on its own working dir failed with
+      # "Access denied - path outside allowed directories" (2026-08-21).
+      - OPENHANDS_WORKSPACE=/home/abelardojara/workspace/chat-bridge
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - TELEGRAM_ALLOWED_CHAT_IDS=${TELEGRAM_ALLOWED_CHAT_IDS}
       - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN}
@@ -250,6 +257,7 @@ services:
       - CLI_PROXY_API_KEY=${CLI_PROXY_API_KEY}
       - GITHUB_PERSONAL_ACCESS_TOKEN=${GITHUB_PERSONAL_ACCESS_TOKEN}
       - AVIATION_STACK_API_KEY=${AVIATION_STACK_API_KEY}
+      - BRAVE_API_KEY=${BRAVE_API_KEY}
       - RAG_API_URL=http://rag_api:8000
     volumes:
       - ~/containers/librechat/images:/app/client/public/images
