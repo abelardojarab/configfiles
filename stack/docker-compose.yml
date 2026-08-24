@@ -611,6 +611,52 @@ services:
     # actually free at startup. vLLM's own startup log suggested this exact
     # value (4.89GiB/GPU) to fully use what's free -- ~1.86x more KV cache
     # for the same weights, no quality tradeoff. 2026-08-20.
+    #
+    # 2026-08-24: tried raising context 65536 -> 131072 with kv-cache-memory-
+    # bytes bumped 4.89 -> ~5.82GiB/GPU (max_num_seqs 4->2) to match. Booted
+    # fine and served one test request, but crashed for real ~10min into
+    # actual use: CUDA OOM on both GPUs -> EngineDeadError. Root cause:
+    # kv-cache-memory-bytes mode skips vLLM's own memory-profiling safety
+    # margin (it only respects the *initial* free-memory snapshot at
+    # startup), so it had zero headroom for activation memory once real
+    # traffic (not just the one canned startup test) needed more than that
+    # snapshot allowed. Contradicts what an earlier comment here claimed
+    # ("hard reservation ... rejects/queues rather than OOMs") -- that was
+    # wrong, confirmed by this crash. The container's docker-compose
+    # healthcheck only pings /health on the API server process, which stays
+    # up even after the engine itself dies, so the crash was silent until a
+    # real client request hit EngineDeadError ("Streaming response ended
+    # before any complete data was received"). Reverted to the known-stable
+    # 65536/4.89GiB/max_num_seqs=4 config below. If context needs to go back
+    # up, do it more conservatively than this attempt (smaller step, and
+    # actually soak-test under real multi-turn traffic -- not one request --
+    # before trusting it) or reduce --kv-cache-memory-bytes to leave real
+    # margin below the vLLM-recommended max instead of taking exactly its
+    # extrapolated ceiling.
+    # 2026-08-24: tried --max-num-batched-tokens 8192, reasoning it would cap
+    # transient/activation memory per iteration (vs. kv-cache-memory-bytes's
+    # static KV pool) and add a safety margin the earlier OOM was missing.
+    # Wrong in practice: booted fine and served a small test request, but
+    # OOM'd for real ~2min later once actual client traffic (claude-qwen,
+    # whose prompt includes tool schemas -- much bigger than the "hi" test)
+    # hit it. Root cause suspected: the V1 engine's *actual* default batch
+    # size may be smaller than 8192, so explicitly setting 8192 likely
+    # *raised* the per-iteration batch ceiling instead of capping it,
+    # letting a real request need more transient memory than the already
+    # razor-thin margin (see the kv-cache-memory-bytes writeup above) could
+    # cover. Reverted -- this exact config (no max-num-batched-tokens flag
+    # at all) is the one that ran stably for days before 2026-08-24's
+    # changes; don't add a value here without first confirming the actual
+    # current default via a running engine's config dump, not just the
+    # --help text.
+    # Also tried --load-format instanttensor (faster weight loading via
+    # pipelined prefetch/direct I/O) same day -- crash-looped immediately,
+    # every restart: `ModuleNotFoundError: No module named 'instanttensor'`.
+    # It's a real load_format value in this vLLM version's code, but the
+    # actual instanttensor package isn't installed in the
+    # vllm/vllm-openai:v0.27.1-cu129 image. Reverted to the default (auto).
+    # Would need a custom image with `pip install instanttensor` (or
+    # whatever the real PyPI package name is) added to try this again.
     command: >
       --model Qwen/Qwen3.8-27B-FP8
       --served-model-name qwen3.8-27b
