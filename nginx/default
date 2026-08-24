@@ -14,28 +14,27 @@
 # Default server configuration
 #
 
+# ============================================
+# Upstream Definitions
+# ============================================
+
+# PHP Sockets
 upstream php8 {
     server unix:/run/php/php8.4-fpm.sock;
 }
 
-upstream php7 {
-    server unix:/run/php/php7.0-fpm.sock;
-}
-
+# Dashboards & Core Navigation
 upstream heimdall {
     server 127.0.0.1:7888;
-}
-
-upstream mariadb {
-    server 127.0.0.1:8095;
 }
 
 upstream portainer {
     server 127.0.0.1:9010;
 }
 
-upstream code-server {
-    server 127.0.0.1:8085;
+upstream cockpit-ws {
+    server 127.0.0.1:9090 fail_timeout=0;
+    keepalive 32;
 }
 
 upstream authentik {
@@ -46,21 +45,27 @@ upstream uptime-kuma {
     server 127.0.0.1:3011;
 }
 
-upstream drawio {
-    server 127.0.0.1:8087;
+# CI/CD & Development Tools
+upstream code-server {
+    server 127.0.0.1:8085;
 }
 
-upstream mlflow {
-    server 127.0.0.1:5002;
+upstream gitlab {
+    server 127.0.0.1:2443 fail_timeout=0;
+    keepalive 32;
 }
 
-upstream onlyoffice {
-    server 127.0.0.1:8096;
+upstream jenkins {
+    server 127.0.0.1:9082;
 }
 
 upstream teamcity {
     server 127.0.0.1:8112 fail_timeout=0;
     keepalive 32;
+}
+
+upstream sonarqube {
+    server 127.0.0.1:9191;
 }
 
 upstream jira {
@@ -73,19 +78,84 @@ upstream artifactory {
     keepalive 32;
 }
 
+upstream artifactory-ui {
+    server 127.0.0.1:8082;
+}
+
+upstream docker-registry {
+    server 127.0.0.1:5000;
+}
+
+# Observability & Monitoring
+upstream grafana {
+    server 127.0.0.1:3000;
+}
+
+upstream prometheus {
+    server 127.0.0.1:9091;
+}
+
+upstream kibana {
+    server 127.0.0.1:5601;
+}
+
+upstream elasticsearch {
+    server 127.0.0.1:9200;
+}
+
+upstream webmin {
+    server 127.0.0.1:10000;
+}
+
+# AI & Data Science
 upstream notebook {
     server 127.0.0.1:8888 fail_timeout=0;
     keepalive 32;
 }
 
-upstream gitlab {
-    server 127.0.0.1:2443 fail_timeout=0;
-    keepalive 32;
+upstream mlflow {
+    server 127.0.0.1:5002;
 }
 
-upstream cockpit-ws {
-    server 127.0.0.1:9090 fail_timeout=0;
-    keepalive 32;
+upstream librechat {
+    server 127.0.0.1:3080;
+}
+
+upstream openhands {
+    server 127.0.0.1:8093;
+}
+
+# Applications & Storage
+upstream nextcloud {
+    server 127.0.0.1:8890;
+}
+
+upstream onlyoffice {
+    server 127.0.0.1:8096;
+}
+
+upstream drawio {
+    server 127.0.0.1:8087;
+}
+
+upstream filebrowser {
+    server 127.0.0.1:8484;
+}
+
+upstream calibre-web {
+    server 127.0.0.1:8084;
+}
+
+upstream guacamole {
+    server 127.0.0.1:8190;
+}
+
+upstream adminer {
+    server 127.0.0.1:8094;
+}
+
+upstream kubernetes-dashboard {
+    server 127.0.0.1:8001;
 }
 
 # Rate limiting zones
@@ -96,7 +166,6 @@ limit_conn_zone $binary_remote_addr zone=addr:10m;
 server {
     root /var/www/html;
     autoindex off;
-    index index.php;
 
     listen 443 ssl default_server;
     listen [::]:443 ssl default_server;
@@ -154,9 +223,6 @@ server {
     location = /50x.html {
         root /usr/share/nginx/html;
     }
-
-    # add global x-content-type-options header
-    add_header X-Content-Type-Options nosniff;
 
     # Sessions
     proxy_cache_key "$host$request_uri$cookie_sessioncookie";
@@ -344,7 +410,7 @@ server {
 
     # Gitlab
     location /gitlab/ {
-        proxy_pass https://127.0.0.1:2443/gitlab/;
+        proxy_pass https://gitlab/gitlab/;
 
         # Use remote real IP, add $server_port to remove port number
         proxy_set_header Host $host:$server_port;
@@ -376,7 +442,7 @@ server {
 
     # SonarQube
     location /sonarqube {
-        proxy_pass http://127.0.0.1:9191/sonarqube;
+        proxy_pass http://sonarqube/sonarqube;
         proxy_cookie_path ~*^/.* "/; secure";
 
         # Use remote real IP
@@ -399,7 +465,7 @@ server {
     # Jenkins
     location /jenkins {
         # Proxy redirect
-        proxy_pass http://127.0.0.1:9082/jenkins;
+        proxy_pass http://jenkins/jenkins;
         proxy_redirect http:// https://;
         sendfile off;
 
@@ -437,7 +503,7 @@ server {
         location ~ ^/zabbix/(.+\.php)$ {
             alias /usr/share/zabbix/$1;
             # Update to match your PHP version/socket
-            fastcgi_pass unix:/run/php/php8.4-fpm.sock;
+            fastcgi_pass php8;
             fastcgi_index index.php;
             fastcgi_param SCRIPT_FILENAME $request_filename;
             fastcgi_param PHP_VALUE "display_errors=Off \n error_reporting=E_ALL & ~E_DEPRECATED & ~E_NOTICE & ~E_WARNING";
@@ -454,7 +520,7 @@ server {
 
     # Cockpit
     location /mgmt/ {
-        proxy_pass https://localhost:9090/mgmt/;
+        proxy_pass https://cockpit-ws/mgmt/;
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -481,7 +547,7 @@ server {
 
         # Paths
         proxy_cookie_path ~*^/.* /;
-        proxy_pass http://localhost:8081/artifactory/;
+        proxy_pass http://artifactory/artifactory/;
 
         # Use remote real IP
         proxy_set_header Host $host:$server_port;
@@ -499,7 +565,7 @@ server {
     location /ui/ {
         proxy_read_timeout 900;
         proxy_cookie_path ~*^/.* /;
-        proxy_pass http://localhost:8082/ui/;
+        proxy_pass http://artifactory-ui/ui/;
         proxy_set_header Host $host:$server_port;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -508,7 +574,7 @@ server {
 
     # Jira
     location /jira/ {
-        proxy_pass http://localhost:8181;
+        proxy_pass http://jira;
 
         # Use remote real IP
         proxy_set_header Host $host:$server_port;
@@ -524,7 +590,7 @@ server {
 
     # Teamcity
     location /teamcity/ {
-        proxy_pass http://localhost:8112;
+        proxy_pass http://teamcity;
 
         # Use remote real IP
         proxy_set_header Host $host:$server_port;
@@ -540,7 +606,7 @@ server {
 
     # Grafana
     location /grafana/ {
-        proxy_pass http://localhost:3000/;
+        proxy_pass http://grafana/;
 
         # The final / in previous line handles next line
         # rewrite ^/grafana/(.*)  /$1 break;
@@ -566,7 +632,7 @@ server {
 
     # Kibana
     location ~ /kibana {
-        proxy_pass http://localhost:5601;
+        proxy_pass http://kibana;
 
         # Real IP and port
         proxy_set_header Host $host:$server_port;
@@ -599,7 +665,7 @@ server {
             break;
         }
 
-        proxy_pass http://localhost:9200;
+        proxy_pass http://elasticsearch;
         proxy_redirect off;
 
         proxy_set_header Host $host;
@@ -608,7 +674,7 @@ server {
 
     # Jupyter
     location /notebook/ {
-        proxy_pass http://localhost:8888/notebook/;
+        proxy_pass http://notebook/notebook/;
 
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -636,7 +702,7 @@ server {
 
     # Prometheus
     location /prometheus/ {
-        proxy_pass http://localhost:9091;
+        proxy_pass http://prometheus;
 
         # Real IP and port
         proxy_set_header Host $host:$server_port;
@@ -656,7 +722,7 @@ server {
 
     # Webmin
     location /webmin/ {
-        proxy_pass http://localhost:10000/;
+        proxy_pass http://webmin/;
 
         # Remote the port from proxy redirect
         # proxy_set_header   Host              $host:$server_port;
@@ -691,7 +757,7 @@ server {
 
     # Kubernetes dashboard
     location /kubernetes/ {
-        proxy_pass http://localhost:8001;
+        proxy_pass http://kubernetes-dashboard;
         rewrite ^/kubernetes/(.*) /$1 break;
 
         proxy_ssl_certificate /etc/kubernetes/pki/front-proxy-client.crt;
@@ -707,7 +773,7 @@ server {
 
     # Calibreweb
     location /calibre-web {
-        proxy_pass http://localhost:8084;
+        proxy_pass http://calibre-web;
         proxy_set_header Host $http_host;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Scheme $scheme;
@@ -717,9 +783,9 @@ server {
     # Filebrowser
     location /filebrowser/ {
         # rewrite ^/filebrowser(/.*)$ $1 break;
-        # proxy_pass http://localhost:8484/;
+        # proxy_pass http://filebrowser/;
 
-        proxy_pass http://localhost:8484;
+        proxy_pass http://filebrowser;
 
         # Remote the port from proxy redirect
         proxy_set_header Host $host:$server_port;
@@ -858,7 +924,7 @@ server {
     location ^~ /guacamole/ {
         proxy_http_version 1.1;
         proxy_set_header Connection "";
-        proxy_pass http://localhost:8190/guacamole/;
+        proxy_pass http://guacamole/guacamole/;
         proxy_buffering off;
     }
 
@@ -881,7 +947,7 @@ server {
         auth_basic "Restricted Content";
         auth_basic_user_file /var/www/.htpasswd;
 
-        proxy_pass http://localhost:8094/;
+        proxy_pass http://adminer/;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -890,7 +956,7 @@ server {
 
     # LibreChat
     location /librechat/ {
-        proxy_pass http://localhost:3080/;
+        proxy_pass http://librechat/;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -916,7 +982,7 @@ server {
         auth_basic "Restricted Content";
         auth_basic_user_file /var/www/.htpasswd;
 
-        proxy_pass http://localhost:8093;
+        proxy_pass http://openhands;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -937,7 +1003,7 @@ server {
         auth_basic "Restricted Content";
         auth_basic_user_file /var/www/.htpasswd;
 
-        proxy_pass http://localhost:8093;
+        proxy_pass http://openhands;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -957,7 +1023,7 @@ server {
     # tried to serve them as local files instead of proxying to the
     # container. guacamole's location below already uses this pattern.
     location ^~ /nextcloud/ {
-        proxy_pass http://localhost:8890/;
+        proxy_pass http://nextcloud/;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -980,7 +1046,7 @@ server {
 
         location ~ \.php$ {
             include fastcgi_params;
-            fastcgi_pass unix:/run/php/php8.4-fpm.sock;
+            fastcgi_pass php8;
             fastcgi_param SCRIPT_FILENAME $request_filename;
         }
     }
@@ -992,7 +1058,7 @@ server {
 
         location ~ \.php$ {
             include fastcgi_params;
-            fastcgi_pass unix:/run/php/php8.4-fpm.sock;
+            fastcgi_pass php8;
             fastcgi_param SCRIPT_FILENAME $request_filename;
         }
     }
@@ -1004,7 +1070,7 @@ server {
     server_name registry.jaraberrocal.readmyblog.org;
 
     location /v2/ {
-        proxy_pass http://localhost:5000;
+        proxy_pass http://docker-registry;
         auth_basic "Private Docker Registry";
         auth_basic_user_file /var/www/.htpasswd;
 
@@ -1015,7 +1081,6 @@ server {
     }
     ssl_certificate /etc/letsencrypt/live/registry.jaraberrocal.readmyblog.org/fullchain.pem; # managed by Certbot
     ssl_certificate_key /etc/letsencrypt/live/registry.jaraberrocal.readmyblog.org/privkey.pem; # managed by Certbot
-
 }
 
 # Authentik gets its own vhost -- it only works served from the root of a
@@ -1044,7 +1109,6 @@ server {
     ssl_certificate_key /etc/letsencrypt/live/auth.jaraberrocal.readmyblog.org/privkey.pem; # managed by Certbot
     include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
-
 }
 
 server {
@@ -1053,12 +1117,10 @@ server {
     }
     # managed by Certbot
 
-
     if ($host = jaraberrocal.readmyblog.org) {
         return 301 https://$host$request_uri;
     }
     # managed by Certbot
-
 
     listen 80 default_server;
     listen [::]:80 default_server;
@@ -1074,11 +1136,8 @@ server {
         return 301 https://$host$request_uri;
     } # managed by Certbot
 
-
     listen 80;
     listen [::]:80;
     server_name auth.jaraberrocal.readmyblog.org;
     return 404; # managed by Certbot
-
-
 }
