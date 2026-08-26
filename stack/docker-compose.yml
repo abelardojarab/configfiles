@@ -530,9 +530,28 @@ services:
     environment:
       - MINIO_ROOT_USER=admin
       - MINIO_ROOT_PASSWORD=qitlrtsx
+      - MINIO_BROWSER_REDIRECT_URL=https://jaraberrocal.readmyblog.org/minio/ui
+      - MINIO_SERVER_URL=https://jaraberrocal.readmyblog.org/minio
     command: server /data --console-address ":9001"
     volumes:
-      - ~/containers/minio/data:/data
+      - /media/nfs6/minio:/data
+
+  filebrowser:
+    image: filebrowser/filebrowser:v2-s6
+    container_name: filebrowser
+    restart: unless-stopped
+    ports:
+      - "8484:80"
+    environment:
+      - PUID=501
+      - PGID=501
+      - FB_BASEURL=/filebrowser
+    volumes:
+      - ~/containers/filebrowser/database:/database
+      - ~/containers/filebrowser/config:/config
+      - /media/nfs6:/srv/nfs6
+      - ~/workspace:/srv/workspace
+      - /var/www:/srv/www
 
   mlflow:
     image: burakince/mlflow:latest  # This image includes psycopg2
@@ -576,7 +595,7 @@ services:
       - "8094:8080"
 
   vllm:
-    image: vllm/vllm-openai:v0.27.1-cu129
+    image: vllm/vllm-openai:cu129-nightly-x86_64
     container_name: vllm
     restart: unless-stopped
     runtime: nvidia
@@ -662,13 +681,13 @@ services:
       --served-model-name qwen3.8-27b
       --max-model-len 65536
       --tensor-parallel-size 2
-      --kv-cache-memory-bytes 5249842688
+      --kv-cache-memory-bytes 2415919104
       --max-num-seqs 4
       --kv-cache-dtype fp8
       --enable-prefix-caching
       --enable-auto-tool-choice
       --tool-call-parser qwen3_xml
-      --speculative-config '{"method": "mtp", "num_speculative_tokens": 3}'
+      --speculative-config '{"method": "dflash", "model": "incoai/Qwen3.8-27B-DFlash2", "num_speculative_tokens": 7}'
 
   litellm-claude-proxy:
     image: ghcr.io/berriai/litellm:main-stable
