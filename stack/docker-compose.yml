@@ -259,6 +259,20 @@ services:
       - AVIATION_STACK_API_KEY=${AVIATION_STACK_API_KEY}
       - BRAVE_API_KEY=${BRAVE_API_KEY}
       - RAG_API_URL=http://rag_api:8000
+      # 2026-08-27: default 15min (MCP_USER_CONNECTION_IDLE_TIMEOUT unset)
+      # tears down every MCP server connection for this user after any
+      # 15-minute gap between messages. The next request triggers a lazy
+      # reconnect of all 11 servers, but the "does this agent have any
+      # tools" gate in ToolService.js runs before that reconnect finishes,
+      # so that first message 503s with "The agent is configured to use MCP
+      # tools, but none are available" -- confirmed via librechat's own logs,
+      # [MCP Reinitialize] success lines and the
+      # AgentToolInitializationError landing in the same second. Restarting
+      # "fixes" it only because boot connects all servers synchronously
+      # before any request arrives. Single-user always-on instance, so
+      # there's no benefit to the 15min teardown -- raised to 7 days so
+      # normal usage gaps never trigger the race.
+      - MCP_USER_CONNECTION_IDLE_TIMEOUT=604800000
     volumes:
       - ~/containers/librechat/images:/app/client/public/images
       - ~/containers/librechat/uploads:/app/uploads
@@ -531,7 +545,6 @@ services:
       - MINIO_ROOT_USER=admin
       - MINIO_ROOT_PASSWORD=qitlrtsx
       - MINIO_BROWSER_REDIRECT_URL=https://jaraberrocal.readmyblog.org/minio/ui
-      - MINIO_SERVER_URL=https://jaraberrocal.readmyblog.org/minio
     command: server /data --console-address ":9001"
     volumes:
       - /media/nfs6/minio:/data
@@ -682,6 +695,16 @@ services:
     # allowing 131k FP8 KV cache with gpu-memory-utilization 0.95 (0.92 was too
     # tight and failed the KV cache size check at startup), chunked prefill,
     # and DFlash2 speculative decoding.
+    # 2026-08-26: added --reasoning-parser qwen3 after a Discord reply via
+    # the qwen-vllm OpenHands profile surfaced raw chain-of-thought text as
+    # the visible answer (a fabricated "let me check the logs" narrative
+    # followed by an unrelated made-up response). Root cause confirmed by a
+    # direct /v1/chat/completions test: without this flag, vLLM has no way
+    # to split the model's reasoning from its final answer, so it dumps the
+    # whole raw generation into `content` with `"reasoning": null`. vLLM
+    # ships a qwen3-specific parser (Qwen3ParserReasoningAdapter) for
+    # exactly this; --tool-call-parser qwen3_xml above already handles tool
+    # calls, this handles reasoning/thinking content.
     command: >
       --model barrydeen/Qwen3.8-27B-AWQ-4bit
       --served-model-name qwen3.8-27b
@@ -695,6 +718,7 @@ services:
       --enable-prefix-caching
       --enable-auto-tool-choice
       --tool-call-parser qwen3_xml
+      --reasoning-parser qwen3
       --speculative-config '{"method": "dflash", "model": "incoai/Qwen3.8-27B-DFlash2", "num_speculative_tokens": 5}'
 
   litellm-claude-proxy:
