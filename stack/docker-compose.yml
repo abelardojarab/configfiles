@@ -273,6 +273,18 @@ services:
       # there's no benefit to the 15min teardown -- raised to 7 days so
       # normal usage gaps never trigger the race.
       - MCP_USER_CONNECTION_IDLE_TIMEOUT=604800000
+      # Temporary (2026-08-30): the idle-timeout raise above didn't fix a
+      # recurrence of the same "MCP tools, but none are available" 503 --
+      # this time every server reconnects successfully in the info-level
+      # logs right before the throw, which points at ToolService.js:1128's
+      # resolvedToolCount===0 check discarding freshly-fetched tools via a
+      # publication-generation cache-fencing path (packages/api/src/mcp/
+      # tools.ts updateMCPServerTools) built for multi-replica/Redis setups
+      # -- the deciding log lines ([MCP Cache] Skipped unfenced..., [MCP
+      # Reinitialize] Preserving cached tools...) are debug-level and
+      # invisible at the default log level. Remove both once confirmed.
+      - DEBUG_LOGGING=true
+      - DEBUG_CONSOLE=true
     volumes:
       - ~/containers/librechat/images:/app/client/public/images
       - ~/containers/librechat/uploads:/app/uploads
