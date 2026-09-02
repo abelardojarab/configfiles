@@ -12,4 +12,7 @@ node default {
     # include virtualisation
     # include ppas
     include accounts
+    include zabbix
+    include telegraf
+    include jenkins_agent
 }
