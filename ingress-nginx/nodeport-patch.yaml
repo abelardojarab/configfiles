@@ -1,0 +1,19 @@
+# Pins the ingress-nginx-controller Service to fixed NodePorts so host
+# nginx's `upstream ingress-nginx { server 127.0.0.1:30080; }` (see
+# nginx/default) never has to chase a randomly assigned port.
+#
+# Applied with:
+#   kubectl patch svc ingress-nginx-controller -n ingress-nginx --patch-file ingress-nginx/nodeport-patch.yaml
+spec:
+  type: NodePort
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+    protocol: TCP
+    nodePort: 30080
+  - name: https
+    port: 443
+    targetPort: https
+    protocol: TCP
+    nodePort: 30443
