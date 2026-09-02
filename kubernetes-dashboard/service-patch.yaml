@@ -1,0 +1,13 @@
+# --type merge (JSON merge patch, full list replace) matters here: the
+# default strategic merge tries to match list entries by port name, and
+# since neither the old (443) nor new (80) port has a name, it appends
+# instead of replacing and the API rejects the result (ports need unique
+# names once there's more than one).
+#
+# Applied with:
+#   kubectl patch service kubernetes-dashboard -n kubernetes-dashboard --type merge --patch-file kubernetes-dashboard/service-patch.yaml
+spec:
+  ports:
+  - port: 80
+    targetPort: 9090
+    protocol: TCP

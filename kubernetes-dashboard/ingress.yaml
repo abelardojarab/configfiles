@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kubernetes-dashboard
+  namespace: kubernetes-dashboard
+  annotations:
+    # TLS ends at host nginx; see argocd/ingress.yaml for why.
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    # Dashboard's HTML uses relative asset paths (e.g. href="styles.xxx.css",
+    # no leading slash), so stripping the /dashboard prefix before it
+    # reaches the pod is enough for both the page and its sub-resources to
+    # resolve correctly -- unlike ArgoCD, no root-absolute paths to fight.
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: k8s.jaraberrocal.readmyblog.org
+    http:
+      paths:
+      - path: /dashboard(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: kubernetes-dashboard
+            port:
+              number: 80
