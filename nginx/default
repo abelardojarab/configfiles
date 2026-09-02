@@ -162,8 +162,8 @@ upstream adminer {
     server 127.0.0.1:8094;
 }
 
-upstream kubernetes-dashboard {
-    server 127.0.0.1:8001;
+upstream ingress-nginx {
+    server 127.0.0.1:30080;
 }
 
 # Rate limiting zones
@@ -763,22 +763,6 @@ server {
     # Application Proxies (Containers)
     # ============================================
 
-    # Kubernetes dashboard
-    location /kubernetes/ {
-        proxy_pass http://kubernetes-dashboard;
-        rewrite ^/kubernetes/(.*) /$1 break;
-
-        proxy_ssl_certificate /etc/kubernetes/pki/front-proxy-client.crt;
-        proxy_ssl_certificate_key /etc/kubernetes/pki/front-proxy-client.key;
-        proxy_ssl_trusted_certificate /etc/kubernetes/pki/ca.crt;
-        set $token "eyJhbGciOiJSUzI1NiIsImtpZCI6IkxlcVRKb2lvOGtiLU5yekJGck5TaUxoM0RnR1FZVmRxQjBnaTN1c3lDVEUifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlcm5ldGVzLWRhc2hib2FyZCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJhYmVsYXJkb2phcmEtdG9rZW4tcGZqZnMiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiYWJlbGFyZG9qYXJhIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQudWlkIjoiNzg3ZTRiYTAtMGNmMC00YzE1LWI5NDctNGYzYjkyNWYxZmUyIiwic3ViIjoic3lzdGVtOnNlcnZpY2VhY2NvdW50Omt1YmVybmV0ZXMtZGFzaGJvYXJkOmFiZWxhcmRvamFyYSJ9.LHdsFOv6NQoEDfF_z45OtWbaa59V7g2iEx04DoWIy5Z5ItcOFLFTUVBZyT1CdYk7kR5IOd2myW3u1_RtxOCRbw68dd9vTvl2Wt6gDertMXj5uD3L8BAY7wyLvS_WJ4C46OeXlOF9iMrMONrI67xj2WZBPN8utYr0-SqbVdhpSaVgdJkBXhFB4I4VZOn72fJAACyzCgnJpfecBjWcDrqrX4kjmeOKh1mSMIcpvyawDgdn4eRHHkKJN0-3yjHGhi89ZGUrTaMNFKViqoErcWHBVkmPzHpHFNV3d7wPdxHZ2s_14oiXRn82ySgrC7IeRQQSNljSyB68BfzhwOHXfZUdDw";
-        proxy_set_header Authorization "Bearer $token";
-
-        auth_basic "Restricted Content";
-        auth_basic_user_file /var/www/.htpasswd;
-        auth_request_set $token $upstream_http_x_auth_request_access_token;
-    }
-
     # Calibreweb
     location /calibre-web {
         proxy_pass http://calibre-web;
@@ -1163,6 +1147,45 @@ server {
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
 }
 
+# Kubernetes apps (ingress-nginx running in-cluster as a NodePort Service,
+# see ingress-nginx/nodeport-patch.yaml). Host nginx does the TLS
+# termination here -- same as registry.* above -- and ingress-nginx does
+# the routing inside the cluster by Host/path (ArgoCD at /, the smoke-test
+# app at /demo, etc.). Point k8s.jaraberrocal.readmyblog.org's DNS record
+# at this host, then run:
+#   sudo certbot --nginx -d k8s.jaraberrocal.readmyblog.org
+# which will fill in the ssl_certificate directives and add the :443
+# server block / http->https redirect automatically.
+# No 443/ssl_certificate lines yet -- they don't exist on disk until
+# certbot issues them, and nginx refuses to start/reload with a listen
+# ssl block pointing at a missing cert. `certbot --nginx` finds this
+# block by server_name, obtains the cert via the HTTP-01 challenge over
+# this plain :80 listener, and rewrites this file to add the 443 block
+# and the http->https redirect automatically (exactly like it already
+# did for auth.* above).
+server {
+    server_name k8s.jaraberrocal.readmyblog.org;
+
+    location / {
+        proxy_pass http://ingress-nginx;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    listen 443 ssl; # managed by Certbot
+    listen [::]:443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/k8s.jaraberrocal.readmyblog.org/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/k8s.jaraberrocal.readmyblog.org/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+
 server {
     if ($host = www.jaraberrocal.readmyblog.org) {
         return 301 https://$host$request_uri;
@@ -1192,4 +1215,18 @@ server {
     listen [::]:80;
     server_name auth.jaraberrocal.readmyblog.org;
     return 404; # managed by Certbot
+}
+
+server {
+    if ($host = k8s.jaraberrocal.readmyblog.org) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    server_name k8s.jaraberrocal.readmyblog.org;
+    listen 80;
+    listen [::]:80;
+    return 404; # managed by Certbot
+
+
 }

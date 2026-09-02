@@ -1,0 +1,9 @@
+# TLS is terminated upstream by host nginx (Certbot cert for
+# k8s.jaraberrocal.readmyblog.org), same as every other app proxied from
+# nginx/default, so argocd-server must not also try to speak TLS itself.
+#
+# Applied with:
+#   kubectl patch configmap argocd-cmd-params-cm -n argocd --type merge --patch-file argocd/argocd-cmd-params-patch.yaml
+#   kubectl rollout restart deployment argocd-server -n argocd
+data:
+  server.insecure: "true"

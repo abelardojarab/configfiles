@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-nginx-ingress
+  namespace: default
+  annotations:
+    # TLS ends at host nginx (Certbot cert for k8s.jaraberrocal.readmyblog.org)
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    # The container only serves its default page at "/" -- rewrite /demo -> /
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: k8s.jaraberrocal.readmyblog.org
+    http:
+      paths:
+      - path: /demo
+        pathType: Prefix
+        backend:
+          service:
+            name: my-nginx-service
+            port:
+              number: 80
+  # No tls: block / cert-manager annotation -- see argocd/ingress.yaml for why.

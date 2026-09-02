@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-server
+  namespace: argocd
+  annotations:
+    # TLS already ends at host nginx; without this, ingress-nginx issues
+    # its own 308 redirect to https for every request and breaks the chain.
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: k8s.jaraberrocal.readmyblog.org
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: argocd-server
+            # Both "http" and "https" service ports point at the same
+            # plain-HTTP 8080 once server.insecure=true; use "http".
+            # CLI users should `argocd login --grpc-web` (or set
+            # core.grpc-web: true) since native gRPC needs HTTP/2 to the
+            # backend, which this HTTP-terminated chain doesn't provide.
+            port:
+              name: http
+  # No tls: block here on purpose -- host nginx terminates TLS for this
+  # host (see nginx/default) and proxies plain HTTP to ingress-nginx.
