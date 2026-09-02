@@ -1,0 +1,27 @@
+# Same reasoning as argocd/argocd-cmd-params-patch.yaml: TLS terminates
+# at host nginx (Certbot cert for k8s.jaraberrocal.readmyblog.org), so the
+# dashboard doesn't need to speak TLS itself. Swaps
+# --auto-generate-certificates for a plain insecure listener.
+#
+# Applied with:
+#   kubectl patch deployment kubernetes-dashboard -n kubernetes-dashboard --patch-file kubernetes-dashboard/deployment-patch.yaml
+spec:
+  template:
+    spec:
+      containers:
+      - name: kubernetes-dashboard
+        args:
+        - --namespace=kubernetes-dashboard
+        - --insecure-bind-address=0.0.0.0
+        - --insecure-port=9090
+        - --enable-insecure-login
+        ports:
+        - containerPort: 9090
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            scheme: HTTP
+            path: /
+            port: 9090
+          initialDelaySeconds: 30
+          timeoutSeconds: 30

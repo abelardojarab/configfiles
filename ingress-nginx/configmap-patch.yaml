@@ -1,0 +1,10 @@
+# The default "worker-processes: auto" spawns one nginx worker per
+# visible CPU core. abelardojara-super-server reports 256 cores to the
+# container, so the controller was trying to run 256 nginx workers --
+# severe resource contention that made every request hang. Pin it to a
+# sane number instead.
+#
+# Applied with:
+#   kubectl patch configmap ingress-nginx-controller -n ingress-nginx --type merge --patch-file ingress-nginx/configmap-patch.yaml
+data:
+  worker-processes: "4"
