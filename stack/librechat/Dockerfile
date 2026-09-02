@@ -10,4 +10,6 @@
 FROM registry.librechat.ai/danny-avila/librechat-dev:latest
 USER root
 RUN echo "abelardojara:x:501:501::/tmp:/bin/sh" >> /etc/passwd
+# Patch updateMCPServerTools to return tools instead of null when cache fencing fails for MCP servers
+RUN sed -i '/async function updateMCPServerTools/,/async function mergeAppTools/ s/return null;/return serverTools;/g' /app/node_modules/@librechat/api/dist/index.cjs
 USER 501
