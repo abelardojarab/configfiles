@@ -4,7 +4,7 @@ class telegraf {
     release  => 'stable',
     repos    => 'main',
     key      => {
-      name   => 'influxdata.gpg',
+      name   => 'influxdata.asc',
       # NOTE: the old *_compat.key expired 2026-01-17; this is the current key.
       source => 'https://repos.influxdata.com/influxdata-archive.key',
     },

@@ -59,24 +59,24 @@ class devel {
              "feh", "sysbench", "hardinfo", "stress-ng",
              "smartmontools", "silversearcher-ag", "gsmartcontrol", "preload",
              "zlib1g", "sqlite3", "clangd", "clang-tidy", "clang", "rustc",
-             "cargo", "clang-format", "cppcheck", "neofetch", "ncdu", "nnn",
+             "cargo", "clang-format", "cppcheck", "ncdu", "nnn",
              "elinks", "w3m", "mutt", "autoconf", "libc6-dev", "automake",
              "libtool", "bison", "cmake-curses-gui", "pkg-config", "clinfo",
              "vulkan-tools", "vainfo", "gettext", "mesa-opencl-icd", "samba",
              "nfs-common", "gnupg2", "pass", "avahi-daemon", "avahi-discover",
              "avahi-dnsconfd", "avahi-utils", "libnss-mdns", "mdns-scan",
              "nfs-kernel-server", "libjansson4", "pydf", "exuberant-ctags",
-             "global", "libtree-sitter0", "libtree-sitter-dev",
+             "global", "libtree-sitter-dev",
              "fzf", "bat", "fd-find", "finch", "gnuplot", "ffmpeg",
              "linux-firmware", "bpfcc-tools", "linux-tools-generic",
              "libpoppler-private-dev", "elpa-pdf-tools-server", "chromium-browser",
-             "chromium-chromedriver", "multitime", "iperf", "plantuml",
+             "chromium-chromedriver", "iperf", "plantuml",
              "protobuf-compiler", "libjpeg9", "libgccjit0", "cpu-checker",
              "ovmf", "zsync", "libjpeg-progs", "pdfgrep", "jq",
              "ttygif", "sshpass", "htop", "device-tree-compiler", "libfdt1",
              "lzop", "u-boot-tools", "chrpath", "xz-utils", "i2c-tools",
              "calibre", "calibre-bin", "openmpi-bin", "x264", "v4l-utils",
-             "gnome-startup-applications"]:
+             "gnome-session-bin"]:
                ensure => installed,
   }
 }

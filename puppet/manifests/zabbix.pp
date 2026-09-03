@@ -1,4 +1,4 @@
-class zabbix {
+class my_zabbix {
   apt::source { 'zabbix':
     location => 'https://repo.zabbix.com/zabbix/6.0/ubuntu',
     release  => 'focal',   # zabbix has no resolute dist yet
