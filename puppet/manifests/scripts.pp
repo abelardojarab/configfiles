@@ -1,4 +1,9 @@
 class scripts {
+  # Slurm client (provides /etc/slurm-llnl)
+  package { 'slurm-llnl':
+    ensure => installed,
+  }
+
   file { '/root/fix_missing_keys.sh':
     ensure   => present,
     source   => 'puppet:///modules/scripts/fix_missing_keys.sh',

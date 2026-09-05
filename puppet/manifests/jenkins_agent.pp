@@ -10,6 +10,7 @@ class jenkins_agent (
     'ubuntu07'  => 'cb1cfb855b5b3718dff7d468533616bea21c000d645546ba148f42cd26e7455b',
     'ubuntu03'  => '24ab9a088e71271cb5cc0a2beac65478361e3933df0ab4361cd942451849e9c2',
     'ubuntu05'  => 'd0c59705bd4ba5d1e6e327ad662a7823a81b42cac85bf6991a9be343aeb3a83e',
+    'ubuntu08'  => '36679dae4082fbfc796cce180ce6468690c81e726b536fcf31a27c4a82a88b5f',
   }
 
   $hostname = $facts['networking']['hostname']

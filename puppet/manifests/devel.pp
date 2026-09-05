@@ -21,6 +21,11 @@ class devel {
     ensure => installed,
   }
 
+  # Java
+  package { ['default-jre', 'default-jdk']:
+    ensure => installed,
+  }
+
   # Network
   package { ['rsync', 'wget', 'curl', 'net-tools']:
     ensure => installed,
