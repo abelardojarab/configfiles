@@ -5,12 +5,9 @@ node default {
     include docker
     include kubernetes
     include python3
-    include pips
     include golang
     include nodejs
     include nodes
-    # include virtualisation
-    # include ppas
     include accounts
     include my_zabbix
     include telegraf

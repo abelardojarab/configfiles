@@ -1,0 +1,8 @@
+# Puppetfile for this repo's puppet manifests.
+# Sync with:  puppet package sync --puppetfile Puppetfile
+# (or: puppet-agent package sync --puppetfile Puppetfile)
+
+mod 'puppetlabs/apt',    '~> 8.0'
+mod 'puppet/kmod',       '~> 3.0'
+mod 'voxpupuli/accounts', '~> 3.0'
+mod 'puppet/zabbix',     '~> 6.0'

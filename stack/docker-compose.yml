@@ -107,6 +107,20 @@ services:
       timeout: 5s
       retries: 3
       start_period: 5s
+    # Capped 2026-09-02 after `docker stats` showed this container spiking
+    # to 2000-6000% CPU. Investigated: /proc/<beam.smp pid>/stat over a 3s
+    # window showed real usage ~1.66%, and rabbitmq-diagnostics
+    # runtime_thread_stats showed all Erlang schedulers 100% idle -- the
+    # spikes were a docker-stats/cgroup v1 (cgroupfs driver) reporting
+    # artifact, not genuine load (queues were empty, 0 messages). No actual
+    # runaway process to fix; this limit is just a bounded safety net in
+    # case that ever changes, so a real runaway here can't eat the whole
+    # host. 2 CPUs is generous headroom for what is normally an idle job
+    # queue with a handful of consumers.
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
 
   firecrawl-postgres:
     # Firecrawl's job-queue backend (their "nuq" queue, postgres-backed by

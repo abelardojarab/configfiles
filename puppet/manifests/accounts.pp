@@ -19,6 +19,7 @@ accounts::user { 'cpulab_farm':
 $teamcity_id_overrides = {
   'ubuntu05' => '6990',
   'ubuntu03' => '6990',
+  'ubuntu08' => '6990',
 }
 $teamcity_id = $teamcity_id_overrides[$facts['networking']['hostname']]
 
