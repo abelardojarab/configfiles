@@ -796,6 +796,33 @@ services:
       - ~/containers/cli-proxy-api/logs:/CLIProxyAPI/logs
       - ~/containers/cli-proxy-api/plugins:/CLIProxyAPI/plugins
 
+  # Nous Research's Hermes Agent. Built locally -- upstream ships no
+  # prebuilt image, only a Dockerfile (source cloned to
+  # ~/containers/hermes-agent-src, `docker build -t hermes-agent .`).
+  # network_mode: host is upstream's own default (needed so the gateway
+  # can reach localhost-published sibling services, e.g. litellm-claude-proxy
+  # on :4001); it also means the dashboard's 127.0.0.1:9119 bind lands
+  # directly on the host loopback, which is exactly what nginx's
+  # `upstream hermes-dashboard` (nginx/default) targets.
+  # Model routing configured in ~/.hermes/config.yaml to point at
+  # litellm-claude-proxy (same backend the orchestrator/orchestrator-gemini/
+  # orchestrator-qwen subagents use), API key in ~/.hermes/.env.
+  hermes:
+    build: ~/containers/hermes-agent-src
+    image: hermes-agent
+    container_name: hermes
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ~/.hermes:/opt/data
+    environment:
+      - HERMES_UID=${HERMES_UID:-10000}
+      - HERMES_GID=${HERMES_GID:-10000}
+      - HERMES_DASHBOARD=1
+      - HERMES_DASHBOARD_HOST=127.0.0.1
+      - HERMES_DASHBOARD_NO_OPEN=1
+    command: ["gateway", "run"]
+
   open-webui:
     image: ghcr.io/open-webui/open-webui:main
     container_name: open-webui
