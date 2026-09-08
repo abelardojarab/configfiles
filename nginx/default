@@ -125,6 +125,10 @@ upstream mlflow {
     server 127.0.0.1:5002;
 }
 
+upstream hermes-dashboard {
+    server 127.0.0.1:9119;
+}
+
 upstream librechat {
     server 127.0.0.1:3080;
 }
@@ -954,6 +958,43 @@ server {
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
         proxy_pass http://portainer/api/websocket/;
+    }
+
+    # Hermes Agent dashboard
+    # Behind Authentik forward-auth -- provider/application set up via the
+    # local/portainer.yaml blueprint (mode forward_single, bound to the
+    # embedded outpost), same as Portainer/File Browser/Kubernetes Dashboard
+    # above. Dashboard binds 127.0.0.1:9119 only inside its host-networked
+    # container (see stack/docker-compose.yml); this is the only path in.
+    # If assets/websockets don't tolerate the /hermes/ subpath, drop this
+    # and give it its own server{} block instead (same note as Uptime Kuma).
+    location /hermes/ {
+        auth_request     /outpost.goauthentik.io/auth/nginx;
+        error_page 401 = @goauthentik_proxy_signin;
+
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        # Pass the prefix so FastAPI generates correct redirects
+        proxy_set_header X-Forwarded-Prefix /hermes;
+        
+        # Disable compression so sub_filter can read the HTML
+        proxy_set_header Accept-Encoding "";
+
+        proxy_pass http://hermes-dashboard/;
+
+        sub_filter_types text/html application/javascript text/javascript;
+        sub_filter '"assets/' '"/hermes/assets/';
+        sub_filter 'url(\'/fonts/' 'url(\'/hermes/fonts/';
+        sub_filter 'fetch(\'/auth/' 'fetch(\'/hermes/auth/';
+        sub_filter 'href="/auth/' 'href="/hermes/auth/';
+        sub_filter 'window.location.assign((data && data.next) || \'/\');' 'let n = data && data.next; window.location.assign(n === \'/\' ? \'/hermes/\' : (n || \'/hermes/\'));';
+        sub_filter_once off;
     }
 
     # Guacamole
