@@ -1,0 +1,19 @@
+[Unit]
+Description=Point the Emacs daemon at the current graphical session
+Documentation=man:emacsclient(1)
+
+# Runs once per graphical session. emacsd.service itself is not PartOf the
+# graphical session -- it outlives logout by design -- so without this, a
+# daemon carried over from a previous session holds a stale XAUTHORITY and can
+# never open a display again.
+After=graphical-session.target emacsd.service
+PartOf=graphical-session.target
+
+[Service]
+Type=oneshot
+# The script waits for the Emacs socket itself and bounds its own call, so it
+# cannot hold up the session whether Emacs is slow, absent or wedged.
+ExecStart=%h/workspace/configfiles/scripts/emacs-refresh-display
+
+[Install]
+WantedBy=graphical-session.target
