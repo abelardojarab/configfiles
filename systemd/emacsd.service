@@ -2,14 +2,55 @@
 Description=Emacs: the extensible, self-documenting text editor
 Documentation=man:emacs(1) info:Emacs
 
+# Ordered after the graphical session, but deliberately NOT PartOf it: the
+# daemon holds long-lived buffers and has to survive logout and stay usable
+# from ssh. The ordering only matters at login, where it keeps the daemon from
+# starting before gnome-session has imported DISPLAY, WAYLAND_DISPLAY and
+# XAUTHORITY into the systemd user manager -- a daemon that starts first has no
+# XAUTHORITY, cannot authenticate to Xwayland, and every `emacsclient -c` then
+# fails with "Display :0 can't be opened" for the lifetime of that daemon.
+#
+# Sessions that start later are handled by emacs-display-env.service, which
+# re-points this daemon instead of restarting it.
+After=graphical-session.target
+
 [Service]
 Type=forking
 ExecStart=/usr/bin/emacs --daemon
-ExecStop=/usr/bin/emacsclient --eval "(progn (setq kill-emacs-hook nil) (kill-emacs))"
+
+# -s is required. server-socket-dir is customised to ~/.emacs.cache/server, so
+# a bare `emacsclient --eval` cannot find the server: the previous ExecStop
+# failed on every single stop and systemd fell back to signalling the process,
+# which is why a restart never shut Emacs down on its own terms.
+#
+# kill-emacs-hook is deliberately left alone. The previous version nil'd it,
+# which would now actually take effect and silently drop what those hooks
+# write on the way out -- recentf, the bm bookmark repository and the semantic
+# tag summaries. They are plain non-interactive saves and take about a second;
+# TimeoutStopSec below is what bounds them.
+ExecStop=/usr/bin/emacsclient -s %h/.emacs.cache/server/server --eval "(kill-emacs)"
+
 Restart=on-failure
-Environment=DISPLAY=:0
+
+# This Emacs exits 15 on a completely normal shutdown -- measured both ways,
+# via the ExecStop above and via a plain SIGTERM, with the save hooks running
+# to completion each time and no process left behind. (A bare `emacs -Q`
+# exits 0, so it comes from the configuration, not from systemd.) Without this
+# every clean stop parks the unit in "failed", and Restart=on-failure would
+# resurrect an Emacs the user deliberately killed with M-x kill-emacs.
+SuccessExitStatus=15
+
+# DISPLAY is intentionally not set here. gnome-session imports the real
+# DISPLAY/WAYLAND_DISPLAY/XAUTHORITY into the user manager, and a value
+# hardcoded in the unit silently overrides the correct one -- it was pinned to
+# :0 while XAUTHORITY was missing entirely, which is the worst combination:
+# Emacs believed it had a display and could never open it.
 Environment=SSH_AUTH_SOCK=%t/keyring/ssh
+
+# Loading this configuration takes well over a minute, so the start timeout
+# stays off; the stop path is bounded so a wedged daemon cannot hold up logout.
 TimeoutStartSec=0
+TimeoutStopSec=30
 
 [Install]
 WantedBy=default.target

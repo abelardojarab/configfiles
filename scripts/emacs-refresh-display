@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+#
+# Point the running Emacs daemon at the current graphical session.
+#
+# The daemon is long-lived on purpose, but XAUTHORITY is
+# /run/user/<uid>/.mutter-Xwaylandauth.XXXXXX and mutter regenerates that
+# suffix every time Xwayland restarts. A daemon started in an earlier session
+# keeps the old path, can no longer authenticate to the X server, and from then
+# on every `emacsclient -c` fails with "Display :0 can't be opened" -- the
+# daemon looks healthy and answers elisp, it simply cannot make a frame.
+#
+# Re-pointing it is enough. It does not need restarting, so no buffers are lost.
+#
+# Run from emacs-display-env.service on every graphical-session start; safe to
+# run by hand at any time.
+#
+set -uo pipefail
+
+SOCKET="${EMACS_SERVER_FILE:-$HOME/.emacs.cache/server/server}"
+VARS=(DISPLAY WAYLAND_DISPLAY XAUTHORITY XDG_SESSION_TYPE XDG_CURRENT_DESKTOP)
+
+log() { printf 'emacs-refresh-display: %s\n' "$*"; }
+
+# Started with the graphical session, this can easily beat the daemon to it --
+# loading that configuration takes well over a minute from cold.
+for _ in $(seq 1 90); do
+  [ -S "$SOCKET" ] && break
+  sleep 2
+done
+if [ ! -S "$SOCKET" ]; then
+  log "no emacs socket at $SOCKET after 180s; nothing to refresh"
+  exit 0
+fi
+
+# Prefer this process's own environment; fall back to the user manager, which
+# is where gnome-session publishes the authoritative values.
+#
+# Order matters, and not in the obvious direction. The systemd user manager is
+# consulted FIRST because gnome-session refreshes it on every graphical login;
+# this script's own inherited environment is the weaker source, since a shell
+# (or an agent) started in a previous session carries a stale XAUTHORITY and
+# would happily publish a dead auth file over a live one. Observed: three
+# .mutter-Xwaylandauth.* files in /run/user, only the newest usable.
+declare -A env_now=()
+while IFS='=' read -r k rest; do
+  case " ${VARS[*]} " in *" $k "*) [ -n "$rest" ] && env_now[$k]="$rest" ;; esac
+done < <(systemctl --user show-environment 2>/dev/null)
+
+for v in "${VARS[@]}"; do
+  [ -z "${env_now[$v]:-}" ] && [ -n "${!v:-}" ] && env_now[$v]="${!v}"
+done
+
+# Xwayland's own -auth argument is the ground truth for X authentication: it is
+# what the server is actually reading. If it disagrees with everything above,
+# everything above is out of date.
+xw_auth="$(tr '\0' '\n' < /proc/"$(pgrep -x Xwayland | head -1)"/cmdline 2>/dev/null \
+           | grep -A1 -x -- '-auth' | tail -1)"
+if [ -n "$xw_auth" ] && [ -r "$xw_auth" ] && [ "$xw_auth" != "${env_now[XAUTHORITY]:-}" ]; then
+  log "XAUTHORITY corrected to Xwayland's own: $xw_auth"
+  env_now[XAUTHORITY]="$xw_auth"
+fi
+
+if [ "${#env_now[@]}" -eq 0 ]; then
+  log "no graphical session variables to publish"
+  exit 0
+fi
+
+# Build the elisp, escaping anything that would break out of the string.
+elisp='(progn'
+for v in "${!env_now[@]}"; do
+  esc="${env_now[$v]//\\/\\\\}"; esc="${esc//\"/\\\"}"
+  elisp+=" (setenv \"$v\" \"$esc\")"
+done
+elisp+=' t)'
+
+# Bounded: a daemon wedged on a prompt it has no frame to display will never
+# answer, and this must not hold the graphical session open waiting for it.
+if timeout 20 emacsclient -s "$SOCKET" --eval "$elisp" >/dev/null 2>&1; then
+  log "refreshed: ${!env_now[*]}"
+else
+  log "emacs daemon did not answer within 20s; left it alone"
+fi
+exit 0
