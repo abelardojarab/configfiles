@@ -115,15 +115,40 @@ export VISUAL=vim; export EDITOR="$VISUAL"
 _path_prepend "$HOME/.local/bin"
 _path_prepend "$HOME/.cask/bin"
 
-# Emacs client alias (prefer system paths if present)
+# Emacs client (prefer system paths if present)
+#
+# -t, not -c, whenever this is a terminal.  `emacsclient -c' asks the daemon
+# for a *new frame*, and on a tty that frame is not bound to the terminal:
+# measured here, with the terminal at 100x40 it came up 159x32 and then never
+# changed again through any resize, whereas -t tracked 100x40 -> 150x50
+# exactly.  That is the "emacs doesn't resize with the terminal or tmux" bug --
+# it is the flag, not tmux, whose aggressive-resize and tmux-256color settings
+# are already correct.
+#
+# -c is still right for a graphical frame, so it is kept for the case where
+# there is a display and we are not inside a multiplexer.
 if command -v /usr/local/bin/emacsclient >/dev/null 2>&1; then
-  alias emacsclients='/usr/local/bin/emacsclient -c -s ~/.emacs.cache/server/server'
+  _EMACSCLIENT=/usr/local/bin/emacsclient
 elif command -v /usr/bin/emacsclient >/dev/null 2>&1; then
-  alias emacsclients='/usr/bin/emacsclient -c -s ~/.emacs.cache/server/server'
+  _EMACSCLIENT=/usr/bin/emacsclient
 else
-  alias emacsclients='emacsclient -c -s ~/.emacs.cache/server/server'
+  _EMACSCLIENT=emacsclient
 fi
 export EMACS_SERVER_FILE="$HOME/.emacs.cache/server/server"
+
+emacsclients() {
+  local flag=-t
+  # A graphical frame only makes sense with a display and outside tmux/screen.
+  if [ -z "${TMUX:-}" ] && [ -z "${STY:-}" ] \
+     && { [ -n "${WAYLAND_DISPLAY:-}" ] || [ -n "${DISPLAY:-}" ]; } \
+     && [ -z "${SSH_CONNECTION:-}" ]; then
+    flag=-c
+  fi
+  "$_EMACSCLIENT" "$flag" -s "$EMACS_SERVER_FILE" "$@"
+}
+# Explicit overrides when the guess is not what you want.
+emacsclientt() { "$_EMACSCLIENT" -t -s "$EMACS_SERVER_FILE" "$@"; }   # always terminal
+emacsclientg() { "$_EMACSCLIENT" -c -s "$EMACS_SERVER_FILE" "$@"; }   # always graphical
 
 # Licenses — keep list unique as we append many vendors
 theHost="$(hostname)"
