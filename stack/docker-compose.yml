@@ -872,18 +872,202 @@ services:
       retries: 10
       start_period: 60s
 
-  minecraft-bedrock:
-    image: itzg/minecraft-bedrock-server
-    container_name: bedrock
+  # Replaced the old minecraft-bedrock (itzg/minecraft-bedrock-server) setup
+  # 2026-09-13 -- Bedrock's Script API (beta, unpublished version pins,
+  # binary level.dat experiment flag) was too fragile for the AI-companion +
+  # mod work wanted here. Full Fabric server instead: real mod ecosystem
+  # (Farmer's Delight, LazyDFU), Geyser (Fabric mod, not the Spigot plugin
+  # variant) on the same 19132/udp port the old Bedrock server used, so
+  # existing port-forwarding keeps working unchanged. AI villager logic
+  # lives in the separate `villager-bridge` service below, NOT in KubeJS --
+  # KubeJS's Java class filter blocks java.net.http.HttpClient outright
+  # (only lifted via a compiled KubeJS plugin, not from a plain script), so
+  # outbound HTTP to vllm/ollama/litellm/firecrawl has to happen outside the
+  # sandbox. Sodium/Iris/Distant Horizons are NOT here -- those are 100%
+  # client-side, they do nothing installed on a server; add them to each
+  # player's own launcher instead. Train mod (Create) dropped for now, see
+  # note below.
+  minecraft-java:
+    image: itzg/minecraft-server
+    container_name: minecraft-java
     restart: unless-stopped
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
     ports:
-      - "19132:19132/udp"
+      - "25565:25565"
+      # 19132/udp moved to geyser-standalone below -- can't both bind it.
     environment:
       - EULA=TRUE
+      - TYPE=FABRIC
+      # Pinned 2026-09-18 (was LATEST): the ai-bots' ViaProxy is told --target-version 26.2 and the Fabric mods
+      # below are resolved for it; a silent bump to the next release would break both until they catch up.
+      - VERSION=26.2
+      - MEMORY=6G
+      # Explicit UID/GID so files this container creates are owned by
+      # abelardojara (501:501) rather than whichever host account happens
+      # to already sit at the default uid 1000 on this machine.
+      - UID=501
+      - GID=501
+      # Pinned rather than left to itzg's auto-generated random default --
+      # that value rotates on every container recreate (confirmed
+      # 2026-09-13, broke villager-bridge's saved RCON auth), which is
+      # unworkable for a service that needs to reconnect reliably. Not a
+      # secret pulled from anywhere -- just a fixed value chosen for this
+      # internal container-to-container connection (RCON is only reachable
+      # from inside the docker network, never exposed to a host port).
+      - RCON_PASSWORD=vgai-rcon-9f2b7d
+      - ENABLE_RCON=true
+      # 2026-09-13: switched VERSION from a pinned 1.20.1 to LATEST, and
+      # dropped kubejs/rhino/architectury-api + viafabric. The original
+      # reason for pinning 1.20.1 was KubeJS-Fabric's version ceiling (no
+      # Fabric build past 1.20.1) -- but the AI-villager logic moved to the
+      # external villager-bridge service instead (KubeJS's Java class
+      # filter blocks java.net.http.HttpClient outright), so that
+      # constraint no longer applies to anything we actually use. Staying
+      # on 1.20.1 was only costing us: Geyser standalone's latest build
+      # speaks a modern-only Java protocol to the backend, which a
+      # ViaFabric translation layer never fully resolved ("Incompatible
+      # client!" persisted even with ViaFabric + a pinned newer ViaVersion
+      # installed) -- and it's why Create/Steam 'n' Rails 404'd earlier (no
+      # Fabric 1.20.1 build existed for either). Re-added create +
+      # create-steam-n-rails for the train mod, since a current version
+      # might actually have a working Fabric build where 1.20.1 didn't.
+      #
+      # geyser dropped from here permanently: Modrinth's Fabric mirror is
+      # stuck on an old Bedrock-protocol-support snapshot regardless of MC
+      # version ("Outdated Geyser proxy" on any modern Bedrock client).
+      # Managing the jar manually instead -- downloaded straight from
+      # download.geysermc.org/v2/projects/geyser/versions/latest/builds/latest/downloads/fabric
+      # into ~/containers/minecraft-java/mods/. Don't add "geyser" back to
+      # this list or the downloader will overwrite it with the stale build.
+      # create/create-steam-n-rails also 404'd against 26.2 (confirmed
+      # 2026-09-13) -- mods always lag behind a brand-new MC release, not
+      # specific to 1.20.1 after all. Trains stay an open follow-up
+      # regardless of MC version; retry these once Create itself ships a
+      # 26.2 build. lazydfu also 404'd against 26.2 and is small/largely
+      # unmaintained anyway -- dropped, not worth chasing.
+      #
+      # farmers-delight-refabricated dropped 2026-09-13: it registers
+      # custom blocks/items, which makes Fabric's server reject ANY client
+      # that doesn't have the exact same mod installed ("This server
+      # requires Fabric Loader and Fabric API installed on your client!")
+      # -- this hits every connecting client uniformly, not just
+      # Bedrock/Geyser ones, so it's fundamentally incompatible with the
+      # crossplay goal (a phone/Bedrock client can never install a Java
+      # Fabric mod). Real content mods and Bedrock crossplay are mutually
+      # exclusive here; crossplay won out. Revisit only if crossplay is no
+      # longer a requirement.
+      # 2026-09-13: server-side-only additions that vanilla Java and Bedrock (Geyser) clients can join without
+      # installing anything -- no new blocks/items/entities:
+      #   audaki-cart-engine  fast minecart "trains" on vanilla rails (the wall railway)
+      #   move-minecarts      pick up and carry minecarts without breaking them
+      #   villager-names-serilum (+ collective, its required library)  names for villagers/traders
+      # Create / Steam 'n' Rails still have no 26.2 build (and add blocks, so they'd lock out Bedrock anyway).
+      # 2026-09-18: world-gen/structure datapack mods, all server-side so vanilla Java and Bedrock (Geyser) clients
+      # still join without installing anything: terralith (overworld biomes), incendium (nether, alpha channel),
+      # nullscape (end), lithostitched (their shared library), dungeons-and-taverns (structures), chunky (pregen).
+      - MODRINTH_PROJECTS=fabric-api,lithium,ferrite-core,krypton,audaki-cart-engine,move-minecarts,collective,villager-names-serilum,dungeons-and-taverns,chunky,terralith,incendium:alpha,nullscape,lithostitched
+      # Optional Classic Faithful 32x Jappa (2026r20, 26.2) texture pack offered to Java players from the Modrinth
+      # CDN -- chosen over Faithful 64x, which looked too smooth/"plastic"; Jappa keeps the vanilla painted style.
+      # Bedrock players get the matching Classic Faithful 32x Jappa Bedrock pack (packaged from the official
+      # ClassicFaithful/Classic-32x-Jappa-Bedrock repo) plus a Bedrock Tweaks pack (clean glass, lower fire,
+      # 3D sun/moon, trading helper, variated villagers...) from ~/containers/geyser-standalone/packs.
+      # Geyser doesn't convert Java packs. Previous packs are kept in ~/containers/geyser-standalone/packs-disabled.
+      - RESOURCE_PACK=https://cdn.modrinth.com/data/woZSVbVu/versions/gd1cuCpx/CF32J-2026r20.zip
+      - RESOURCE_PACK_SHA1=ad58ebfcb41c4d6fa58b224f71d7fbe480cabf3e
+      - RESOURCE_PACK_ENFORCE=FALSE
     volumes:
-      - ~/containers/minecraft-bedrock:/data
+      - ~/containers/minecraft-java:/data
+
+  # AI players (Qwen / Laguna / Gemini) as real Mineflayer bot clients that
+  # walk the city, build block by block from the villagerai datapack
+  # blueprints, farm, and chat through their own LLM backends (+ Firecrawl
+  # search). Replaced the old log-tailing villager-bridge service
+  # 2026-09-13 -- that one could only fake presence through RCON. RCON
+  # password + litellm key are read from
+  # ~/containers/villager-bridge/secrets.js (filled in by hand, kept out of
+  # this repo). Bot state (their houses, claimed build sites) persists in
+  # ~/containers/ai-bots/state.json.
+  #
+  # Mineflayer 4.39 only speaks up to MC 26.1 while the server runs 26.2,
+  # so the bots connect through ViaProxy (below) instead of downgrading the
+  # server, which would re-break Geyser's backend protocol match.
+  ai-bots:
+    image: node:22-alpine
+    container_name: ai-bots
+    restart: unless-stopped
+    user: "501:501"
+    depends_on:
+      - viaproxy
+      - minecraft-java
+    working_dir: /app
+    environment:
+      - HOME=/app
+      - PROXY_HOST=viaproxy
+      - PROXY_PORT=25568
+      - CLIENT_VERSION=26.1
+    command: ["sh", "-c", "npm install --no-audit --no-fund --omit=dev && node bots.js"]
+    volumes:
+      - ~/containers/ai-bots:/app
+      - ~/containers/villager-bridge/secrets.js:/secrets/secrets.js:ro
+      - ~/containers/minecraft-java/world/datapacks/villagerai/data/villagerai/function:/blueprints:ro
+
+  # ViaProxy: protocol translator for the ai-bots only (26.1 client -> 26.2
+  # server). Internal to the docker network, no host port. Official release
+  # jar from github.com/ViaVersion/ViaProxy.
+  viaproxy:
+    image: eclipse-temurin:21-jre
+    container_name: viaproxy
+    restart: unless-stopped
+    user: "501:501"
+    depends_on:
+      - minecraft-java
+    working_dir: /vp
+    environment:
+      - HOME=/vp
+    command: ["java", "-jar", "ViaProxy.jar", "cli", "--target-address", "minecraft-java:25565", "--target-version", "26.2", "--bind-address", "0.0.0.0:25568", "--auth-method", "NONE", "--chat-signing", "false"]
+    volumes:
+      - ~/containers/viaproxy:/vp
+
+  # GeyserMC standalone (proxy process, NOT the Fabric mod) -- the Fabric
+  # mod's latest build now targets a current Minecraft version incompatible
+  # with our 1.20.1 server, and the only Fabric-1.20.1-compatible build on
+  # Modrinth is a stale snapshot whose Bedrock-protocol support is frozen
+  # years behind current Bedrock clients ("Outdated Geyser proxy" on every
+  # connection attempt, confirmed 2026-09-13). Standalone decouples Geyser's
+  # Bedrock-protocol freshness from the backend's Minecraft version entirely
+  # -- it just proxies Java protocol to minecraft-java:25565, so it can stay
+  # current regardless of what MC version the actual server runs.
+  # Jar pulled directly from GeyserMC's own download API (v2/projects/geyser/
+  # versions/latest/builds/latest/downloads/standalone), not a third-party
+  # Docker image.
+  #
+  # Two hand-made edits this depends on (done manually 2026-09-13, since
+  # they weaken auth):
+  #   1. ~/containers/geyser-standalone/config.yml: remote.address:
+  #      minecraft-java, remote.port: 25565, remote.auth-type: offline,
+  #      bedrock.port: 19132. (Geyser generates a default config.yml on
+  #      first run if this file doesn't exist yet -- edit that instead of
+  #      writing one from scratch.)
+  #   2. ~/containers/minecraft-java/server.properties: online-mode=false
+  #      (required without Floodgate -- Geyser standalone can't authenticate
+  #      Bedrock players against an online-mode Java server otherwise. Real
+  #      tradeoff: this also means Java clients connect without Mojang
+  #      identity verification -- anyone reaching the port can join as any
+  #      username. Standard for a Geyser-without-Floodgate setup, but your
+  #      call given this server is port-forwarded to the internet.)
+  geyser-standalone:
+    image: eclipse-temurin:21-jre
+    container_name: geyser-standalone
+    restart: unless-stopped
+    depends_on:
+      - minecraft-java
+    working_dir: /geyser
+    command: ["java", "-jar", "Geyser.jar"]
+    ports:
+      - "19132:19132/udp"
+    volumes:
+      - ~/containers/geyser-standalone:/geyser
 
 networks:
   guacnet:
