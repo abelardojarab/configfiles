@@ -966,7 +966,13 @@ services:
       # 2026-09-18: world-gen/structure datapack mods, all server-side so vanilla Java and Bedrock (Geyser) clients
       # still join without installing anything: terralith (overworld biomes), incendium (nether, alpha channel),
       # nullscape (end), lithostitched (their shared library), dungeons-and-taverns (structures), chunky (pregen).
-      - MODRINTH_PROJECTS=fabric-api,lithium,ferrite-core,krypton,audaki-cart-engine,move-minecarts,collective,villager-names-serilum,dungeons-and-taverns,chunky,terralith,incendium:alpha,nullscape,lithostitched
+      # 2026-09-27: more places to explore outside the city, all server-side structure mods with no new blocks (checked
+      # the jars: no blockstates, no vanilla structure_set overrides): towns-and-towers (+ cristel-lib, cloth-config)
+      # biome villages/outposts, moogs-voyager-structures (+ moogs-structure-lib) 130+ ruins/towers/camps, explorify,
+      # structory, tidal-towns (floating ocean village). Spacing of vanilla sets (villages 34->22 chunks, outposts,
+      # monuments, trial chambers, mineshafts...) and Terralith's fortified villages is tightened by the
+      # world/datapacks/wolfridge-structures datapack. Only affects chunks generated from now on.
+      - MODRINTH_PROJECTS=fabric-api,lithium,ferrite-core,krypton,audaki-cart-engine,move-minecarts,collective,villager-names-serilum,dungeons-and-taverns,chunky,terralith,incendium:alpha,nullscape,lithostitched,towns-and-towers,cristel-lib,cloth-config,moogs-voyager-structures,moogs-structure-lib,explorify,structory,tidal-towns
       # Optional Classic Faithful 32x Jappa (2026r20, 26.2) texture pack offered to Java players from the Modrinth
       # CDN -- chosen over Faithful 64x, which looked too smooth/"plastic"; Jappa keeps the vanilla painted style.
       # Bedrock players get the matching Classic Faithful 32x Jappa Bedrock pack (packaged from the official
