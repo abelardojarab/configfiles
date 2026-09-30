@@ -1,0 +1,1127 @@
+#!/usr/bin/env bash
+#
+# jjtig -- a tig/magit-style browser for Jujutsu repositories, built on fzf.
+#
+# Views:   log (default), status, operation log, file list per commit.
+# Editor:  opens through the same emacs server as the `emacsclients` alias.
+#
+# Why the previous version showed an empty or scrambled screen:
+#
+#   jj snapshots the working copy on every invocation, and in a repo holding
+#   large files it prints a "Refused to snapshot some files" block -- 35kB of
+#   it in ~/studies. That went to stderr, which fzf does not capture, so it was
+#   painted straight over fzf's own ncurses output. Every read here therefore
+#   passes --ignore-working-copy and redirects stderr; the snapshot happens
+#   once, up front, where its output can be seen.
+#
+set -uo pipefail
+
+SELF="$(readlink -f "${BASH_SOURCE[0]}")"
+
+# -- configuration -----------------------------------------------------------
+# Revset for the log view. Empty means jj's own default, which is the
+# "interesting commits" view rather than every commit in the repo.
+JJT_REVSET="${JJT_REVSET:-}"
+JJT_LIMIT="${JJT_LIMIT:-500}"
+
+# The emacs server the `emacsclients` alias talks to. An alias is not visible
+# to a script, so the wrapper cannot be called by name -- this reproduces it,
+# honouring EMACS_SERVER_FILE when the shell has exported it.
+EMACS_SOCKET="${EMACS_SERVER_FILE:-$HOME/.emacs.cache/server/server}"
+
+# Which editor the file- and message-editing keys use: "emacs" or "nvim".
+# JJT_EDITOR picks the starting one; alt-e switches it while jjtig is running.
+# The live value has to live in a file rather than a variable, because the keys
+# run in fzf's child processes, which cannot write back into this shell.
+JJT_EDITOR="${JJT_EDITOR:-nvim}"
+JJT_STATE="${JJT_STATE:-}"
+
+# -- helpers -----------------------------------------------------------------
+
+die() { printf '\033[31merror:\033[0m %s\n' "$*" >&2; exit 1; }
+
+# Every read-only jj call. --ignore-working-copy keeps it fast, keeps it from
+# taking the working-copy lock while a preview is already holding one, and
+# keeps the snapshot warnings off the terminal.
+jjr() { jj --ignore-working-copy "$@" 2>/dev/null; }
+
+pager() {
+  if command -v less >/dev/null; then less -R -+X -+F; else cat; fi
+}
+
+# The same thing as a string, for the places that build a shell pipeline for
+# fzf to run rather than piping in this process.
+PAGE_CMD="cat"
+command -v less >/dev/null && PAGE_CMD='less -R -+X -+F'
+
+# Syntax highlighting for a diff, if anything is installed to do it. jj already
+# colours its own output, so piping coloured text through bat nests escape
+# sequences and produces the mangled preview the old script had; feed bat plain
+# text or leave jj's colours alone.
+have_delta=0; command -v delta >/dev/null && have_delta=1
+BAT=""
+command -v batcat >/dev/null && BAT=batcat
+[ -z "$BAT" ] && command -v bat >/dev/null && BAT=bat
+
+# Rendered previews are cached on local disk and keyed by commit id. That is
+# safe because a commit id is a content hash -- the same id can never describe
+# different content -- and it matters because this repo's .jj lives on CitC
+# FUSE, where every jj invocation costs roughly a third of a second. Without
+# the cache that is paid again on every single press of the down arrow.
+#
+# The key carries the render mode too, so installing delta later does not serve
+# back previews rendered without it.
+PREVIEW_CACHE="${JJT_CACHE:-${XDG_CACHE_HOME:-$HOME/.cache}/jjtig/previews}"
+[ "$have_delta" = 1 ] && RENDER_MODE=delta || RENDER_MODE=plain
+
+show_commit() {  # $1 = revision
+  if [ "$have_delta" = 1 ]; then
+    jjr show --git --color=never -r "$1" | delta --paging=never
+  else
+    jjr show --color=always -r "$1"
+  fi
+}
+
+diff_commit() {  # $1 = revision
+  if [ "$have_delta" = 1 ]; then
+    jjr diff --git --color=never -r "$1" | delta --paging=never
+  else
+    jjr diff --color=always -r "$1"
+  fi
+}
+
+# -- layout ------------------------------------------------------------------
+
+# Where the preview goes, and how many columns that leaves the header, for a
+# given terminal width. A 62%-wide preview on an 80-column terminal leaves no
+# room for the thing being browsed.
+#
+# Shared rather than inlined at startup because the header has to make exactly
+# the same decision again on every resize -- the percentages fzf is given
+# rescale themselves, but which side the preview sits on, and which of the
+# three header forms fits beside it, do not.
+layout_for() {  # $1 = total columns; prints "<preview-spec> <list-columns>"
+  local c="$1"
+  if   [ "$c" -ge 200 ]; then printf 'right:52%%:border-left:wrap %s\n' "$(( c * 48 / 100 - 4 ))"
+  elif [ "$c" -ge 130 ]; then printf 'right:48%%:border-left:wrap %s\n' "$(( c * 52 / 100 - 4 ))"
+  elif [ "$c" -ge 100 ]; then printf 'right:44%%:border-left:wrap %s\n' "$(( c * 56 / 100 - 4 ))"
+  else                        printf 'down:58%%:border-top:wrap %s\n'   "$(( c - 4 ))"
+  fi
+}
+
+# Ask the terminal how big it is, for the times the kernel does not know --
+# park the cursor far past any plausible edge and read back, with a
+# cursor-position report, where it actually landed. Needs the tty to itself,
+# so from inside fzf it may only be called through execute(), never
+# execute-silent().
+query_tty_size() {  # prints "rows cols", or nothing
+  [ -r /dev/tty ] && [ -w /dev/tty ] || return 1
+  local saved pos r c
+  saved="$(stty -g </dev/tty 2>/dev/null)" || return 1
+  stty raw -echo min 0 time 10 </dev/tty 2>/dev/null
+  printf '\033[s\033[9999;9999H\033[6n\033[u' >/dev/tty
+  IFS= read -r -d R -t 2 pos </dev/tty
+  stty "$saved" </dev/tty 2>/dev/null
+  pos="${pos#*[}"           # strip the ESC [ prefix
+  r="${pos%%;*}"; c="${pos##*;}"
+  case "$r" in ''|*[!0-9]*) return 1 ;; esac
+  case "$c" in ''|*[!0-9]*) return 1 ;; esac
+  [ "$r" -gt 0 ] && [ "$c" -gt 0 ] || return 1
+  printf '%s %s\n' "$r" "$c"
+}
+
+# -- editor ------------------------------------------------------------------
+
+current_editor() {
+  if [ -n "$JJT_STATE" ] && [ -s "$JJT_STATE/editor" ]; then
+    cat "$JJT_STATE/editor"
+  else
+    printf '%s' "$JJT_EDITOR"
+  fi
+}
+
+# The editor jj itself runs for `jj describe`. It has to BLOCK, because jj
+# reads the message file back only once the editor exits -- which rules out the
+# detached `emacsclient -n` used for browsing. `-t` gives emacs a frame in this
+# very terminal, so it blocks properly and needs no display, which matters for
+# a daemon systemd started without one.
+message_editor() {
+  case "$(current_editor)" in
+    nvim) printf 'nvim' ;;
+    *)    printf 'emacsclient -t -s %s' "$EMACS_SOCKET" ;;
+  esac
+}
+
+# How to get back out of a blocking editor. Printed before launching one,
+# because the answer differs per editor and is the sort of thing that is
+# obvious right up until it isn't.
+#
+# C-x C-c is listed alongside C-x # deliberately: on a client frame it runs
+# save-buffers-kill-terminal, which closes that frame and returns here without
+# touching the daemon, so it is a perfectly good way out and not a mistake.
+editor_hint() {  # $1 = optional file count
+  case "$(current_editor)" in
+    nvim)
+      if [ "${1:-1}" -gt 1 ]; then
+        printf '\033[2m  nvim: %s files as tabs -- gt/gT to move, :wq each, :qa when done\033[0m\n' "$1"
+      else
+        printf '\033[2m  nvim: :wq to keep the edit, :q! to abandon it\033[0m\n'
+      fi ;;
+    *) printf '\033[2m  emacs: C-x # when done -- C-x C-c returns here too, the daemon survives\033[0m\n' ;;
+  esac
+}
+
+# Open files for reading. nvim takes over the terminal fzf handed to the key's
+# child process; emacs gets them through its daemon and we return at once.
+open_files() {
+  [ $# -gt 0 ] || return 0
+  case "$(current_editor)" in
+    nvim) editor_hint "$#"; sleep 0.3; nvim -p "$@" </dev/tty >/dev/tty 2>&1 ;;
+    *)    emacs_open "$@" ;;
+  esac
+}
+
+# Everything to do with file paths happens from the repo root, and this is the
+# only function that decides that. It matters because `jj diff --summary` emits
+# paths relative to the CURRENT directory: run it from google3/ and you get
+# cloud/ai/..., run it from the workspace root and you get google3/cloud/ai/...
+# Mixing the two silently produces a fileset that matches nothing -- an empty
+# preview -- and, worse, hands the editor a path that does not exist, which
+# opens a blank buffer in the wrong place instead of the file you picked.
+cd_root() { cd "$(jj root 2>/dev/null)" 2>/dev/null || return 1; }
+
+# Editing a file on disk changes the working copy, whatever commit the cursor
+# happens to be sitting on -- so anything that opens a file for writing has to
+# know whether those two are the same thing.
+is_working_copy() {  # $1 = revision
+  [ "$(jjr log --no-graph -r "$1" -T 'if(current_working_copy, "y", "n")')" = "y" ]
+}
+
+# -- piper -------------------------------------------------------------------
+
+# The CL number jj-on-Piper records as a bookmark once a commit is exported.
+# Each bookmark goes on its own line so the remote-tracking twin, cl/NNN@piper,
+# can be dropped -- it is the same CL and would just be a duplicate.
+cl_of() {  # $1 = revision
+  jjr log --no-graph -r "$1" -T 'bookmarks.join("\n") ++ "\n"' \
+    | sed -n 's|^cl/\([0-9]\{1,\}\)$|\1|p' | head -n1
+}
+
+# Copy text to the clipboard. Over ssh the only channel that reaches the
+# machine the user is actually looking at is OSC 52, which the terminal
+# emulator forwards; xclip would only ever reach the cloudtop's own X server,
+# so it is a supplement rather than the mechanism.
+yank() {  # $1 = text
+  # A subshell, because `test -w /dev/tty` passes on the device node even when
+  # there is no controlling terminal to open; only an actual open tells the
+  # truth, and its failure has to be swallowed rather than printed.
+  ( printf '\033]52;c;%s\a' "$(printf '%s' "$1" | base64 | tr -d '\n')" \
+      >/dev/tty ) 2>/dev/null
+  if [ -n "${DISPLAY:-}" ] && command -v xclip >/dev/null; then
+    printf '%s' "$1" | xclip -selection clipboard >/dev/null 2>&1
+  fi
+}
+
+confirm() {  # $1 = prompt; rest = command to run when accepted
+  local prompt="$1"; shift
+  printf '\n  \033[33m%s\033[0m\n' "$prompt"
+  printf '  proceed? [y/N] '
+  local ans; read -r ans
+  case "$ans" in
+    [yY]*) printf '\n'; "$@"; printf '\n\033[2m-- done, press enter --\033[0m'; read -r ;;
+    *)     printf '  cancelled\n'; sleep 0.4 ;;
+  esac
+}
+
+emacs_open() {  # hand paths to the user's emacs server, without ever waiting
+  [ $# -gt 0 ] || return 0
+
+  # Reachability probe, bounded, so there is something honest to print. A
+  # wedged or absent server answers this in at most three seconds.
+  if ! timeout 3 emacsclient -s "$EMACS_SOCKET" -e t >/dev/null 2>&1; then
+    printf '\n\033[33memacs server at %s is not answering.\033[0m\n' "$EMACS_SOCKET"
+    printf '\033[2mhanding the files over anyway; check  systemctl --user status emacsd\033[0m\n'
+    sleep 2
+  fi
+
+  # Fire and forget, in its own session.
+  #
+  # Three separate things can make emacsclient sit there for minutes, and any
+  # one of them would freeze the fzf UI behind it if jjtig waited:
+  #   -n is required at all times -- without it emacsclient blocks until the
+  #      buffer is killed, and a blocking client on a frameless daemon wedges
+  #      the daemon for every other client too;
+  #   -c fails outright when the daemon cannot reach a display, which is the
+  #      case for a daemon started by systemd without XAUTHORITY, so it needs
+  #      a fallback rather than being the only attempt;
+  #   opening some files is simply slow -- a google3 C++ file under CitC stalls
+  #      this config for minutes.
+  # None of that is jjtig's business, so it is detached and never waited on.
+  setsid bash -c '
+    sock="$1"; shift
+    emacsclient -c -n -s "$sock" "$@" >/dev/null 2>&1 \
+      || emacsclient    -n -s "$sock" "$@" >/dev/null 2>&1
+  ' _ "$EMACS_SOCKET" "$@" >/dev/null 2>&1 &
+  disown 2>/dev/null
+
+  printf '\n\033[32mhanded %d path(s) to emacs\033[0m \033[2m(%s)\033[0m\n' \
+         "$#" "$EMACS_SOCKET"
+  printf '\033[2mif no frame opens, the daemon has lost the graphical session:\033[0m\n'
+  printf '\033[2m  systemctl --user start emacs-display-env\033[0m\n'
+  sleep 1
+  return 0
+}
+
+# -- log template ------------------------------------------------------------
+# Fields 1 and 2 are the change id and commit id, kept plain and hidden from
+# the display with --with-nth so fzf's {1}/{2} stay clean; everything from
+# field 3 on is what the user actually sees.
+# The bookmark column is 17 blank columns in a repo that uses no bookmarks --
+# and it is where jj-on-Piper shows the CL number, so it earns its width when
+# there is anything in it. The parent decides once and exports the answer;
+# fzf's reloads inherit it.
+if [ "${JJT_SHOW_BOOKMARKS:-1}" = "1" ]; then
+  BOOKMARK_COL='++ " \e[35m" ++ pad_end(16, bookmarks.join(" ")) ++ "\e[0m"'
+else
+  BOOKMARK_COL='++ " "'
+fi
+
+# Upload state, as one glyph.
+#
+# jj-on-Piper puts a local bookmark cl/NNN on a commit when it is exported, and
+# a remote-tracking twin cl/NNN@piper recording what Critique actually holds.
+# Amending the commit -- or anything that rewrites it, `jj fix` and a rebase
+# included -- moves the local bookmark to the new commit and leaves the
+# remote-tracking one behind on the old one. So a commit carrying a local CL
+# bookmark with no remote bookmark beside it is exactly a commit whose content
+# has moved on since its last upload.
+#
+# (jj signals the same thing by suffixing the bookmark with `*`, but that is
+# easy to miss and vanishes with the bookmark column.)
+UPLOAD_COL='
+++ if(bookmarks && !remote_bookmarks, "\e[1;33m↑\e[0m",
+      if(!bookmarks && !empty && !immutable, "\e[2;36m+\e[0m", " "))
+'
+
+# The same test, emitting just the change ids, for "upload everything stale".
+STALE_TEMPLATE='if(bookmarks && !remote_bookmarks, change_id.shortest(8) ++ "\n", "")'
+
+LOG_TEMPLATE='
+change_id.shortest(8)
+++ "\t" ++ commit_id.short(12)
+++ "\t"
+++ if(current_working_copy, "\e[1;32m@\e[0m", " ")
+++ if(conflict, "\e[1;31m×\e[0m", " ")
+++ if(empty, "\e[2mø\e[0m", " ")
+++ if(immutable, "\e[34m◆\e[0m", " ")
+'"$UPLOAD_COL"'
+++ " \e[33m" ++ pad_end(8, change_id.shortest(8)) ++ "\e[0m"
+++ " \e[2;36m" ++ pad_end(13, author.timestamp().ago()) ++ "\e[0m"
+'"$BOOKMARK_COL"'
+++ if(description,
+      description.first_line(),
+      "\e[2;3m(no description)\e[0m")
+++ "\n"
+'
+
+# -- internal subcommands (re-entered by fzf) --------------------------------
+
+case "${1:-}" in
+  __log)
+    # Deliberately NOT --color=always. With jj's own colouring on, jj sanitises
+    # the ESC in a template string literal into a visible U+241B symbol, so the
+    # escapes below print as garbage; it also colours the change/commit id in
+    # fields 1-2, which have to stay plain because they are what gets passed
+    # back to jj as a revision, and its codes would break pad_end's alignment.
+    if [ -n "$JJT_REVSET" ]; then
+      jjr log --no-graph -r "$JJT_REVSET" -n "$JJT_LIMIT" -T "$LOG_TEMPLATE"
+    else
+      jjr log --no-graph -n "$JJT_LIMIT" -T "$LOG_TEMPLATE"
+    fi
+    exit 0 ;;
+
+  # $2 = change id (what jj is asked about), $3 = commit id (the cache key).
+  __preview)
+    rev="${2:-}"; cid="${3:-}"; [ -n "$rev" ] || exit 0
+    # Bounded: a root commit "adds" the whole tree, which was a 1.5-million-line
+    # preview in ~/studies. The pager views (enter, C-d) are not capped.
+    if [ -n "$cid" ]; then
+      hit="$PREVIEW_CACHE/$cid.$RENDER_MODE"
+      if [ -s "$hit" ]; then cat "$hit"; exit 0; fi
+      if mkdir -p "$PREVIEW_CACHE" 2>/dev/null; then
+        # tee, not write-then-read: the first viewing still streams out as it
+        # is produced, and only a preview that ran to completion is renamed
+        # into place, so a preview fzf kills halfway cannot be cached truncated.
+        tmp="$hit.part.$$"
+        trap 'rm -f "$tmp"' EXIT
+        show_commit "$rev" | head -n "${JJT_PREVIEW_LINES:-3000}" | tee "$tmp"
+        mv -f "$tmp" "$hit" 2>/dev/null
+        exit 0
+      fi
+    fi
+    show_commit "$rev" | head -n "${JJT_PREVIEW_LINES:-3000}"
+    [ "${PIPESTATUS[0]}" = 0 ] || true
+    exit 0 ;;
+
+  __files)
+    rev="${2:-}"; [ -n "$rev" ] || exit 0
+    jjr diff -r "$rev" --summary
+    exit 0 ;;
+
+  # The file list, as "path <TAB> what to display" so fzf can show the second
+  # field and hand the first one back untouched.
+  #
+  # The filename leads and the directory trails it, dimmed: a google3 path is
+  # long enough that a plain listing truncates away the only part that
+  # identifies the file. fzf still matches the whole line, so filtering by
+  # directory keeps working.
+  __filelist)
+    rev="${2:-}"; [ -n "$rev" ] || exit 0
+    cd_root || exit 0
+    # The commit message rides at the top of its own file list as a pseudo
+    # entry: the thing you are about to amend sits beside the files it
+    # describes, previews like any of them, and opens the describe editor when
+    # chosen. __MSG__ cannot collide with a real path.
+    printf '__MSG__\t\033[1;35m●\033[0m %-28s \033[2m%s\033[0m\n' 'message' \
+      "$(jjr log --no-graph -r "$rev" -T 'if(description, description.first_line(), "(no description)")')"
+    # Only what this commit touches: `jj diff -r` is already the diff against
+    # its parent, so this is never the whole tree. The one exception is a
+    # commit sitting directly on the root, which "adds" every file in the repo
+    # -- a list nobody wants and enough of them to wedge the UI. Cap it and say
+    # so rather than pretending to render it.
+    jjr diff -r "$rev" --summary \
+      | awk -v max="${JJT_MAX_FILES:-2000}" '
+          NR > max {
+            printf "__MSG__\t\033[1;31m!\033[0m %-28s \033[2m%s\033[0m\n",
+                   "too many files", "more than " max " changed; showing the first " max
+            exit }
+          { st = $1; $1 = ""; sub(/^[ \t]+/, ""); p = $0
+            base = p; sub(/.*\//, "", base)
+            dir  = p; sub(/[^\/]*$/, "", dir)
+            c = (st == "A") ? "32" : (st == "D") ? "31" : (st == "M") ? "33" : "36"
+            printf "%s\t\033[%sm%s\033[0m %-28s \033[2m%s\033[0m\n", p, c, st, base, dir }'
+    exit 0 ;;
+
+  # Drilling into a commit: its message and its files on the left, whatever is
+  # under the cursor rendered on the right, and the editing keys to hand. It
+  # stays open until esc, so a commit can be worked through -- amend the
+  # message, fix two files, upload -- without going back out each time. Every
+  # action reloads the list, so the message row reflects an amend immediately.
+  __openfiles)
+    rev="${2:-}"; [ -n "$rev" ] || exit 0
+    root="$(jj root 2>/dev/null)" || exit 0
+    subj="$(jjr log --no-graph -r "$rev" -T 'description.first_line()')"
+    cl="$(cl_of "$rev")"
+    hdr="$(printf '\033[1m%s\033[0m %s \033[2m%.44s\033[0m\n\033[2menter\033[0m edit/amend  \033[2mC-t\033[0m msg  \033[2mM-a\033[0m msg+push  \033[2mC-u\033[0m upload  \033[2mC-v\033[0m view  \033[2mesc\033[0m back' \
+            "$rev" "${cl:+cl/$cl}" "$subj")"
+    "$SELF" __filelist "$rev" \
+      | fzf --ansi --layout=reverse --height=100% --multi \
+            --delimiter='\t' --with-nth='2..' \
+            --border=rounded --border-label=" $rev " \
+            --prompt='file > ' --pointer='▶' --marker='✓' \
+            --color='border:8,label:5,prompt:4,pointer:2,marker:2,header:8,info:8' \
+            --header "$hdr" \
+            --preview "$SELF __filediff '$rev' {1}" \
+            --preview-window='right:58%:border-left:wrap' \
+            --bind 'pgup:preview-page-up,pgdn:preview-page-down' \
+            --bind 'shift-up:preview-up,shift-down:preview-down' \
+            --bind 'alt-up:preview-half-page-up,alt-down:preview-half-page-down' \
+            --bind "enter:execute($SELF __submenu_enter '$rev' {+1})+reload($SELF __filelist '$rev')" \
+            --bind "ctrl-t:execute($SELF __describe '$rev')+reload($SELF __filelist '$rev')" \
+            --bind "alt-a:execute($SELF __amend_upload '$rev')+reload($SELF __filelist '$rev')" \
+            --bind "ctrl-u:execute($SELF __upload '$rev')+reload($SELF __filelist '$rev')" \
+            --bind "ctrl-d:execute($SELF __filediff '$rev' {1} | $PAGE_CMD)" \
+            --bind "ctrl-v:execute($SELF __file_view '$rev' {1} | $PAGE_CMD)" \
+            --bind "alt-y:execute($SELF __yank_text {1})" \
+            --bind "ctrl-o:execute($SELF __submenu_enter '$rev' {+1})+reload($SELF __filelist '$rev')" \
+      >/dev/null 2>&1
+    exit 0 ;;
+
+  # What enter does inside a commit: the message entry opens the describe
+  # editor, real paths open the editor on those files. A marked set can hold
+  # both, so handle each kind rather than picking one.
+  __submenu_enter)
+    rev="${2:-}"; shift 2 2>/dev/null || exit 0
+    [ -n "$rev" ] || exit 0
+    want_msg=0; paths=()
+    for a in "$@"; do
+      if [ "$a" = "__MSG__" ]; then want_msg=1; else paths+=("$a"); fi
+    done
+    [ "$want_msg" = 1 ] && "$SELF" __describe "$rev"
+    [ "${#paths[@]}" -gt 0 ] && "$SELF" __file_open "$rev" "${paths[@]}"
+    exit 0 ;;
+
+  # Open files for editing. The catch: the files on disk are the working
+  # copy's, so editing them while the cursor sits on some other commit would
+  # quietly put the change in @ instead of where it was aimed. Say so, and
+  # offer the one step that makes it do what was meant.
+  __file_open)
+    rev="${2:-}"; shift 2 2>/dev/null || exit 0
+    [ -n "$rev" ] && [ $# -gt 0 ] || exit 0
+    root="$(jj root 2>/dev/null)" || exit 0
+    if ! is_working_copy "$rev"; then
+      printf '\n  \033[33m%s is not the working copy.\033[0m\n' "$rev"
+      printf '  Editing on disk would change \033[1m@\033[0m, not %s.\n' "$rev"
+      printf '  Run  \033[1mjj edit %s\033[0m  first, so the edit lands there? [y/N] ' "$rev"
+      read -r ans
+      case "$ans" in
+        [yY]*)
+          jj edit "$rev" || {
+            printf '  \033[31mjj edit failed\033[0m\n'; sleep 1.5; exit 0; } ;;
+        *)
+          printf '  cancelled -- C-v views the file at %s read-only\n' "$rev"
+          sleep 1.8; exit 0 ;;
+      esac
+    fi
+    cd "$root" || exit 0
+    open_files "$@"
+    exit 0 ;;
+
+  # The file's contents as of that revision, read-only -- the honest way to
+  # look at a commit that is not the working copy.
+  __file_view)
+    rev="${2:-}"; file="${3:-}"
+    [ -n "$rev" ] && [ -n "$file" ] || exit 0
+    if [ "$file" = "__MSG__" ]; then "$SELF" __message "$rev"; exit 0; fi
+    cd_root || exit 0
+    if [ -n "$BAT" ]; then
+      jjr file show -r "$rev" -- "$file" \
+        | "$BAT" --color=always --style=plain --paging=never --file-name "$file"
+    else
+      jjr file show -r "$rev" -- "$file"
+    fi
+    exit 0 ;;
+
+  __yank_text)
+    [ -n "${2:-}" ] || exit 0
+    # The message row has no path to copy; the change id is the useful thing.
+    if [ "$2" = "__MSG__" ]; then exit 0; fi
+    yank "$2"
+    printf '\n\033[32mcopied \033[1m%s\033[0m\n' "$2"
+    sleep 0.8
+    exit 0 ;;
+
+  # Every file the commit touched, straight to the editor with no picker.
+  __openall)
+    rev="${2:-}"; [ -n "$rev" ] || exit 0
+    root="$(jj root 2>/dev/null)" || exit 0
+    mapfile -t picks < <(cd "$root" && jjr diff -r "$rev" --name-only)
+    if [ "${#picks[@]}" -eq 0 ]; then
+      printf '\n\033[2mno files changed in %s\033[0m\n' "$rev"; sleep 1; exit 0
+    fi
+    # A commit that touches hundreds of files should not open hundreds of
+    # buffers or nvim tabs by accident.
+    if [ "${#picks[@]}" -gt 20 ]; then
+      confirm "open all ${#picks[@]} files from $rev in $(current_editor)?" \
+        bash -c 'cd "$1" && shift && "$0" __openallnow "$@"' "$SELF" "$root" "${picks[@]}"
+      exit 0
+    fi
+    cd "$root" || exit 0
+    open_files "${picks[@]}"
+    exit 0 ;;
+
+  __openallnow)
+    shift
+    open_files "$@"
+    exit 0 ;;
+
+  __diff)
+    rev="${2:-}"; [ -n "$rev" ] || exit 0
+    diff_commit "$rev"
+    exit 0 ;;
+
+  # The full commit message, as the preview for the pseudo entry above.
+  __message)
+    rev="${2:-}"; [ -n "$rev" ] || exit 0
+    cl="$(cl_of "$rev")"
+    printf '\033[1;35m● commit message\033[0m'
+    [ -n "$cl" ] && printf '   \033[35mcl/%s\033[0m' "$cl"
+    printf '\n\033[2m  enter or C-t amends it; M-a amends and re-uploads\033[0m\n\n'
+    jjr log --no-graph -r "$rev" \
+      -T 'if(description, description, "\e[2;3m(no description)\e[0m\n")'
+    exit 0 ;;
+
+  __filediff)
+    rev="${2:-}"; file="${3:-}"; [ -n "$rev" ] || exit 0
+    if [ "$file" = "__MSG__" ]; then "$SELF" __message "$rev"; exit 0; fi
+    cd_root || exit 0
+    # No path means the whole commit; passing `-- ""` would filter to nothing.
+    if [ -z "$file" ]; then diff_commit "$rev"; exit 0; fi
+    if [ "$have_delta" = 1 ]; then
+      jjr diff --git --color=never -r "$rev" -- "$file" | delta --paging=never
+    elif [ -n "$BAT" ]; then
+      jjr diff --color=never -r "$rev" -- "$file" \
+        | "$BAT" --color=always --style=plain --language=diff --paging=never
+    else
+      jjr diff --color=always -r "$rev" -- "$file"
+    fi
+    exit 0 ;;
+
+  # Open the whole commit as a diff buffer in emacs (magit-ish read-only view).
+  __emacsdiff)
+    rev="${2:-}"; [ -n "$rev" ] || exit 0
+    tmp="$(mktemp --suffix=.diff "/tmp/jjtig-${rev}-XXXX")"
+    { jjr show --git --color=never -r "$rev"; } > "$tmp"
+    emacs_open "$tmp"
+    exit 0 ;;
+
+  __status)
+    printf '\033[1mWorking copy status\033[0m\n\n'
+    jj status 2>&1
+    printf '\n\033[1mDiff\033[0m\n\n'
+    diff_commit '@'
+    exit 0 ;;
+
+  __oplog)
+    jjr op log --color=always -n 40
+    exit 0 ;;
+
+  __evolog)
+    rev="${2:-}"; [ -n "$rev" ] || exit 0
+    jjr evolog --color=always -r "$rev"
+    exit 0 ;;
+
+  # Amend the commit message in the current editor. JJ_EDITOR outranks
+  # ui.editor, so this overrides the configured `sensible-editor` without
+  # touching the user's jj config.
+  __describe)
+    rev="${2:-}"; [ -n "$rev" ] || exit 0
+    editor_hint; sleep 0.4
+    JJ_EDITOR="$(message_editor)" jj describe -r "$rev"
+    exit 0 ;;
+
+  # The actual round trip: amend the message, then push the new description to
+  # the CL. The change id survives `jj describe`, so the same revision argument
+  # still names the commit afterwards.
+  __amend_upload)
+    rev="${2:-}"; [ -n "$rev" ] || exit 0
+    editor_hint; sleep 0.4
+    if ! JJ_EDITOR="$(message_editor)" jj describe -r "$rev"; then
+      printf '\n\033[31mdescribe failed -- not uploading\033[0m\n'
+      printf '\033[2m-- press enter --\033[0m'; read -r; exit 0
+    fi
+    printf '\n\033[1mre-uploading %s to Critique...\033[0m\n\n' "$rev"
+    jj piper upload -r "$rev"
+    printf '\n\033[2m-- done, press enter --\033[0m'; read -r
+    exit 0 ;;
+
+  # Upload one or more commits. fzf passes {+1}, so a multi-selection arrives
+  # as several revisions. This publishes a snapshot to a CL that may already be
+  # under review, so it shows exactly what it is about to push -- but the
+  # prompt defaults to yes, because confirming the thing you just asked for
+  # should cost one keystroke.
+  __upload)
+    shift
+    [ $# -gt 0 ] || exit 0
+    printf '\n\033[1muploading to Critique:\033[0m\n'
+    for r in "$@"; do
+      cl="$(cl_of "$r")"
+      if [ -n "$(jjr log --no-graph -r "$r" -T 'if(bookmarks && !remote_bookmarks, "x", "")')" ]; then
+        mark=$'\033[1;33m↑ needs it\033[0m'
+      elif [ -n "$cl" ]; then
+        mark=$'\033[2m  up to date\033[0m'
+      else
+        mark=$'\033[2;36m+ new CL\033[0m'
+      fi
+      printf '  \033[33m%-10s\033[0m %-13s %s  %s\n' \
+        "$r" "${cl:+cl/$cl}" "$mark" \
+        "$(jjr log --no-graph -r "$r" -T 'description.first_line()')"
+    done
+    printf '\n  proceed? [Y/n] '
+    read -r ans
+    case "$ans" in [nN]*) printf '  cancelled\n'; sleep 0.4; exit 0 ;; esac
+    printf '\n'
+    jj piper upload "$@"
+    printf '\n\033[2m-- done, press enter --\033[0m'; read -r
+    exit 0 ;;
+
+  # Upload every commit wearing an arrow, rather than hunting for them one at a
+  # time. Hands off to __upload so the listing and the confirmation are the
+  # same ones a manual upload shows.
+  __upload_stale)
+    if [ -n "$JJT_REVSET" ]; then
+      mapfile -t stale < <(jjr log --no-graph -r "$JJT_REVSET" -n "$JJT_LIMIT" -T "$STALE_TEMPLATE")
+    else
+      mapfile -t stale < <(jjr log --no-graph -n "$JJT_LIMIT" -T "$STALE_TEMPLATE")
+    fi
+    if [ "${#stale[@]}" -eq 0 ]; then
+      printf '\n\033[32mnothing to re-upload -- every CL matches its commit\033[0m\n'
+      sleep 1.2; exit 0
+    fi
+    exec "$SELF" __upload "${stale[@]}" ;;
+
+  # Conflicts. jj writes conflict markers straight into the file, so editing it
+  # by hand is a first-class fix and not a fallback -- that path works for any
+  # editor. The 3-way merge tool is offered beside it for the cases where
+  # seeing base/left/right side by side is what you actually want.
+  __conflicts)
+    rev="${2:-}"; [ -n "$rev" ] || exit 0
+    root="$(jj root 2>/dev/null)" || exit 0
+    cd_root || exit 0
+    if ! list="$(jj resolve --list -r "$rev" 2>/dev/null)" || [ -z "$list" ]; then
+      printf '\n\033[32m%s has no conflicts\033[0m\n' "$rev"; sleep 1; exit 0
+    fi
+    n="$(printf '%s\n' "$list" | grep -c .)"
+    hdr="$(printf '\033[1;31m%s conflicted file(s) in %s\033[0m\n\033[2menter\033[0m edit markers in %s  \033[2mC-t\033[0m 3-way merge  \033[2mC-d\033[0m show conflict' "$n" "$rev" "$(current_editor)")"
+    sel="$(printf '%s\n' "$list" \
+            | awk '{ p = $1; $1 = ""; sub(/^[ \t]+/, "")
+                     printf "%s\t\033[1;31m✗\033[0m %s  \033[2m%s\033[0m\n", p, p, $0 }' \
+            | fzf --ansi --layout=reverse --height=100% --multi \
+                  --delimiter='\t' --with-nth='2..' \
+                  --border=rounded --border-label=" conflicts in $rev " \
+                  --prompt='conflict > ' --pointer='▶' --marker='✓' \
+                  --color='border:1,label:1,prompt:4,pointer:2,marker:2,header:8,info:8' \
+                  --header "$hdr" \
+                  --preview "$SELF __filediff '$rev' {1}" \
+                  --preview-window='right:58%:border-left:wrap' \
+                  --bind 'pgup:preview-page-up,pgdn:preview-page-down' \
+                  --bind "ctrl-d:execute($SELF __filediff '$rev' {1} | $PAGE_CMD)" \
+                  --bind "ctrl-t:execute($SELF __resolve_tool '$rev' {1})+abort")" || exit 0
+    [ -n "$sel" ] || exit 0
+    mapfile -t picks < <(printf '%s\n' "$sel" | cut -f1)
+    "$SELF" __file_open "$rev" "${picks[@]}"
+    exit 0 ;;
+
+  # Run jj's 3-way merge tool on one conflicted file. jj ships a `vimdiff`
+  # preset; for nvim the same preset is cloned onto the nvim binary rather than
+  # asking the user to configure a tool they did not ask for.
+  __resolve_tool)
+    rev="${2:-}"; file="${3:-}"
+    [ -n "$rev" ] && [ -n "$file" ] || exit 0
+    cd_root || exit 0
+    printf '\n\033[2m  3-way merge: left=yours base=ancestor right=theirs;\033[0m\n'
+    printf '\033[2m  edit the leftmost pane, then :wqa to accept or :cq to abandon\033[0m\n'
+    sleep 0.5
+    case "$(current_editor)" in
+      nvim)
+        jj --config 'merge-tools.jjtig-nvim.program=nvim' \
+           --config 'merge-tools.jjtig-nvim.merge-args=["-f","-d","$output","-M","$left","$base","$right","-c","wincmd J","-c","set modifiable","-c","set write","-c","/<<<<<</+2"]' \
+           --config 'merge-tools.jjtig-nvim.merge-tool-edits-conflict-markers=true' \
+           resolve -r "$rev" --tool jjtig-nvim -- "$file" ;;
+      *)
+        jj resolve -r "$rev" --tool vimdiff -- "$file" ;;
+    esac
+    printf '\n\033[2m-- done, press enter --\033[0m'; read -r
+    exit 0 ;;
+
+  # Fast-forward main and rebase onto it.
+  __sync)
+    printf '\n  \033[1mjj piper sync\033[0m\n'
+    printf '  Fast-forwards main/p4head to the latest indexed Piper CL and rebases\n'
+    printf '  your commits on top of it.\n\n'
+    printf '  That rewrites every commit it moves, so uploaded CLs will come back\n'
+    printf '  marked \033[1;33m↑\033[0m and want re-uploading -- \033[1mM-u\033[0m does the lot in one go.\n'
+    printf '  Conflicts, if any, land in the rebased commits and show as \033[1;31m×\033[0m.\n'
+    printf '\n  proceed? [y/N] '
+    read -r ans
+    case "$ans" in [yY]*) ;; *) printf '  cancelled\n'; sleep 0.4; exit 0 ;; esac
+    printf '\n'
+    jj piper sync
+    printf '\n\033[2m-- done, press enter --\033[0m'; read -r
+    exit 0 ;;
+
+  __lint)
+    rev="${2:-}"; [ -n "$rev" ] || exit 0
+    jj piper lint -r "$rev" 2>&1
+    exit 0 ;;
+
+  # Open the commit's CL in Critique, and leave the URL on the clipboard so it
+  # is also pasteable into a bug or a chat.
+  __critique)
+    rev="${2:-}"; [ -n "$rev" ] || exit 0
+    cl="$(cl_of "$rev")"
+    if [ -z "$cl" ]; then
+      printf '\n\033[33m%s has no CL yet -- upload it first with C-u\033[0m\n' "$rev"
+      sleep 1.5; exit 0
+    fi
+    url="http://cl/$cl"
+    yank "$url"
+    setsid xdg-open "$url" >/dev/null 2>&1 &
+    disown 2>/dev/null
+    printf '\n\033[32mopening %s\033[0m \033[2m(copied to clipboard too)\033[0m\n' "$url"
+    sleep 1
+    exit 0 ;;
+
+  # Yank the most useful identifier: the CL number once the commit has one,
+  # otherwise the change id.
+  __yank)
+    rev="${2:-}"; [ -n "$rev" ] || exit 0
+    cl="$(cl_of "$rev")"
+    if [ -n "$cl" ]; then val="cl/$cl"; else val="$rev"; fi
+    yank "$val"
+    printf '\n\033[32mcopied \033[1m%s\033[0m\n' "$val"
+    sleep 0.8
+    exit 0 ;;
+
+  # Re-tier the preview after a resize: a 52%-wide right-hand preview chosen
+  # for a 190-column window leaves 40 columns of list once that window is 84.
+  # Emits an action for fzf's `transform`, or nothing at all, which is a no-op.
+  #
+  # Silent once the preview has been placed by hand, because snapping alt-w's
+  # choice back on the next resize would be the tool overruling the user.
+  __relayout)
+    [ -n "${FZF_COLUMNS:-}" ] || exit 0
+    [ -e "${JJT_STATE:-/nonexistent}/preview-manual" ] && exit 0
+    read -r spec _ <<< "$(layout_for "$FZF_COLUMNS")"
+    printf 'change-preview-window(%s)' "$spec"
+    exit 0 ;;
+
+  __preview_manual)
+    [ -n "$JJT_STATE" ] && : > "$JJT_STATE/preview-manual"
+    exit 0 ;;
+
+  # For a terminal that never reports its size at all -- not at startup, and
+  # not on resize either. Ask it directly and push the answer into the pty;
+  # the resulting SIGWINCH is what makes fzf lay itself out again.
+  __resize_tty)
+    probed="$(query_tty_size)"
+    if [ -z "$probed" ]; then
+      printf '\n\033[33mthe terminal did not answer the size query\033[0m\n'
+      printf '\033[2mset it by hand, e.g.  stty rows 40 cols 120\033[0m\n'
+      sleep 1.5; exit 0
+    fi
+    read -r r c <<< "$probed"
+    stty rows "$r" cols "$c" </dev/tty 2>/dev/null
+    printf '\n\033[32mterminal is %sx%s\033[0m\n' "$c" "$r"
+    sleep 0.5
+    exit 0 ;;
+
+  # Flip the editor for the rest of this session. Printing the new header is
+  # what fzf's transform-header consumes, so the change shows up immediately.
+  __toggle_editor)
+    [ -n "$JJT_STATE" ] || exit 0
+    case "$(current_editor)" in
+      nvim) printf 'emacs' > "$JJT_STATE/editor" ;;
+      *)    printf 'nvim'  > "$JJT_STATE/editor" ;;
+    esac
+    exit 0 ;;
+
+  # The header lives in the list pane, not the whole window, and fzf truncates
+  # it with an ellipsis rather than wrapping -- so a full keymap silently loses
+  # its tail as soon as the preview takes half the screen. Pick a form that
+  # fits the width the parent measured; F1 always has the complete list.
+  __header)
+    ed="$(current_editor)"
+    # FZF_COLUMNS is the width fzf reports to its children right now, so the
+    # resize binding re-runs this and gets the new one. JJT_HEADER_COLS is the
+    # startup value, used only for the very first render, before fzf has had
+    # anything to say.
+    if [ -n "${FZF_COLUMNS:-}" ]; then
+      read -r _ w <<< "$(layout_for "$FZF_COLUMNS")"
+    else
+      w="${JJT_HEADER_COLS:-80}"
+    fi
+    if [ "$w" -ge 80 ]; then
+      printf '\033[1mjjtig\033[0m  \033[2m@\033[0m wc  \033[2m◆\033[0m imm  \033[2mø\033[0m empty  \033[2m×\033[0m conflict  \033[1;33m↑\033[0m\033[2m re-upload\033[0m   \033[2meditor:\033[0m \033[1;36m%s\033[0m \033[2m(M-e)\033[0m\n' "$ed"
+      printf '\033[2menter\033[0m open commit  \033[2mC-d\033[0m diff  \033[2mC-o\033[0m all  \033[2mC-s\033[0m status  \033[2mPgUp/Dn\033[0m scroll  \033[2mC-g\033[0m oplog\n'
+      printf '\033[2mC-t\033[0m amend  \033[2mM-a\033[0m amend+push  \033[2mC-u/M-u\033[0m upload  \033[2mM-m\033[0m conflicts  \033[2mM-S\033[0m sync  \033[2mF1\033[0m keys\n'
+    elif [ "$w" -ge 52 ]; then
+      printf '\033[1mjjtig\033[0m  \033[2m@\033[0mwc \033[2m◆\033[0mimm \033[2mø\033[0mempty \033[2m×\033[0mconflict \033[1;33m↑\033[0m\033[2mstale\033[0m  \033[2med:\033[0m \033[1;36m%s\033[0m\n' "$ed"
+      printf '\033[2mC-t\033[0m amend  \033[2mC-u\033[0m upload  \033[2mM-m\033[0m conflicts  \033[2mF1\033[0m keys\n'
+    else
+      printf '\033[1mjjtig\033[0m \033[2m-- F1 for keys\033[0m \033[2m(\033[0m\033[36m%s\033[0m\033[2m)\033[0m\n' "$ed"
+    fi
+    exit 0 ;;
+
+  __edit)    confirm "jj edit ${2}  (moves the working copy)" jj edit "${2}"; exit 0 ;;
+  __new)     confirm "jj new ${2}   (new child commit)"       jj new  "${2}"; exit 0 ;;
+  __abandon) confirm "jj abandon ${2}  -- THIS DISCARDS THE COMMIT" jj abandon "${2}"; exit 0 ;;
+  __squash)  confirm "jj squash --into ${2}" jj squash --into "${2}"; exit 0 ;;
+
+  # Fold this commit into its parent. `jj squash -r X` moves X's changes down
+  # and, being left empty, X is abandoned -- so the commit itself disappears,
+  # which is worth spelling out before doing it.
+  __squash_parent)
+    rev="${2:-}"; [ -n "$rev" ] || exit 0
+    parent="$(jjr log --no-graph -r "${rev}-" -T 'description.first_line() ++ "\n"' | head -n1)"
+    confirm "jj squash -r ${rev}  -- folds it into its parent (${parent:-<parent>}); ${rev} disappears" \
+      jj squash -r "$rev"
+    exit 0 ;;
+
+  -h|--help)
+    cat <<EOF
+jjtig -- tig/magit-style browser for Jujutsu, built on fzf.
+
+usage: jjtig [revset]
+
+  revset        optional jj revset for the log view (default: jj's own)
+
+environment:
+  JJT_REVSET        default revset
+  JJT_LIMIT         max commits to list (default 500)
+  JJT_EDITOR        emacs (default) or nvim; alt-e switches it live
+  EMACS_SERVER_FILE emacs server socket
+                    (default ~/.emacs.cache/server/server)
+
+viewing:
+  enter      open the commit (see below) ctrl-d  diff in pager
+  alt-enter  whole commit in a pager
+  ctrl-s     working-copy status         ctrl-g  operation log
+  alt-g      evolog (how it evolved)     alt-l   piper lint findings
+  pgup/pgdn  page the preview            shift-up/down  scroll it a line
+  alt-up/dn  half-page the preview       alt-w   cycle preview position
+  alt-p      hide/show preview           ctrl-r  reload
+
+  Resizing the window re-lays-out on its own: the header switches between its
+  three forms and the preview moves between the right-hand side and the bottom
+  to suit the new width. Placing the preview by hand (alt-w, alt-p) turns that
+  off for the rest of the session, so a later resize will not overrule you.
+
+  alt-r      re-detect the terminal size. Only needed for a terminal that
+             never reports its size -- see the note at the top of this script.
+
+editing:
+  ctrl-t     amend the commit message    alt-a   amend message, then re-upload
+  ctrl-f     file submenu (see below)    ctrl-o  open ALL changed files
+  ctrl-v     commit diff as emacs buffer alt-e   toggle emacs <-> nvim
+
+  Getting back out of the editor:
+    nvim   :wq to keep the edit, :q! to abandon, :qa with several tabs open
+    emacs  C-x # when done. C-x C-c works too -- on a client frame it closes
+           that frame and returns here, it does not kill the daemon.
+
+enter / ctrl-f -- open a commit and work inside it:
+
+  The commit's message and its files list on the left, whatever the cursor is
+  on renders on the right. The first row is the commit message itself: select
+  it to read the whole thing, press enter to amend it. It stays open until
+  esc, so you can amend the message, edit two files and upload without
+  leaving, and every action refreshes the list underneath you.
+
+  enter      edit the file -- or amend the message, on that row
+  ctrl-t     amend the message from anywhere in the list
+  alt-a      amend the message and re-upload    ctrl-u  upload this commit
+  ctrl-v     view the file AS OF that commit, read-only
+  ctrl-d     that file's diff in a pager        alt-y   yank the path
+  tab        mark several                       ctrl-o  act on everything marked
+  esc        back to the commit list
+
+  Editing writes to the working copy, so if the commit you are on is not @,
+  it offers to run jj edit first rather than quietly putting your change in
+  the wrong commit. Use ctrl-v when you only want to look.
+
+  alt-enter on the commit list still dumps the whole commit into a pager.
+
+conflicts and rebasing:
+  alt-m      conflicts in this commit -- a submenu of the conflicted files:
+               enter  edit the conflict markers in your editor (any editor)
+               ctrl-t 3-way merge tool: nvim -d, or vim -d under emacs
+               ctrl-d show the conflict
+  alt-S      jj piper sync -- fast-forward main and rebase onto it (confirm).
+             Rewrites commits, so expect ↑ everywhere afterwards; alt-u then
+             re-uploads them all.
+
+piper / critique:
+  ctrl-u     upload selected to Critique alt-u   upload everything marked ↑
+  alt-c      open the CL in Critique     alt-y   yank cl/NNN to clipboard
+
+  (alt- keys are used for the new actions so that ctrl-b, ctrl-y and the
+   other emacs line-editing keys still work in the filter prompt.)
+
+flags in the left column:
+  @  the working copy          ◆  immutable (cannot be edited)
+  ø  empty                     ×  has a conflict
+  ↑  uploaded, then changed -- Critique is behind this commit, re-upload it
+  +  never uploaded -- no CL for this commit yet
+
+  ↑ is derived from the CL bookmarks: exporting a commit leaves cl/NNN on it
+  plus a remote twin cl/NNN@piper recording what Critique holds. Rewriting the
+  commit (amend, jj fix, rebase) carries cl/NNN to the new commit and strands
+  the twin on the old one, so local-CL-without-remote-twin means "changed
+  since upload". jj writes the same fact as a * after the bookmark name.
+
+history (all confirm first):
+  ctrl-e     jj edit (move working copy) ctrl-n  jj new (child commit)
+  ctrl-x     jj abandon                  alt-s   squash INTO PARENT
+  ctrl-\\     jj squash --into (fold @ into the selected commit)
+
+  tab marks extra commits; ctrl-u uploads every marked one.
+  F1 / alt-h  this help
+EOF
+    exit 0 ;;
+esac
+
+# -- startup checks ----------------------------------------------------------
+
+command -v jj  >/dev/null || die "jj is not installed"
+command -v fzf >/dev/null || die "fzf is required but not installed"
+jj root >/dev/null 2>&1   || die "not inside a jj workspace ($PWD)"
+
+# A positional argument is a revset, so `jjtig 'all()'` just works.
+[ $# -gt 0 ] && JJT_REVSET="$1"
+export JJT_REVSET JJT_LIMIT
+
+# -- terminal size guard -----------------------------------------------------
+# The other way this script paints a blank screen: a pty whose kernel window
+# size was never set reports 0x0. VS Code's remote terminal and a few ssh
+# clients leave it that way, and nothing sends the SIGWINCH that would correct
+# it. fzf then has zero rows to draw in and emits an empty screen with a lone
+# scrollbar glyph -- no error, because from fzf's point of view it drew the
+# whole screen it was given.
+#
+# Guessing a size would be a lie, so ask the terminal itself with
+# query_tty_size, then write the answer into the pty with stty, so fzf, less
+# and delta all agree on it for the rest of the session. A terminal that will
+# not answer that either can be re-probed on demand later with alt-r.
+TTY_ROWS=0; TTY_COLS=0
+read -r TTY_ROWS TTY_COLS <<< "$(stty size </dev/tty 2>/dev/null)"
+case "$TTY_ROWS" in ''|*[!0-9]*) TTY_ROWS=0 ;; esac
+case "$TTY_COLS" in ''|*[!0-9]*) TTY_COLS=0 ;; esac
+
+if [ "$TTY_ROWS" -lt 4 ] || [ "$TTY_COLS" -lt 20 ]; then
+  _probed="$(query_tty_size)"
+  if [ -n "$_probed" ]; then
+    read -r TTY_ROWS TTY_COLS <<< "$_probed"
+  else
+    TTY_ROWS="${LINES:-24}"; TTY_COLS="${COLUMNS:-80}"
+  fi
+  stty rows "$TTY_ROWS" cols "$TTY_COLS" </dev/tty 2>/dev/null
+  printf '\033[2mjjtig: terminal reported no window size; using %sx%s\033[0m\n' \
+         "$TTY_COLS" "$TTY_ROWS"
+fi
+
+[ "$TTY_ROWS" -ge 4 ] && [ "$TTY_COLS" -ge 20 ] || \
+  die "terminal is ${TTY_COLS}x${TTY_ROWS}; too small to draw anything.
+       Resize the window, or run:  stty rows 40 cols 120"
+
+export LINES="$TTY_ROWS" COLUMNS="$TTY_COLS"
+
+# The diff buffers handed to emacs are real files and have to outlive this
+# process, so they cannot be cleaned up on exit; sweep the old ones instead.
+# Same for state directories orphaned by a kill -9, which no trap can catch.
+find /tmp -maxdepth 1 -name 'jjtig-*.diff' -user "$(id -un)" -mtime +1 \
+     -delete 2>/dev/null || true
+find /tmp -maxdepth 1 -type d -name 'jjtig-state-*' -user "$(id -un)" -mmin +240 \
+     -exec rm -rf {} + 2>/dev/null || true
+# Cached previews are keyed by commit id, so they are never wrong, only stale
+# in the sense of being for commits nobody will look at again.
+find "$PREVIEW_CACHE" -maxdepth 1 -type f \( -mtime +7 -o -name '*.part.*' \) \
+     -delete 2>/dev/null || true
+
+# Snapshot the working copy exactly once, here, where its warnings are visible
+# and harmless. Everything after this point reads with --ignore-working-copy,
+# so fzf never has jj's stderr painted across it.
+printf '\033[2mjjtig: refreshing working copy...\033[0m\n'
+snap_err="$(jj log -r @ -n 1 -T '""' 2>&1 >/dev/null)"
+if [ -n "$snap_err" ]; then
+  n="$(printf '%s\n' "$snap_err" | grep -c 'maximum size allowed')"
+  [ "$n" -gt 0 ] && printf '\033[2mjjtig: %s large file(s) not snapshotted (expected in this repo)\033[0m\n' "$n"
+fi
+
+# Show the bookmark column only if something would appear in it.
+if [ -n "$JJT_REVSET" ]; then
+  _bm="$(jjr log --no-graph -r "$JJT_REVSET" -n "$JJT_LIMIT" -T 'bookmarks.join(" ")' | tr -d ' \n')"
+else
+  _bm="$(jjr log --no-graph -n "$JJT_LIMIT" -T 'bookmarks.join(" ")' | tr -d ' \n')"
+fi
+[ -n "$_bm" ] && JJT_SHOW_BOOKMARKS=1 || JJT_SHOW_BOOKMARKS=0
+export JJT_SHOW_BOOKMARKS
+
+# Lay the preview out for the terminal actually in use. A 62%-wide preview on
+# an 80-column terminal leaves no room for the thing being browsed. Use the
+# size settled above rather than tput, which reports the same broken 0 that
+# sent us here.
+# The starting layout. Both values get recomputed on every resize, from the
+# width fzf reports then.
+read -r PREVIEW_WIN LIST_COLS <<< "$(layout_for "$TTY_COLS")"
+export JJT_HEADER_COLS="$LIST_COLS"
+
+if [ -z "$("$SELF" __log | head -c1)" ]; then
+  die "the log view is empty for revset '${JJT_REVSET:-<default>}'.
+       Try a wider one, e.g.  jjtig 'all()'   or   jjtig '::@'"
+fi
+
+# -- the UI ------------------------------------------------------------------
+
+# Where the live editor choice is kept. Exported, so every key's child process
+# reads the same one; removed on the way out. fzf is therefore not exec'd any
+# more -- the script has to outlive it to clean up.
+JJT_STATE="$(mktemp -d "${TMPDIR:-/tmp}/jjtig-state-XXXXXX")"
+export JJT_STATE
+printf '%s' "$JJT_EDITOR" > "$JJT_STATE/editor"
+
+# Warm the preview cache in the background, so a first walk down the list is
+# not one FUSE round trip per row. Sequential and niced deliberately: the point
+# is to use the seconds while the first commit is being read, not to race the
+# foreground on a machine that is already loaded. Capped, because JJT_LIMIT is
+# 500 and nobody scrolls that far.
+warm_previews() {
+  "$SELF" __log 2>/dev/null | head -n "${JJT_WARM:-40}" \
+  | while IFS="$(printf '\t')" read -r _chg _cid _rest; do
+      [ -n "$_chg" ] && [ -n "$_cid" ] || continue
+      [ -s "$PREVIEW_CACHE/$_cid.$RENDER_MODE" ] && continue
+      nice -n 10 "$SELF" __preview "$_chg" "$_cid" >/dev/null 2>&1
+    done
+}
+# Job control, just for this one line, so the warmer becomes a process group
+# leader. Killing the subshell alone would orphan whatever jj it had running
+# and the rest of the loop with it -- quit jjtig straight after opening it and
+# forty niced jj processes would carry on churning a machine that is already
+# loaded. The negative pid kills the whole group. stdin is closed so the group
+# can never fight fzf for the terminal.
+set -m
+warm_previews </dev/null >/dev/null 2>&1 & WARM_PID=$!
+set +m
+
+stop_warm() { [ -n "${WARM_PID:-}" ] && kill -- -"$WARM_PID" 2>/dev/null; return 0; }
+trap 'stop_warm; rm -rf "$JJT_STATE"' EXIT INT TERM
+
+fzf \
+  --ansi \
+  --multi \
+  --delimiter='\t' \
+  --with-nth='3..' \
+  --layout=reverse \
+  --height=100% \
+  --border=rounded \
+  --border-label=" jj: $(basename "$(jj root 2>/dev/null)") " \
+  --info=inline-right \
+  --prompt='commit > ' \
+  --pointer='▶' \
+  --marker='✓' \
+  --scrollbar='│' \
+  --cycle \
+  --no-mouse \
+  --preview "$SELF __preview {1} {2}" \
+  --preview-window="$PREVIEW_WIN" \
+  --color='border:8,label:6,prompt:4,pointer:2,marker:2,header:8,info:8,hl:3,hl+:3' \
+  --header "$("$SELF" __header)" \
+  --bind "start:transform-header($SELF __header)" \
+  --bind "enter:execute($SELF __openfiles {1})+reload($SELF __log)" \
+  --bind "alt-enter:execute($SELF __preview {1} {2} | $PAGE_CMD)" \
+  --bind "ctrl-d:execute($SELF __diff {1} | $PAGE_CMD)" \
+  --bind "ctrl-s:execute($SELF __status | $PAGE_CMD)" \
+  --bind "ctrl-g:execute($SELF __oplog | $PAGE_CMD)" \
+  --bind "alt-g:execute($SELF __evolog {1} | $PAGE_CMD)" \
+  --bind "alt-l:execute($SELF __lint {1} | $PAGE_CMD)" \
+  --bind "ctrl-f:execute($SELF __openfiles {1})" \
+  --bind "ctrl-o:execute($SELF __openall {1})" \
+  --bind "ctrl-v:execute($SELF __emacsdiff {1})" \
+  --bind "alt-e:execute-silent($SELF __toggle_editor)+transform-header($SELF __header)" \
+  --bind "ctrl-t:execute($SELF __describe {1})+reload($SELF __log)" \
+  --bind "alt-a:execute($SELF __amend_upload {1})+reload($SELF __log)" \
+  --bind "ctrl-u:execute($SELF __upload {+1})+reload($SELF __log)" \
+  --bind "alt-u:execute($SELF __upload_stale)+reload($SELF __log)" \
+  --bind "alt-c:execute($SELF __critique {1})" \
+  --bind "alt-y:execute($SELF __yank {1})" \
+  --bind "ctrl-e:execute($SELF __edit {1})+reload($SELF __log)" \
+  --bind "ctrl-n:execute($SELF __new {1})+reload($SELF __log)" \
+  --bind "ctrl-x:execute($SELF __abandon {1})+reload($SELF __log)" \
+  --bind "alt-s:execute($SELF __squash_parent {1})+reload($SELF __log)" \
+  --bind "alt-m:execute($SELF __conflicts {1})+reload($SELF __log)" \
+  --bind "alt-S:execute($SELF __sync)+reload($SELF __log)" \
+  --bind "ctrl-\\:execute($SELF __squash {1})+reload($SELF __log)" \
+  --bind "ctrl-r:reload($SELF __log)" \
+  --bind "pgup:preview-page-up" \
+  --bind "pgdn:preview-page-down" \
+  --bind "shift-up:preview-up" \
+  --bind "shift-down:preview-down" \
+  --bind "alt-up:preview-half-page-up" \
+  --bind "alt-down:preview-half-page-down" \
+  --bind "resize:transform-header($SELF __header)+transform($SELF __relayout)" \
+  --bind "alt-r:execute($SELF __resize_tty)+transform-header($SELF __header)" \
+  --bind "alt-w:change-preview-window(down:70%:border-top:wrap|hidden|$PREVIEW_WIN)+execute-silent($SELF __preview_manual)" \
+  --bind "alt-p:toggle-preview+execute-silent($SELF __preview_manual)" \
+  --bind "f1:execute($SELF --help | $PAGE_CMD)" \
+  --bind "alt-h:execute($SELF --help | $PAGE_CMD)" \
+  < <("$SELF" __log)

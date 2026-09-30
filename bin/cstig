@@ -1,0 +1,265 @@
+#!/usr/bin/env bash
+#
+# cstig -- a tig/fzf browser for Code Search, for the ajb_ workspaces.
+#
+# Finds where a symbol is declared and where it is used, shows the hit with
+# syntax highlighting, and tells you which change last touched the line.
+#
+# Two sources, because neither is sufficient on its own:
+#
+#   cs (Code Search)  indexes the depot at HEAD. It is fast -- 1.2s for a
+#                     whole-depot symbol query, measured -- and it is the only
+#                     way to see who across google3 uses a thing. It cannot
+#                     see your unsubmitted CL at all: a symbol you wrote ten
+#                     minutes ago returns zero hits whether or not it is used.
+#
+#   CiderLSP          via the running Emacs daemon, which already has a warm
+#                     server attached to these workspaces. It sees the
+#                     workspace as it is now, unsubmitted work included, and
+#                     is the only thing that can answer "is the function I
+#                     just wrote referenced anywhere". Optional: without a
+#                     reachable daemon cstig still works, HEAD-only.
+#
+# Note on grep: `rg` and friends are refused inside google3 -- the monorepo
+# has no on-disk index and a recursive search hangs. Everything local here
+# goes through Code Search with an anchored path restrict, or through LSP.
+#
+set -uo pipefail
+
+SELF="$(readlink -f "${BASH_SOURCE[0]}")"
+
+# -- configuration -----------------------------------------------------------
+
+# Only these workspaces, per request. A name, not a path: the ~/jj_workspaces
+# entries are symlinks into /google/src/cloud/$USER, and both spellings have
+# to match.
+CSTIG_PREFIX="${CSTIG_PREFIX:-ajb_}"
+
+# The emacs server the `emacsclients` alias talks to; same default as jjtig.
+EMACS_SOCKET="${EMACS_SERVER_FILE:-$HOME/.emacs.cache/server/server}"
+
+# Hit limit per query. Code Search will happily return thousands.
+CSTIG_LIMIT="${CSTIG_LIMIT:-400}"
+
+# -- helpers -----------------------------------------------------------------
+
+die() { printf '\033[31merror:\033[0m %s\n' "$*" >&2; exit 1; }
+note() { printf '\033[2m%s\033[0m\n' "$*" >&2; }
+
+have() { command -v "$1" >/dev/null 2>&1; }
+
+# bat is packaged as batcat on Debian.
+BAT=""
+have batcat && BAT=batcat
+[ -z "$BAT" ] && have bat && BAT=bat
+
+# Which workspace are we in, and is it one of the allowed ones?
+workspace_root() {
+  local d
+  d="$(cd "${1:-$PWD}" 2>/dev/null && pwd -P)" || return 1
+  while [ "$d" != "/" ]; do
+    [ -d "$d/.jj" ] && { printf '%s\n' "$d"; return 0; }
+    d="$(dirname "$d")"
+  done
+  return 1
+}
+
+# Returns 0 when the workspace is one we are allowed in. Deliberately not a
+# command substitution: `die' inside one only kills the subshell, so the
+# script sails on past a guard that looked like it fired.
+allowed_p() {
+  local root="$1" name logical
+  name="$(basename "$root")"
+  # The resolved path is /google/src/cloud/$USER/<name>; the symlink actually
+  # cd'd through is ~/jj_workspaces/<name>. Either spelling may carry it.
+  logical="$(basename "${PWD%%/google3*}")"
+  case "$name"    in "$CSTIG_PREFIX"*) return 0 ;; esac
+  case "$logical" in "$CSTIG_PREFIX"*) return 0 ;; esac
+  return 1
+}
+
+# -- sources -----------------------------------------------------------------
+
+# Code Search, whole depot, anchored to google3 so we do not also search
+# android and git-on-borg.
+cs_hits() {
+  local sym="$1" scope="${2:-}" restrict=""
+  [ -n "$scope" ] && restrict=" f:^//depot/google3/${scope}"
+  # `\$' not `$$': inside double quotes bash expands $$ to its own PID, which
+  # silently turned `package:^piper$' into `package:^piper12345' and made
+  # every query return nothing.
+  cs "c:\\b${sym}\\b package:^piper\$${restrict}" 2>/dev/null \
+    | head -n "$CSTIG_LIMIT"
+}
+
+# Declarations only: Code Search has no symbol index here, so approximate with
+# the shapes a C++/proto/py declaration takes. Marked as a guess in the UI.
+cs_decls() {
+  local sym="$1"
+  cs "c:(class|struct|enum|message|def|func|interface)\\s+${sym}\\b package:^piper\$" 2>/dev/null \
+    | head -n "$CSTIG_LIMIT"
+}
+
+# CiderLSP, through the daemon. Needs a concrete position, so this is driven
+# from a hit the user has already selected rather than from a bare name.
+lsp_refs() {
+  local file="$1" line="$2" col="${3:-0}"
+  [ -S "$EMACS_SOCKET" ] || return 1
+  timeout 120 emacsclient -s "$EMACS_SOCKET" -e \
+    "(my/google3-references-report \"$file\" $line $col)" 2>/dev/null \
+    | sed -e 's/^"//' -e 's/"$//' -e 's/\\n/\n/g' | sed '/^$/d'
+}
+
+daemon_up() {
+  [ -S "$EMACS_SOCKET" ] && timeout 10 emacsclient -s "$EMACS_SOCKET" -e t >/dev/null 2>&1
+}
+
+# -- preview -----------------------------------------------------------------
+# Called by fzf as a child process, so it takes everything on the command line.
+
+preview() {
+  local spec="$1" file line ctx=40
+  file="${spec%%:*}"
+  line="$(printf '%s' "$spec" | cut -d: -f2)"
+  case "$line" in ''|*[!0-9]*) line=1 ;; esac
+  [ -r "$file" ] || { printf 'unreadable: %s\n' "$file"; return; }
+  local from=$(( line > ctx/2 ? line - ctx/2 : 1 ))
+  local to=$(( from + ctx ))
+  if [ -n "$BAT" ]; then
+    "$BAT" --color=always --style=numbers --paging=never \
+           --highlight-line "$line" --line-range "${from}:${to}" "$file"
+  else
+    sed -n "${from},${to}p" "$file" | nl -ba -v "$from"
+  fi
+}
+
+# Who last touched this line. Inside one of our workspaces the change stack
+# can answer cheaply; for a depot path at HEAD there is no cheap blame --
+# `jj file annotate' is 21 seconds on a single file in a CitC workspace, so it
+# is offered on demand rather than run for every preview.
+blame() {
+  local spec="$1" file line
+  file="${spec%%:*}"
+  line="$(printf '%s' "$spec" | cut -d: -f2)"
+  local root
+  if root="$(workspace_root "$(dirname "$file")" 2>/dev/null)"; then
+    printf '\033[1mchanges touching %s\033[0m\n\n' "$(basename "$file")"
+    ( cd "$root" && jj --ignore-working-copy log --no-graph \
+        -T 'change_id.short() ++ "  " ++ author.name() ++ "  " ++ description.first_line() ++ "\n"' \
+        -r "files(\"$(realpath --relative-to="$root" "$file")\")" 2>/dev/null | head -20 )
+    printf '\n\033[2mline %s; jj file annotate is ~21s here, run it yourself if you need per-line blame\033[0m\n' "$line"
+  else
+    printf '\033[1m%s\033[0m is outside your workspaces (depot HEAD).\n' "$file"
+    printf 'No cheap blame available; open it in Code Search for history:\n'
+    printf '  http://cs/google3/%s;l=%s\n' "${file#*/depot/google3/}" "$line"
+  fi
+}
+
+# -- the browser -------------------------------------------------------------
+
+browse() {
+  local sym="$1" mode="${2:-all}" root="$3" scope="$4"
+  local hits
+  case "$mode" in
+    decl) hits="$(cs_decls "$sym")" ;;
+    *)    hits="$(cs_hits "$sym" "$scope")" ;;
+  esac
+  # cs prints a summary preamble on some queries; keep only path:line: lines.
+  hits="$(printf '%s\n' "$hits" | grep -E '^/[^:]+:[0-9]+:' || true)"
+  if [ -z "$hits" ]; then
+    printf 'no HEAD hits for %s' "$sym"
+    [ -n "$scope" ] && printf ' under %s' "$scope"
+    printf '\n'
+    printf '\nCode Search indexes HEAD, so a symbol that only exists in your\n'
+    printf 'unsubmitted CL will always look like this. Use the Emacs side\n'
+    printf '(M-? on the symbol, or C-c g "refs: is this symbol used?") for\n'
+    printf 'workspace-accurate references.\n'
+    return 1
+  fi
+
+  local header
+  header="$sym — $(printf '%s\n' "$hits" | wc -l) hit(s) at HEAD"
+  [ "$mode" = decl ] && header="$header (declaration-shaped only)"
+  daemon_up || header="$header — no emacs daemon, HEAD only"
+
+  printf '%s\n' "$hits" | fzf \
+    --ansi --no-sort --layout=reverse --height=100% \
+    --border --header="$header" \
+    --delimiter=: --with-nth=1,2,3.. \
+    --preview "$SELF --preview {}" \
+    --preview-window='right,60%,border-left,+{2}/2' \
+    --bind "alt-b:execute($SELF --blame {} | less -R)" \
+    --bind "alt-d:reload($SELF --raw-decls $sym)" \
+    --bind "alt-a:reload($SELF --raw-hits $sym $scope)" \
+    --bind "enter:execute($SELF --open {})" \
+    --bind 'alt-y:execute-silent(printf %s {} | xclip -selection clipboard 2>/dev/null || true)' \
+    --prompt="$sym > "
+}
+
+open_hit() {
+  local spec="$1" file line
+  file="${spec%%:*}"
+  line="$(printf '%s' "$spec" | cut -d: -f2)"
+  if [ -S "$EMACS_SOCKET" ]; then
+    emacsclient -s "$EMACS_SOCKET" -t "+$line" "$file"
+  elif [ -n "${EDITOR:-}" ]; then
+    $EDITOR "+$line" "$file"
+  else
+    ${PAGER:-less} "+${line}g" "$file"
+  fi
+}
+
+usage() {
+  cat <<'EOF'
+usage: cstig [SYMBOL]
+
+A Code Search browser in the terminal. Run it inside one of the ajb_
+workspaces; with no SYMBOL it asks for one.
+
+  enter    open the hit (emacsclient -t, else $EDITOR)
+  alt-d    declaration-shaped hits only
+  alt-a    back to all hits
+  alt-b    which changes touched this file
+  alt-y    copy path:line
+
+Code Search indexes the depot at HEAD and cannot see your unsubmitted CL.
+For references to something you just wrote, use CiderLSP from Emacs.
+
+env: CSTIG_PREFIX (default ajb_), CSTIG_LIMIT (400), EMACS_SERVER_FILE
+EOF
+}
+
+# -- dispatch ----------------------------------------------------------------
+# The --raw-* and --preview forms exist for fzf's child processes to call back
+# into; they are not meant to be typed.
+
+case "${1:-}" in
+  --preview)    preview "${2:-}" ; exit 0 ;;
+  --blame)      blame   "${2:-}" ; exit 0 ;;
+  --open)       open_hit "${2:-}" ; exit 0 ;;
+  --raw-hits)   cs_hits "${2:-}" "${3:-}" | grep -E '^/[^:]+:[0-9]+:' || true ; exit 0 ;;
+  --raw-decls)  cs_decls "${2:-}" | grep -E '^/[^:]+:[0-9]+:' || true ; exit 0 ;;
+  -h|--help)    usage ; exit 0 ;;
+esac
+
+have cs  || die "Code Search CLI (cs) not found"
+have fzf || die "fzf not found"
+[ -n "$BAT" ] || note "bat/batcat not found; previews will be unhighlighted"
+
+ROOT="$(workspace_root)" || die "not inside a jj workspace"
+allowed_p "$ROOT" || die "cstig is limited to ${CSTIG_PREFIX}* workspaces (this is '$(basename "$ROOT")'); set CSTIG_PREFIX to widen"
+# Restrict to the subtree the workspace actually maps to, when we can work it
+# out -- a whole-depot query for a common name is noise.
+SCOPE=""
+case "$PWD" in
+  */google3/*) SCOPE="${PWD#*/google3/}" ;;
+esac
+
+SYM="${1:-}"
+if [ -z "$SYM" ]; then
+  printf 'symbol: '
+  read -r SYM || exit 0
+fi
+[ -n "$SYM" ] || exit 0
+
+browse "$SYM" all "$ROOT" "$SCOPE"
