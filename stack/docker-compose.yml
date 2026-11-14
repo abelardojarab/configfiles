@@ -1026,12 +1026,31 @@ services:
     container_name: viaproxy
     restart: unless-stopped
     user: "501:501"
+    # ViaProxy resolves --target-address once at startup and keeps the IP
+    # for the life of the process, so whenever minecraft-java is recreated
+    # (new IP on stack_default) every backend connection fails with "Could
+    # not connect to the backend server!" until viaproxy restarts (bit us
+    # 2026-09-28: bots kicked for 2 days). Two triggers cover both recreate
+    # paths: compose `restart: true` for `docker compose up`, and the
+    # watchtower depends-on label for image-update recreates (needs
+    # watchtower.enable on this service too, since watchtower runs with
+    # --label-enable and only considers enabled containers for restarts).
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+      - "com.centurylinklabs.watchtower.depends-on=minecraft-java"
     depends_on:
-      - minecraft-java
+      minecraft-java:
+        condition: service_started
+        restart: true
     working_dir: /vp
     environment:
       - HOME=/vp
     command: ["java", "-jar", "ViaProxy.jar", "cli", "--target-address", "minecraft-java:25565", "--target-version", "26.2", "--bind-address", "0.0.0.0:25568", "--auth-method", "NONE", "--chat-signing", "false"]
+    # Loopback-only: geyser-standalone (host networking) reaches the Java
+    # server through ViaProxy here, because current Geyser speaks Java 26.3
+    # and the server is 26.2.
+    ports:
+      - "127.0.0.1:25568:25568"
     volumes:
       - ~/containers/viaproxy:/vp
 
@@ -1070,8 +1089,9 @@ services:
       - minecraft-java
     working_dir: /geyser
     command: ["java", "-jar", "Geyser.jar"]
-    ports:
-      - "19132:19132/udp"
+    # Host networking: Bedrock NetherNet (WebRTC) needs the real host addresses;
+    # it could not find a network path through Docker's NAT. Uses TCP+UDP 19132.
+    network_mode: host
     volumes:
       - ~/containers/geyser-standalone:/geyser
 
