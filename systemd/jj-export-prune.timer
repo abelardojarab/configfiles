@@ -1,0 +1,17 @@
+[Unit]
+Description=Weekly prune of orphaned jj-export-* CitC clients
+
+[Timer]
+# Monday morning, so a run that aborts is noticed at the start of a week
+# rather than sitting failed over a weekend.
+OnCalendar=Mon 09:00
+# The cloudtop is not always up at 09:00 on a Monday; catch up on the next
+# boot instead of silently skipping a week.
+Persistent=true
+# Nothing here is urgent, and the window keeps it off the same instant as
+# every other Monday-morning job.
+RandomizedDelaySec=30min
+AccuracySec=5min
+
+[Install]
+WantedBy=timers.target

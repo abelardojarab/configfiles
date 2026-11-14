@@ -1,0 +1,31 @@
+[Unit]
+Description=Prune jj-export-* CitC clients with no pending CL behind them
+Documentation=file:%h/workspace/configfiles/scripts/jj-export-prune
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/jj-export-prune
+
+# The script decides for itself whether it can run: no LOAS2, no CitC mount,
+# or a pending-CL query it does not trust, and it exits without deleting. It
+# aborts non-zero only when something is genuinely wrong and a human should
+# look, which is exactly when the unit should show as failed.
+
+# Deleting a client is a Piper round trip; a handful of them is seconds, but
+# a wedged CitC backend should not leave this running until the next firing.
+TimeoutStartSec=20min
+
+# Sandboxing, minus the three directives that break Piper authentication.
+# Measured on this machine, each of these on its own makes `g4' fail with
+# "Piper client error: LOAS isn't available; run gcert":
+#
+#   PrivateTmp=true            LOAS credentials are reached through /tmp
+#   ProtectKernelTunables=true both of these set up a mount namespace that
+#   ProtectControlGroups=true  loses the same access
+#
+# The failure is silent in the sense that it looks like "no pending CLs",
+# which for this script is the dangerous direction -- it is only safe
+# because the pending-list guard refuses to treat an empty result as
+# "everything is an orphan". These two are verified not to interfere.
+RestrictSUIDSGID=true
+NoNewPrivileges=true

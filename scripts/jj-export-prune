@@ -1,0 +1,166 @@
+#!/usr/bin/env bash
+#
+# jj-export-prune -- delete the CitC clients jj leaves behind after uploading.
+#
+# `jj piper upload' creates a throwaway client named
+# jj-export-<workspace>-<changeid>-<hash> to carry the CL. Nothing ever
+# removes them, so they accumulate one per upload: this machine reached 61
+# export clients against 51 real workspaces before the first manual sweep.
+# An export client whose CL has been submitted or abandoned holds nothing --
+# the work lives in the source workspace, or in Piper.
+#
+# THE FAILURE MODE THIS SCRIPT IS BUILT AROUND
+#
+# The rule is "delete an export client that no pending CL points at". If the
+# query for pending CLs fails -- expired LOAS, Piper unreachable, a changed
+# output format -- it returns an empty list, every export client looks
+# orphaned, and a naive implementation deletes all of them, including the
+# ones holding live CLs. That is unrecoverable and it is the single most
+# likely thing to go wrong in an unattended weekly job.
+#
+# So the empty/!suspicious cases abort rather than proceed, every candidate is
+# re-verified individually right before it is deleted, and there is a cap on
+# how many one run may remove.
+#
+set -uo pipefail
+
+CITC_ROOT="${CITC_ROOT:-/google/src/cloud/$USER}"
+
+# Refuse to delete more than this in one run. A correct run removes a handful;
+# a large number means the pending-CL list is wrong, not that you uploaded 30
+# times this week.
+MAX_DELETE="${JJ_PRUNE_MAX:-25}"
+
+# Extended regex of client names never to touch. Empty by default.
+KEEP_RE="${JJ_PRUNE_KEEP:-}"
+
+# Minimum LOAS remaining. The job is weekly and not urgent; if credentials are
+# nearly gone, skip this run rather than half-finish.
+MIN_CRED="${JJ_PRUNE_MIN_CRED:-30m}"
+
+DRY_RUN=0
+[ "${1:-}" = "--dry-run" ] && DRY_RUN=1
+[ "${1:-}" = "-n" ] && DRY_RUN=1
+
+log()  { printf '%s\n' "$*"; }
+warn() { printf 'WARNING: %s\n' "$*" >&2; }
+abort() { printf 'ABORT: %s\n' "$*" >&2; exit 1; }
+
+# -- preconditions -----------------------------------------------------------
+
+command -v g4 >/dev/null 2>&1 || abort "g4 not found"
+[ -d "$CITC_ROOT" ] || abort "CitC root $CITC_ROOT is not there (not mounted?)"
+
+# No credentials means the pending-CL query below would fail open. Exit 0:
+# a skipped weekly run is normal, not a fault worth alerting on.
+# LOAS2 only: --check_ssh also inspects the gnubby/fido2 SSH cert, which is
+# routinely expired on this machine (1491h at the time of writing) and would
+# have made every single run skip. g4 needs LOAS, not the gnubby.
+if command -v gcertstatus >/dev/null 2>&1; then
+  if ! gcertstatus --check_remaining="$MIN_CRED" \
+        --check_loas2=true --check_ssh=false --quiet >/dev/null 2>&1; then
+    log "skipping: no LOAS2 credentials with $MIN_CRED remaining"
+    exit 0
+  fi
+fi
+
+# -- gather ------------------------------------------------------------------
+
+mapfile -t EXPORTS < <(ls -1 "$CITC_ROOT" 2>/dev/null | grep '^jj-export-' | sort)
+n_exports=${#EXPORTS[@]}
+if [ "$n_exports" -eq 0 ]; then
+  log "no jj-export-* clients; nothing to do"
+  exit 0
+fi
+
+# The client name is the third colon-separated field of the "by" column:
+#   ... by jaraberrocal@jaraberrocal:jj-export-foo-abcdefgh-12345678:2704:citc ...
+pending_raw="$(g4 changes -s pending -u "$USER" 2>/dev/null)"
+g4_rc=$?
+[ "$g4_rc" -eq 0 ] || abort "g4 changes failed (rc=$g4_rc); refusing to guess at orphans"
+
+mapfile -t PENDING < <(printf '%s\n' "$pending_raw" \
+  | sed -nE 's/.*@[^:]+:([^:]+):[0-9]+:citc.*/\1/p' | sort -u)
+n_pending=${#PENDING[@]}
+
+# The tell-tale of a failed query: export clients exist but nothing is pending.
+# Possible in principle (every CL submitted and every client already pruned),
+# but far more likely to be a broken query -- and the cost of being wrong is
+# deleting live CLs. Make the human look.
+if [ "$n_pending" -eq 0 ]; then
+  abort "$n_exports export client(s) but 0 pending CLs parsed -- treating as a failed query, not as 'everything is an orphan'"
+fi
+
+# -- select ------------------------------------------------------------------
+
+printf '%s\n' "${PENDING[@]}" > "${TMPDIR:-/tmp}/.jjprune.pending.$$"
+trap 'rm -f "${TMPDIR:-/tmp}/.jjprune.pending.$$"' EXIT
+
+CANDIDATES=()
+for c in "${EXPORTS[@]}"; do
+  grep -qxF "$c" "${TMPDIR:-/tmp}/.jjprune.pending.$$" && continue
+  if [ -n "$KEEP_RE" ] && printf '%s' "$c" | grep -qE "$KEEP_RE"; then
+    log "keep (matches JJ_PRUNE_KEEP): $c"
+    continue
+  fi
+  CANDIDATES+=("$c")
+done
+
+n_cand=${#CANDIDATES[@]}
+log "export clients: $n_exports; pending CLs: $n_pending; candidates: $n_cand"
+[ "$n_cand" -eq 0 ] && { log "nothing to prune"; exit 0; }
+
+if [ "$n_cand" -gt "$MAX_DELETE" ]; then
+  abort "$n_cand candidates exceeds the cap of $MAX_DELETE -- refusing; raise JJ_PRUNE_MAX after checking the list is right"
+fi
+
+# -- verify and delete -------------------------------------------------------
+
+deleted=0 skipped=0 failed=0
+for c in "${CANDIDATES[@]}"; do
+  # Ask about this client specifically. A pending CL would have shown up
+  # above, so anything here means the earlier list was incomplete -- and a
+  # submitted CL still counts as "this client is referenced", so require a
+  # clean zero either way.
+  out="$(g4 changes -c "$c" -m 5 2>/dev/null)"; rc=$?
+  if [ "$rc" -ne 0 ]; then
+    warn "skip $c: g4 changes -c failed (rc=$rc)"
+    skipped=$((skipped+1)); continue
+  fi
+  n=$(printf '%s\n' "$out" | grep -c '^Change ')
+  if [ "$n" -ne 0 ]; then
+    warn "skip $c: has $n changelist(s) after all"
+    skipped=$((skipped+1)); continue
+  fi
+
+  if [ "$DRY_RUN" -eq 1 ]; then
+    log "would delete: $c"
+    deleted=$((deleted+1)); continue
+  fi
+
+  # </dev/null: citc -d does not prompt today, but a unit has no stdin and a
+  # future prompt would hang the timer rather than fail it.
+  res="$(timeout 180 g4 citc -d "$c" </dev/null 2>&1 | head -1)"
+  if printf '%s' "$res" | grep -q 'deleted'; then
+    log "deleted: $c"
+    deleted=$((deleted+1))
+  else
+    # Transient CitC health-check alarms are common; one retry clears them.
+    sleep 5
+    res="$(timeout 180 g4 citc -d "$c" </dev/null 2>&1 | head -1)"
+    if printf '%s' "$res" | grep -q 'deleted'; then
+      log "deleted (on retry): $c"
+      deleted=$((deleted+1))
+    else
+      warn "failed: $c :: $res"
+      failed=$((failed+1))
+    fi
+  fi
+done
+
+if [ "$DRY_RUN" -eq 1 ]; then
+  log "dry run: would delete $deleted, skip $skipped"
+else
+  log "done: deleted $deleted, skipped $skipped, failed $failed"
+fi
+exit 0
