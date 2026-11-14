@@ -1,0 +1,50 @@
+{
+  // Copy to <repository>/.vscode/tasks.json, or merge the tasks into yours.
+  // Needs REVIEWKIT_HOME set in the environment VS Code starts from.
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "review-kit: sweep staged changes",
+      "type": "shell",
+      "command": "python3 \"${env:REVIEWKIT_HOME}/scripts/cq_sweep.py\" --staged",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "review-kit: sweep last commit",
+      "type": "shell",
+      "command": "python3 \"${env:REVIEWKIT_HOME}/scripts/cq_sweep.py\" --commit HEAD",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "review-kit: truth audit of last commit",
+      "type": "shell",
+      "command": "python3 \"${env:REVIEWKIT_HOME}/scripts/truth_audit.py\" HEAD",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "review-kit: stack churn",
+      "type": "shell",
+      "command": "python3 \"${env:REVIEWKIT_HOME}/scripts/stack_churn.py\"",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "review-kit: AI review of the stack",
+      "type": "shell",
+      "command": "python3 \"${env:REVIEWKIT_HOME}/scripts/local_review.py\"",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "review-kit: gate",
+      "type": "shell",
+      "command": "python3 \"${env:REVIEWKIT_HOME}/scripts/gate.py\"",
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": "test",
+      "problemMatcher": []
+    }
+  ]
+}
