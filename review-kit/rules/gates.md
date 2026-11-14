@@ -31,9 +31,9 @@ their current form. The gate fails on any of:
   paragraph.
 * A commit over 150 changed lines (added plus deleted), unless its subject
   says pure move or golden.
-* An enum value the commit adds that the stack's non-test code uses nowhere,
-  or only in `==`/`!=` comparisons and `case` labels: a dead enum value
-  (`rules/design.md`).
+* A `.proto` enum value the commit adds that the stack's non-test code uses
+  nowhere, or only in `==`/`!=` comparisons and `case` labels: a dead enum
+  value (`rules/design.md`).
 * A commit that removes 5 or more lines which earlier commits of its stack
   added (`scripts/stack_churn.py`; `rules/stack_shape.md`): fold each edit
   into the commit that introduced the lines, or re-cut the stack.

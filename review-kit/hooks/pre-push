@@ -1,0 +1,14 @@
+#!/bin/sh
+# review-kit hook
+# Blocks a push whose commits no recent gate pass covers.
+kit=${REVIEWKIT_HOME:-}
+if [ -z "$kit" ]; then
+    kit=$(git config --get reviewkit.home 2>/dev/null) || kit=
+fi
+if [ -z "$kit" ] || [ ! -f "$kit/scripts/gate.py" ]; then
+    echo "review-kit: cannot find the kit. Set REVIEWKIT_HOME, or run" >&2
+    echo "  git config reviewkit.home /path/to/review-kit" >&2
+    echo "(the directory that holds scripts/gate.py)." >&2
+    exit 1
+fi
+exec python3 "$kit/scripts/gate.py" --check-push "$1" "$2"

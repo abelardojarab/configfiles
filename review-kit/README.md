@@ -4,7 +4,8 @@ Rules and scripts that check a change before a reviewer sees it. They work in
 any git repository and from any editor or coding agent: the checks are plain
 commands, and three git hooks run them at commit and push time.
 
-Needs git and Python 3.8 or later. No other dependency.
+Needs git and Python 3. No other dependency. The scripts are written for
+Python 3.8 and later and have been run on 3.13 only.
 
 ## What is here
 
@@ -47,6 +48,11 @@ git config --global reviewkit.home "$REVIEWKIT_HOME"
 A gate pass is recorded per commit fingerprint (message body plus net patch
 lines), so a rebase keeps it and any edit voids it.
 
+The push check covers the commits that no remote has yet, so history fetched
+from one remote can be pushed to another (a fork) without a pass. Before a
+repository's first push or fetch there is no mainline to measure a stack
+from, so commits on the base branch are let through and the hook says so.
+
 ## The scripts
 
 Run them from anywhere inside the repository. A "stack" is the commits between
@@ -80,7 +86,7 @@ environment variable `REVIEWKIT_<KEY>` in upper snake case overrides a key
 | `reviewkit.tidyCmd` | none | Analyzer whose findings count only on added lines; may be set several times |
 | `reviewkit.reviewCmd` | none | AI reviewer: a command that reads a prompt on stdin and prints the answer |
 | `reviewkit.verifyCmd` | none | A second, independent reviewer, ideally another model |
-| `reviewkit.stateDir` | inside `.git` | Where reports, overrides and gate passes are kept |
+| `reviewkit.stateDir` | `review-kit/` inside `.git` | Where reports, overrides and gate passes are kept; a path inside the work tree is refused |
 
 `lintCmd` and `tidyCmd` take the form `globs::command`. The command runs from
 the repository root with the matching touched files appended:
@@ -100,6 +106,12 @@ git config --global reviewkit.verifyCmd 'other-agent --read {prompt_file}'
 ```
 
 Without `reviewCmd` the gate skips the AI review and says so.
+`local_review.py` also reads two environment variables: `PARALLEL`, the
+number of reviews run at once (default 2), and `TIMEOUT_S`, the seconds
+allowed per review (default 3600).
+
+The hooks read `reviewkit.strict` and `reviewkit.home` from git config only;
+`REVIEWKIT_HOME` in the environment overrides the second.
 
 ## With a coding agent
 
@@ -151,6 +163,9 @@ such a repository.
 - The stack checks need a linear stack. A range with a merge commit is
   reported as not checked.
 - `git push --no-verify` skips the push hook, as it skips every hook.
+- The AI review is only as good as the command behind `reviewCmd`. The gate
+  checks that a report exists and has no open High or Medium finding, not
+  that the review was thorough.
 
 ## Tests
 

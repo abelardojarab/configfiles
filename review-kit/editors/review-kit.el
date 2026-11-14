@@ -1,4 +1,4 @@
-;;; review-kit.el --- Run the review-kit checks from Emacs  -*- lexical-binding: t; -*-
+;;; review-kit.el --- Run review-kit checks  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 ;; Load this file, set `review-kit-home' (or the REVIEWKIT_HOME environment
@@ -20,18 +20,20 @@
 (defun review-kit--run (script &rest args)
   "Run SCRIPT from the kit with ARGS at the root of the current repository."
   (unless (and review-kit-home
-               (file-exists-p (expand-file-name "scripts/gate.py" review-kit-home)))
+               (file-exists-p
+                (expand-file-name "scripts/gate.py" review-kit-home)))
     (user-error "Set `review-kit-home' to the review-kit directory"))
   (let ((root (locate-dominating-file default-directory ".git")))
     (unless root
       (user-error "Not inside a git repository"))
     (let ((default-directory root))
-      (compile (mapconcat #'shell-quote-argument
-                          (append (list "python3"
-                                        (expand-file-name (concat "scripts/" script)
-                                                          review-kit-home))
-                                  args)
-                          " ")))))
+      (compile (mapconcat
+                #'shell-quote-argument
+                (append (list "python3"
+                              (expand-file-name (concat "scripts/" script)
+                                                review-kit-home))
+                        args)
+                " ")))))
 
 ;;;###autoload
 (defun review-kit-sweep-staged ()
