@@ -1,7 +1,8 @@
 #!/bin/sh
 # review-kit hook
 # Runs the code-quality sweep on the staged changes; with
-# reviewkit.strict set to true, findings block the commit.
+# reviewkit.strict set to true, findings block the commit. Then runs
+# pre-commit.local if it exists.
 kit=${REVIEWKIT_HOME:-}
 if [ -z "$kit" ]; then
     kit=$(git config --get reviewkit.home 2>/dev/null) || kit=
@@ -12,7 +13,15 @@ if [ -z "$kit" ] || [ ! -f "$kit/scripts/gate.py" ]; then
     echo "(the directory that holds scripts/gate.py)." >&2
     exit 1
 fi
+# A hook that was here before review-kit (install.sh moves it to
+# <hook>.local) runs after the kit's own check passes.
+chained="$0.local"
 if [ "$(git config --bool --get reviewkit.strict 2>/dev/null)" = true ]; then
-    exec python3 "$kit/scripts/cq_sweep.py" --staged --strict
+    python3 "$kit/scripts/cq_sweep.py" --staged --strict || exit $?
+else
+    python3 "$kit/scripts/cq_sweep.py" --staged || exit $?
 fi
-exec python3 "$kit/scripts/cq_sweep.py" --staged
+if [ -x "$chained" ]; then
+    exec "$chained" "$@"
+fi
+exit 0

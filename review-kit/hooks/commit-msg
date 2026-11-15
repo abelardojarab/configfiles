@@ -1,6 +1,6 @@
 #!/bin/sh
 # review-kit hook
-# Checks the commit message.
+# Checks the commit message, then runs commit-msg.local if it exists.
 kit=${REVIEWKIT_HOME:-}
 if [ -z "$kit" ]; then
     kit=$(git config --get reviewkit.home 2>/dev/null) || kit=
@@ -11,4 +11,11 @@ if [ -z "$kit" ] || [ ! -f "$kit/scripts/gate.py" ]; then
     echo "(the directory that holds scripts/gate.py)." >&2
     exit 1
 fi
-exec python3 "$kit/scripts/commit_msg.py" "$1"
+# A hook that was here before review-kit (install.sh moves it to
+# <hook>.local) runs after the kit's own check passes.
+chained="$0.local"
+python3 "$kit/scripts/commit_msg.py" "$1" || exit $?
+if [ -x "$chained" ]; then
+    exec "$chained" "$@"
+fi
+exit 0

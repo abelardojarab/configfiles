@@ -19,10 +19,15 @@ brief: message and diff only), and its raw output reaches the main prompt as
 file holding the prompt instead of stdin.
 
 Placeholders in review.md: {{COMMIT}} {{SHORT}} {{BASE}} {{KIT}} {{STACK}}
-{{MESSAGE}} {{DIFF}} {{CLAIMS}} {{RULES}} {{CHECKS}}. verify.md takes the
-same set except {{RULES}}, {{CHECKS}} and {{CLAIMS}}. Every placeholder is
-replaced in one pass, so text inside a diff or a rule file that looks like a
-placeholder stays as it is.
+{{MESSAGE}} {{DIFF}} {{CLAIMS}} {{LENSES}} {{CHECKS}}. verify.md takes the
+same set except {{LENSES}}, {{CHECKS}} and {{CLAIMS}}. Every placeholder is
+replaced in one pass, so text inside a diff or a lens file that looks like a
+placeholder stays as it is. {{RULES}} is an older name for {{LENSES}}.
+
+{{LENSES}} holds <home>/lenses/common/*.md plus the language lenses the
+commit needs: the ones reviewkit.lenses names, or, when it is `auto`, the
+languages of the files the commit touches (c, cpp, protobuf, python,
+typescript).
 
 Environment:
   PARALLEL   concurrent reviews (default 2)
@@ -48,7 +53,7 @@ import kit  # noqa: E402
 
 MAX_DIFF_CHARS = 200000
 NO_VERIFIER = "(no independent verifier configured)"
-NO_RULES = "(no rules directory)"
+NO_LENSES = "(no lenses directory)"
 NO_CHECKS = "(no checks file)"
 REPORT = re.compile(r"^<<<LOCAL_REVIEW_REPORT[ \t]*\n(.*?)\n"
                     r"LOCAL_REVIEW_REPORT>>>[ \t]*$", re.S | re.M)
@@ -70,14 +75,18 @@ def read_text(path):
         return handle.read()
 
 
-def rules_text(home):
-    """Every rules/*.md, sorted by name, each behind a `### name` line."""
-    paths = sorted(glob.glob(os.path.join(home, "rules", "*.md")))
-    if not paths:
-        return NO_RULES
-    return "\n\n".join("### %s\n%s" % (os.path.basename(path),
-                                       read_text(path).strip())
-                       for path in paths)
+def lenses_text(home, names):
+    """Every lenses/<name>/*.md for the given lens names, in that order and
+    sorted by file name within a lens, each behind a `### name/file` line."""
+    parts = []
+    for name in names:
+        for path in sorted(glob.glob(os.path.join(home, "lenses", name,
+                                                  "*.md"))):
+            parts.append("### %s/%s\n%s" % (name, os.path.basename(path),
+                                            read_text(path).strip()))
+    if not parts:
+        return NO_LENSES
+    return "\n\n".join(parts)
 
 
 def checks_text(home):
@@ -123,6 +132,10 @@ def review(commit, ctx):
         # Hand-written or truncated: review for real.
         os.remove(path)
     msg = kit.message(commit)
+    diff = kit.commit_diff(commit)
+    touched = [new or old for old, new, _ in kit.sections(diff)
+               if new or old]
+    lenses = lenses_text(ctx["home"], kit.lenses_for(touched))
     values = {
         "COMMIT": commit,
         "SHORT": short,
@@ -130,7 +143,7 @@ def review(commit, ctx):
         "KIT": kit.KIT_DIR,
         "STACK": ctx["stack"],
         "MESSAGE": msg,
-        "DIFF": cut_diff(kit.commit_diff(commit), commit),
+        "DIFF": cut_diff(diff, commit),
     }
     claims = NO_VERIFIER
     try:
@@ -143,7 +156,7 @@ def review(commit, ctx):
                         % (code, err.strip()[-200:]))
             claims = out
         prompt = fill(ctx["review_template"],
-                      dict(values, CLAIMS=claims, RULES=ctx["rules"],
+                      dict(values, CLAIMS=claims, LENSES=lenses, RULES=lenses,
                            CHECKS=ctx["checks"]))
         code, out, err = run_reviewer(ctx["review_cmd"], prompt, ctx["root"],
                                       ctx["timeout"])
@@ -202,7 +215,6 @@ def main(argv):
             "verify_template": (read_text(os.path.join(home, "prompts",
                                                        "verify.md"))
                                 if verify_cmd else ""),
-            "rules": rules_text(home),
             "checks": checks_text(home),
             "stack": "\n".join("%s %s" % (c[:12], kit.subject(kit.message(c)))
                                for c in commits),

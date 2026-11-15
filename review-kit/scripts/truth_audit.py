@@ -9,8 +9,13 @@ message body lines and the comment text on lines the commit adds (all added
 text in Markdown). What can be checked mechanically is flagged:
 
   [attribution]  the message matches reviewkit.forbidMessage
-  [symbol]       a code-looking name found neither in the code of the files
-                 the stack touches nor anywhere in the tree at the merge base
+  [symbol]       a code-looking name in the message or in a source-code
+                 comment that is found neither in the code of the files the
+                 stack touches nor anywhere in the tree at the merge base.
+                 Lines of prose files (Markdown, YAML, TOML, Dockerfiles and
+                 the like) only reach the checklist: their capitalized words
+                 are products and settings, not symbols. A name listed in
+                 reviewkit.knownNames is never flagged.
   [commit]       a commit hash that does not exist, or that is neither merged
                  nor in the stack while the sentence does not say pending,
                  unmerged or parent
@@ -106,9 +111,12 @@ def audit(rev, base_commit):
 
     corpus = kit.stack_corpus(base_commit, rev)
     checked = {}
+    known = kit.known_names()
     for where, text in sources:
+        if where != "message" and kit.is_prose(where):
+            continue
         for tok in sorted(tokens(text)):
-            if tok in checked:
+            if tok in checked or tok in known:
                 continue
             # An all-caps name is often the end of a longer constant, such as
             # an enum value written without its type prefix.

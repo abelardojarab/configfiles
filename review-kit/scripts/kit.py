@@ -38,12 +38,15 @@ AUTO_BASES = ("origin/HEAD", "origin/main", "origin/master", "main", "master")
 _AI_TOOLS = (r"claude|copilot|gemini|gpt|chatgpt|openai|anthropic|cursor"
              r"|codex|aider|devin")
 # Two of the tool names are also given names, so for those a co-author
-# trailer counts only with a qualifier that a person's name does not carry.
+# trailer counts only with a qualifier that a person's name does not carry,
+# or with no surname at all before the address.
 DEFAULT_FORBID_MESSAGE = (
     r"^[ \t]*co-authored-by[ \t]*:[^\n]*(?:"
     r"\b(?:copilot|gemini|gpt|chatgpt|openai|anthropic|cursor|codex|aider)\b"
     r"|\bclaude(?:[ \t]+(?:code|opus|sonnet|haiku|ai)\b|\.ai\b|\[bot\])"
-    r"|\bdevin(?:[- ]ai\b|\.ai\b|\[bot\]))"
+    r"|\bdevin(?:[- ]ai\b|\.ai\b|\[bot\])"
+    # A person signs with a surname; a bare "Claude <mail>" is the model.
+    r"|\b(?:claude|devin)[ \t]*<)"
     r"|^[^\n]*\bgenerated[ \t]+(?:with|by)\b[^\n]*\b(?:"
     + _AI_TOOLS + r"|ai)\b"
     r"|^[ \t]*(?:assisted-by|ai-assisted)[ \t]*:"
@@ -56,6 +59,8 @@ DEFAULTS = {
     "churnLimit": "5",
     "forbidMessage": DEFAULT_FORBID_MESSAGE,
     "requireTrailers": "",
+    "knownNames": "",
+    "lenses": "auto",
     "reviewCmd": "",
     "verifyCmd": "",
     "stateDir": "",
@@ -89,6 +94,13 @@ DASH_EXT = {".sql", ".lua"}
 SEMI_EXT = {".el", ".lisp", ".lsp", ".scm", ".ss", ".rkt", ".clj", ".cljs",
             ".cljc", ".edn", ".fnl"}
 MARKDOWN_EXT = {".md", ".markdown"}
+# Files whose comments describe products, services and settings rather than
+# code: the truth audit lists their lines for a manual look but does not
+# treat a capitalized word in them as a symbol.
+PROSE_EXT = MARKDOWN_EXT | {".txt", ".rst", ".yaml", ".yml", ".toml", ".ini",
+                            ".cfg", ".conf", ".json", ".env", ".service",
+                            ".timer", ".socket"}
+PROSE_NAMES = {"Dockerfile", "Containerfile"}
 TEST_PATH = re.compile(r"_test\.|(?:^|/)test_|\.test\.|_spec\.|(?:^|/)tests?/")
 
 # Standards that are written NAME-number and are not issue keys.
@@ -295,7 +307,7 @@ def config_int(key):
 
 
 def home_dir():
-    """Directory holding prompts/ and rules/: REVIEWKIT_HOME when it names a
+    """Directory holding prompts/ and lenses/: REVIEWKIT_HOME when it names a
     directory, else the kit this script belongs to."""
     override = os.environ.get("REVIEWKIT_HOME")
     if override and os.path.isdir(override):
@@ -602,6 +614,20 @@ def is_markdown(path):
     return _ext(path) in MARKDOWN_EXT
 
 
+def is_prose(path):
+    """Whether comments in `path` are prose rather than code comments."""
+    base = os.path.basename(path)
+    return (_ext(path) in PROSE_EXT or base in PROSE_NAMES
+            or base.startswith(("Dockerfile.", "Containerfile.")))
+
+
+def known_names():
+    """Names reviewkit.knownNames lists as real although no code defines
+    them (product names, services, config keys)."""
+    return {name.strip() for name in config("knownNames").split(",")
+            if name.strip()}
+
+
 def is_c_family(path):
     return _ext(path) in C_FAMILY_EXT
 
@@ -688,6 +714,37 @@ def issue_refs(text):
             continue
         refs.append(ref)
     return refs
+
+
+# ---------------------------------------------------------------- lenses
+
+# Which language lens a file falls under. A lone header is read as C++, the
+# more common case; a stack with .c files gets the C lens as well.
+LENS_EXT = {".c": "c", ".proto": "protobuf", ".py": "python",
+            ".pyi": "python", ".ts": "typescript", ".tsx": "typescript",
+            ".mts": "typescript", ".cts": "typescript"}
+LENS_NAMES = ("common", "c", "cpp", "protobuf", "python", "typescript")
+
+
+def lenses_for(paths):
+    """The lens directories a change needs: `common`, plus the language
+    lenses reviewkit.lenses names, or, when it is `auto`, the languages the
+    files in `paths` are written in."""
+    wanted = config("lenses").strip() or "auto"
+    if wanted != "auto":
+        chosen = [name.strip() for name in wanted.split(",") if name.strip()]
+    else:
+        chosen = []
+        for path in paths:
+            ext = _ext(path)
+            name = ("cpp" if ext in CPP_EXT else LENS_EXT.get(ext))
+            if name and name not in chosen:
+                chosen.append(name)
+    out = ["common"]
+    for name in chosen:
+        if name not in out:
+            out.append(name)
+    return out
 
 
 # ---------------------------------------------------------------- C++ maps
@@ -914,7 +971,7 @@ def main():
     try:
         print("repository: %s" % root())
         print("kit: %s" % KIT_DIR)
-        print("prompts and rules from: %s" % home_dir())
+        print("prompts and lenses from: %s" % home_dir())
         print("state: %s" % state_dir())
         for key in DEFAULTS:
             value = config(key)
@@ -925,6 +982,8 @@ def main():
             for value in config_all(key):
                 print("%s = %s" % (key, value))
         print("base ref: %s" % resolve_base())
+        print("lenses: %s" % ", ".join(lenses_for(
+            changed_files(merge_base(resolve_base()), "HEAD"))))
     except KitError as exc:
         print("kit: %s" % exc)
         return 2

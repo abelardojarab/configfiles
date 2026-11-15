@@ -1,6 +1,8 @@
 #!/bin/sh
 # review-kit hook
-# Blocks a push whose commits no recent gate pass covers.
+# Blocks a push whose commits no recent gate pass covers, then runs
+# pre-push.local if it exists. git describes the push on stdin; both the
+# gate and the chained hook need to read it, so it is buffered here.
 kit=${REVIEWKIT_HOME:-}
 if [ -z "$kit" ]; then
     kit=$(git config --get reviewkit.home 2>/dev/null) || kit=
@@ -11,4 +13,14 @@ if [ -z "$kit" ] || [ ! -f "$kit/scripts/gate.py" ]; then
     echo "(the directory that holds scripts/gate.py)." >&2
     exit 1
 fi
-exec python3 "$kit/scripts/gate.py" --check-push "$1" "$2"
+# A hook that was here before review-kit (install.sh moves it to
+# <hook>.local) runs after the kit's own check passes.
+chained="$0.local"
+input=$(cat)
+feed() { [ -n "$input" ] && printf '%s\n' "$input"; }
+feed | python3 "$kit/scripts/gate.py" --check-push "$1" "$2" || exit $?
+if [ -x "$chained" ]; then
+    feed | "$chained" "$@"
+    exit $?
+fi
+exit 0

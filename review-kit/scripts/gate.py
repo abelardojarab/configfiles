@@ -9,7 +9,8 @@ Without --check-push it checks the stack merge-base(B, HEAD)..HEAD (B
 defaults to reviewkit.base) and prints one `######## <name>` section per
 check: a clean work tree, the commit message rules, the truth audit (flags
 may be overridden in <stateDir>/truth_overrides/<fingerprint>.txt with lines
-`<exact flag line> :: <reason of 20+ characters>`), the size limit, unused
+`<exact flag line> :: <reason of 20+ characters>`), the size limit (off
+when reviewkit.maxLines is 0), unused
 proto enum values, stack churn, reads through a C++ map's operator[],
 lintCmd and tidyCmd, and, when reviewCmd is set, the saved AI review reports.
 The code-quality sweep is printed for each commit without failing. On a pass
@@ -315,7 +316,7 @@ def run_gate(base_arg):
 
             diff = kit.commit_diff(commit)
             size = kit.changed_line_count(diff)
-            if (size > max_lines
+            if (max_lines > 0 and size > max_lines
                     and not kit.MOVE_ONLY.search(kit.subject(msg))):
                 failures.append("%s: %d changed lines (limit %d): split it "
                                 "by problem" % (short, size, max_lines))
