@@ -1219,5 +1219,72 @@ class InstallTest(KitTestCase):
         self.assertIn("cannot find the kit", proc.stderr)
 
 
+class SetupRepoTest(KitTestCase):
+
+    def setup_repo(self, *args, cwd=None):
+        return subprocess.run(["sh", os.path.join(HOOKS, "setup-repo.sh"),
+                               *args], cwd=cwd, stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE, universal_newlines=True)
+
+    def read_agents(self):
+        with open(os.path.join(self.repo.path, "AGENTS.md")) as handle:
+            return handle.read()
+
+    def test_installs_hooks_and_writes_agents_md(self):
+        proc = self.setup_repo(self.repo.path)
+        self.assertExit(proc, 0)
+        self.assertTrue(os.path.isfile(os.path.join(
+            self.repo.path, ".git", "hooks", "pre-push")))
+        self.assertEqual(self.repo.git("config", "reviewkit.home").strip(),
+                         KIT)
+        text = self.read_agents()
+        self.assertTrue(text.startswith("# Instructions for coding agents"))
+        self.assertNotIn("<kit>", text)
+        self.assertNotIn("Copy this file", text)
+        self.assertIn("## Before writing code", text)
+        # Every kit path the agent is told to read or run exists.
+        prefix = KIT + "/"
+        paths = [word.strip("`.,:()")
+                 for word in text.split() if prefix in word]
+        self.assertTrue(paths)
+        for path in paths:
+            self.assertTrue(os.path.exists(path.rstrip("/")), path)
+
+    def test_leaves_an_existing_agents_md_alone(self):
+        self.repo.write("AGENTS.md", "# Ours\n")
+        proc = self.setup_repo(self.repo.path)
+        self.assertExit(proc, 0)
+        self.assertEqual(self.read_agents(), "# Ours\n")
+        self.assertIn("merge", proc.stdout)
+
+    def test_points_out_a_claude_md(self):
+        for name in ("CLAUDE.md", "CLAUDE.local.md"):
+            self.repo.write(name, "# Claude\n")
+        proc = self.setup_repo(self.repo.path)
+        self.assertExit(proc, 0)
+        for name in ("CLAUDE.md", "CLAUDE.local.md"):
+            self.assertIn("reads %s instead of AGENTS.md" % name,
+                          proc.stdout)
+
+    def test_defaults_to_the_current_directory(self):
+        proc = self.setup_repo(cwd=self.repo.path)
+        self.assertExit(proc, 0)
+        self.assertIn("## Before writing code", self.read_agents())
+
+    def test_rejects_more_than_one_argument(self):
+        proc = self.setup_repo(self.repo.path, self.repo.path)
+        self.assertExit(proc, 2)
+        self.assertIn("usage: setup-repo.sh [REPO_DIR]", proc.stderr)
+        self.assertFalse(os.path.exists(os.path.join(self.repo.path,
+                                                     "AGENTS.md")))
+
+    def test_rejects_a_directory_outside_git(self):
+        outside = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, outside)
+        proc = self.setup_repo(outside)
+        self.assertExit(proc, 2)
+        self.assertFalse(os.path.exists(os.path.join(outside, "AGENTS.md")))
+
+
 if __name__ == "__main__":
     unittest.main()

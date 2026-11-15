@@ -14,7 +14,7 @@ Python 3.8 and later and have been run on 3.13 only.
 | `lenses/` | Review lenses as Markdown: each one is the checklist a reviewer applies to one concern. `lenses/common/` (change hygiene, stack shape, design, code quality, testing, reviewer checklists, pattern scan, push gates) applies to every change; `lenses/c/`, `lenses/cpp/`, `lenses/cuda/`, `lenses/go/`, `lenses/kernel/`, `lenses/protobuf/`, `lenses/python/` and `lenses/typescript/` only when the diff touches that language. Load them into a coding agent or read them yourself. |
 | `prompts/` | The prompt for an AI review of one commit, the prompt for an independent verifier, and the checklist of recurring findings both use. |
 | `scripts/` | The checks. Each one runs on its own. |
-| `hooks/` | `pre-commit`, `commit-msg` and `pre-push` wrappers, `install.sh`, and `claude-stop.sh`, a Claude Code Stop hook. |
+| `hooks/` | `pre-commit`, `commit-msg` and `pre-push` wrappers, `install.sh`, `setup-repo.sh`, and `claude-stop.sh`, a Claude Code Stop hook. |
 | `editors/` | VS Code tasks and an Emacs package that run the scripts. |
 | `AGENTS.md` | Instructions that tell a coding agent when to read which lens and when to run which script. |
 | `tests/` | Tests of the scripts. |
@@ -31,6 +31,17 @@ location in its git config. A hook that is already there and was not installed
 by review-kit (git-lfs installs some) is moved to `<hook>.local`, and the
 installed hook runs it after its own check passes. The same `.local` file is
 the place for anything else you want to run after the kit.
+
+To set a repository up for coding agents as well, run `setup-repo.sh` instead
+of `install.sh`. It runs `install.sh`, then writes `AGENTS.md` at the
+repository root from this kit's template with `<kit>` filled in. An
+`AGENTS.md` that already exists is left alone for you to merge, and the script
+points out a `CLAUDE.md` or `CLAUDE.local.md`, which Claude Code reads instead
+of `AGENTS.md`:
+
+```
+"$REVIEWKIT_HOME/hooks/setup-repo.sh" /path/to/repository
+```
 
 To use the kit in every repository instead, point git at the hooks once:
 
