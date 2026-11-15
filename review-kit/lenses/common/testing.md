@@ -1,10 +1,10 @@
-# Testing Standards
+# Testing Lens
 
-Testing rules by test kind; classify the test before applying any rule, because the kinds have opposite shapes.
+What a reviewer checks in tests, by test kind; classify the test before applying any rule, because the kinds have opposite shapes.
 
 | Kind | Thing under test | Typical location |
 |---|---|---|
-| A. Unit tests | the code | `*_test.cc`, `*_test.py` next to the library |
+| A. Unit tests | the code | `*_test.*` or `test_*.*` next to the library |
 | B. Production-config conformance guards | the production configuration | a test directory that reads the checked-in production config files |
 | C. Config-language tests | values written in the config language | tests next to the config sources |
 
@@ -26,7 +26,7 @@ reviewer asks to shrink.
   check one at a time, run the tests, confirm at least one fails, restore.
   Record the result in the description ("Mutation: removing the stock check
   fails `RejectsOrderAboveStock`"). A check is every early return, special case,
-  clamp (`std::max(0.0, ...)`) and floor inside a new function, not only the
+  clamp (`max(0.0, ...)`) and floor inside a new function, not only the
   whole gate. A branch whose deletion leaves every test green is redundant
   (delete it) or needs a test that tells the two paths apart.
 - No default-valued assertions: an expected value equal to the field's default
@@ -34,7 +34,7 @@ reviewer asks to shrink.
   Pick inputs that give a non-default value, or assert presence.
 - Line coverage of the diff: every line the change adds to non-test code runs in
   its tests. An uncovered line needs a test or a one-line reason in the
-  description (logging only, `DCHECK`, error pass-through). Coverage proves the
+  description (logging only, a debug-only assertion, error pass-through). Coverage proves the
   test reaches the line, the mutation check proves it asserts on it, neither
   proves production reaches it (`design.md` §2).
 - Build inputs only in shapes the upstream stage produces in production. Never
@@ -84,13 +84,13 @@ code is glue.
   calls the helper and asserts. Split it into two changes: helper with its
   tests, then the thin guard. A branch only production config runs can be wrong
   and stay green.
-- Keys may be `std::pair<std::string, std::string>` or a concatenated string;
-  the named-key-struct rule (`cpp.md` §4) does not apply here.
+- Keys may be a plain pair or a concatenated string; the named-key-struct rule
+  of the language lens (`lenses/cpp/cpp.md` §4) does not apply here.
 - Share join keys and normalizers from the helper library; never re-type a
   default value or copy the helper.
-- Vacuity guard: `ASSERT_THAT(joined, Not(IsEmpty()))` on the joined data, not
-  only on the inputs.
-- The failure message is for the config author: one `EXPECT_*` per violating
+- Vacuity guard: assert that the joined data is non-empty, not only the
+  inputs.
+- The failure message is for the config author: one assertion per violating
   entity, stating the entity, why it is a problem, how to fix it and the
   tracking issue.
 - The negative check is the proof: temporarily break a real config, run the
@@ -112,7 +112,8 @@ code is glue.
 
 ## C. Config-language tests
 
-- 80 columns; split long labels into adjacent string literals in parentheses.
+- Stay within the column limit; split long labels across adjacent string
+  literals.
 - No whole-dict assertions (`assert policy == base` breaks when a concurrent
   change adds a default). Assert specific fields, or filter excluded keys first:
   `rest = {k: v for k, v in policy.items() if k not in _IGNORED_KEYS}`.

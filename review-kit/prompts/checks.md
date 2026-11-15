@@ -63,7 +63,7 @@ new class of finding here, so every reviewer runs the same list.
     get the same labels whatever order they are processed in, that the
     label's doc states that counterfactual and not the code path that assigns
     it, and that a test has one item hitting both limits.
-14. Stack churn (`rules/stack_shape.md`). When the change has unmerged parent
+14. Stack churn (`lenses/common/stack_shape.md`). When the change has unmerged parent
     commits by the same author, list what it deletes, moves, hides, reformats
     or rewords that a parent added: code, tests, output text, help text.
     `scripts/stack_churn.py` prints the removed lines; hiding or re-parsing a
@@ -71,7 +71,7 @@ new class of finding here, so every reviewer runs the same list.
     diffs. More than extending a statement (one more argument, condition or
     column) is Medium, with the fix "fold it into the parent commit". A
     parent whose subject says pure move is exempt.
-15. One decider per decision (`rules/stack_shape.md`). Every place the change
+15. One decider per decision (`lenses/common/stack_shape.md`). Every place the change
     matches, splits or regex-parses text that another layer of the same
     feature produces (`value.includes('(frozen: ')`, a regex over a marker,
     `header.split(' ')[0]`, a join on keys cut from rendered output): Medium.

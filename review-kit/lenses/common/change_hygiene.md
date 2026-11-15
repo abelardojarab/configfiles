@@ -1,8 +1,8 @@
-# Change Hygiene
+# Change Hygiene Lens
 
-How a change (a commit or pull request) is cut, described, pushed and defended in review.
+How a change (a commit or pull request) is cut, described, pushed and defended in review. Applies to every change, in any language.
 
-The step order around pushing is in `rules/gates.md`; the gate itself is
+The step order around pushing is in `lenses/common/gates.md`; the gate itself is
 `scripts/gate.py`.
 
 ## 1. One problem per change
@@ -13,8 +13,9 @@ The step order around pushing is in `rules/gates.md`; the gate itself is
 - Two independent checks in the same loop are still two changes, even when
   they share a function and a test builder. Bundling them lets feedback on one
   block the other, and a larger change takes more review rounds.
-- Schema changes (`.proto` messages, fields, enum values, schema comments) go
-  in their own change, never mixed with code or configuration.
+- Schema changes (messages, fields, enum values, schema comments) go in their
+  own change, never mixed with code or configuration
+  (`lenses/protobuf/protobuf.md` for protobuf schemas).
 - Keep every change under 150 changed lines (added plus deleted, tests
   included, as `scripts/cq_sweep.py` counts them). A modified line counts
   twice. Over 150 means split before pushing, not explain in the description.
@@ -56,7 +57,7 @@ The step order around pushing is in `rules/gates.md`; the gate itself is
   (the config author, the on-call engineer), not for the reviewer.
 - Be precise: exact sets (which states are included), resource amounts vs.
   instance counts, intended vs. currently observed values, read-write vs.
-  read-only, `<` vs. `>=` (`cpp.md` §1).
+  read-only, `<` vs. `>=`, with an epsilon on float boundaries.
 - Verify reviewer-suggested wording like your own. Before applying a sentence
   a reviewer or a bot proposes, re-derive each qualifier from the code; a
   suggestion often drops a condition its own evidence states.
@@ -111,17 +112,17 @@ The step order around pushing is in `rules/gates.md`; the gate itself is
   tool on every touched build target, then the full listed test set.
 - For guard tests, re-run the negative check on the final code
   (`testing.md` §B).
-- Push only when the configured static analyzer (clang-tidy for C++) reports
+- Push only when the configured static analyzer (`reviewkit.tidyCmd`) reports
   nothing on the change's lines and `scripts/truth_audit.py` has no
   unexplained flags, with every checklist sentence verified, the description
   included.
 - If a parent merges mid-stack and the group push fails, sync, re-run the gate
   on what is left, push it, and reword "the parent change" to the merged change.
-- jj: target change IDs, not commit IDs; edit on top and squash rather than
-  rewriting in place; abandon stale commits in one call. This avoids divergent
-  changes.
-- Before editing a workspace another agent may hold, check the operation log
-  for recent operations and ask the user to stop that agent.
+- In a repository that uses jj: target change IDs, not commit IDs; edit on top
+  and squash rather than rewriting in place; abandon stale commits in one
+  call. This avoids divergent changes. Before editing a workspace another
+  agent may hold, check the operation log for recent operations and ask the
+  user to stop that agent.
 
 ## 5. Post-push
 

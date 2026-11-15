@@ -1,6 +1,6 @@
-# Review Lenses
+# Reviewer Checklists
 
-Two checklists to run on the final diff and description after the gate passes, then the review passes to run before pushing.
+Two checklists to run on the final diff and description after the gate passes, then the review passes to run before pushing. Language-neutral; the language lenses hold the concrete constructs.
 
 Answer each item in one line in the reply to the user. A "no" gets fixed first.
 
@@ -34,8 +34,8 @@ keeps things simple, researches first and agrees on the solution before code.
    the code lives, why it fires in production, how it splits into changes) was
    posted on the issue and acknowledged before the code was written. If not,
    tell the user before pushing.
-8. High standard. Lint, format, dependency cleanup and local clang-tidy are
-   clean (`scripts/gate.py` checks this).
+8. High standard. Lint, format, dependency cleanup and the configured static
+   analyzer are clean (`scripts/gate.py` checks this).
 9. Final states, one deciding layer (`stack_shape.md`). Read the stack of
    changes as one diff. No change deletes, moves, hides or re-parses what an earlier
    unmerged change added (`scripts/stack_churn.py` exits 0 and each line it
@@ -70,19 +70,19 @@ from the author, and finds bugs the author's own pass misses.
 6. Comments and scope match the code. After any logic change, re-read the
    test's doc comment, the failure message and the description's scope
    paragraph against the final code.
-7. Moved header helpers pass a readability review in their new home: pure
-   arithmetic helpers are `constexpr`, parameters have full domain names
-   matching sibling declarations, and the comment is rewritten for the new
-   callers (exact return value, no history of deleted code).
+7. Moved helpers pass a readability review in their new home: pure arithmetic
+   helpers are compile-time where the language allows, parameters have full
+   domain names matching sibling declarations, and the comment is rewritten
+   for the new callers (exact return value, no history of deleted code).
 8. Function comments start with a verb phrase, have an explicit antecedent for
    every pronoun, and state preconditions enforced by callees before
    early-return paths.
 9. New overloads and parameters are tested in the change that adds them, with
    an argument that differs from the old default so a version that ignored it
    fails.
-10. Test include hygiene: include `<tuple>` and `<utility>` directly in test
-    files, and never call a value-returning lookup twice in one assertion;
-    bind it once per iteration.
+10. Test import hygiene: import what the test uses directly, and never call a
+    value-returning lookup twice in one assertion; bind it once per
+    iteration.
 11. Items 1-2 apply to sentences too. A sentence that says when something
     happens, or where two components differ, names the production predicate at
     every level (a global enable and a per-entity setting) and checks every
@@ -104,9 +104,9 @@ re-run the gate.
 - Test blast radius: shared test helpers and fixtures.
 - Includes and forward declarations.
 - Performance: redundant map lookups or ones whose key does not change in
-  the loop, missing `reserve`, ordered containers where hashing suffices,
-  string `operator+` in loops, `string_view` parameters, protobuf messages
-  built in loops.
+  the loop, containers not pre-sized when the size is known, ordered
+  containers where hashing suffices, string concatenation in loops, copies
+  where a view works, messages built from scratch in loops.
 - Readability against the language's style guide.
 - A risk assessment of the change's production impact.
 - For urgent or design-heavy changes, a first-principles review of the

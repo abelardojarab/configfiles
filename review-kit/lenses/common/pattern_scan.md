@@ -1,4 +1,4 @@
-# Directory Pattern Scan
+# Pattern Scan Lens
 
 Before any design or code, for every change: learn how the directory already solves similar problems.
 

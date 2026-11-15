@@ -11,12 +11,12 @@ Python 3.8 and later and have been run on 3.13 only.
 
 | Path | What it is |
 |---|---|
-| `rules/` | Engineering rules as Markdown: change hygiene, stack shape, design, C++, code quality, testing, review checklists, push gates. Load them into a coding agent or read them yourself. |
+| `lenses/` | Review lenses as Markdown: each one is the checklist a reviewer applies to one concern. `lenses/common/` (change hygiene, stack shape, design, code quality, testing, reviewer checklists, pattern scan, push gates) applies to every change; `lenses/c/`, `lenses/cpp/`, `lenses/protobuf/`, `lenses/python/` and `lenses/typescript/` only when the diff touches that language. Load them into a coding agent or read them yourself. |
 | `prompts/` | The prompt for an AI review of one commit, the prompt for an independent verifier, and the checklist of recurring findings both use. |
 | `scripts/` | The checks. Each one runs on its own. |
 | `hooks/` | `pre-commit`, `commit-msg` and `pre-push` wrappers, and `install.sh`. |
 | `editors/` | VS Code tasks and an Emacs package that run the scripts. |
-| `AGENTS.md` | Instructions that tell a coding agent when to read which rule and when to run which script. |
+| `AGENTS.md` | Instructions that tell a coding agent when to read which lens and when to run which script. |
 | `tests/` | Tests of the scripts. |
 
 ## Install
@@ -27,7 +27,10 @@ export REVIEWKIT_HOME=/path/to/review-kit        # in your shell profile
 ```
 
 `install.sh` copies the three hooks into the repository and records the kit's
-location in its git config. It does not overwrite a hook it did not install.
+location in its git config. A hook that is already there and was not installed
+by review-kit (git-lfs installs some) is moved to `<hook>.local`, and the
+installed hook runs it after its own check passes. The same `.local` file is
+the place for anything else you want to run after the kit.
 
 To use the kit in every repository instead, point git at the hooks once:
 
@@ -61,7 +64,7 @@ the merge base with the mainline and `HEAD`.
 | Script | What it checks |
 |---|---|
 | `cq_sweep.py [--staged \| --commit REV \| --range A..B] [--strict]` | Size over the limit, line numbers in comments, issue references outside a TODO, unbraced one-line bodies, missing or unused standard headers, long lines, single-letter names, map reads through `operator[]`, and similar nits on added lines. |
-| `truth_audit.py [REV]` | Names in comments and in the message that exist nowhere in the code, commit references that do not exist or are unmerged, `knob = value` claims that are not in the tree, duplicated paragraphs. Then prints every added sentence as a checklist to verify by hand. |
+| `truth_audit.py [REV]` | Names in source-code comments and in the message that exist nowhere in the code, commit references that do not exist or are unmerged, `knob = value` claims that are not in the tree, duplicated paragraphs. Lines of prose files (Markdown, YAML, TOML, Dockerfiles) only reach the checklist. Then prints every added sentence as a checklist to verify by hand. |
 | `stack_churn.py` | Lines a commit removes that an earlier commit of the same stack added. |
 | `local_review.py` | Runs the configured AI reviewer on each commit and saves its report. |
 | `gate.py` | All of the above for the whole stack, plus dead enum values, the configured linters and analyzers, and the review reports. Exit 0 records a pass. |
@@ -76,12 +79,14 @@ environment variable `REVIEWKIT_<KEY>` in upper snake case overrides a key
 | Key | Default | Meaning |
 |---|---|---|
 | `reviewkit.base` | `origin/HEAD`, else `origin/main`, `origin/master`, `main`, `master` | Mainline ref the stack is measured from |
-| `reviewkit.maxLines` | 150 | Changed lines (added plus deleted) per commit |
+| `reviewkit.maxLines` | 150 | Changed lines (added plus deleted) per commit; 0 turns the check off, for a repository that takes large commits |
 | `reviewkit.maxCols` | 80 | Column limit in the sweep; 0 turns it off |
 | `reviewkit.churnLimit` | 5 | Lines of an earlier commit a later one may remove |
 | `reviewkit.strict` | false | Make the pre-commit sweep block the commit |
 | `reviewkit.forbidMessage` | AI and tool attribution | Regular expression a commit message must not match |
 | `reviewkit.requireTrailers` | none | Comma-separated trailers every message must carry |
+| `reviewkit.knownNames` | none | Comma-separated names the truth audit must not flag as stale: product names, services, config keys that no code defines |
+| `reviewkit.lenses` | `auto` | Language lenses the AI review loads next to `common`: a comma-separated list of `c`, `cpp`, `protobuf`, `python`, `typescript`, or `auto` to pick them from the files each commit touches |
 | `reviewkit.lintCmd` | none | Linter to run on touched files; may be set several times |
 | `reviewkit.tidyCmd` | none | Analyzer whose findings count only on added lines; may be set several times |
 | `reviewkit.reviewCmd` | none | AI reviewer: a command that reads a prompt on stdin and prints the answer |
@@ -117,7 +122,7 @@ The hooks read `reviewkit.strict` and `reviewkit.home` from git config only;
 
 Copy `AGENTS.md` into the repository (or append it to the file your agent
 reads) and replace `<kit>` with this directory's path. The agent then reads
-the rules before coding and runs the gate before pushing. The hooks apply to
+the lenses before coding and runs the gate before pushing. The hooks apply to
 the agent's commits and pushes as they do to yours.
 
 ## With an editor
@@ -153,6 +158,15 @@ repos:
 The push check reads the list of pushed refs that git writes to the pre-push
 hook, so it is not included here: run `gate.py` by hand before pushing in
 such a repository.
+
+## Lenses
+
+The lenses are written as what a reviewer checks, not as the history of any
+one review. `lenses/common/` is language-neutral. A language lens holds the
+concrete constructs for that language only, so a C++ repository never sees
+Python docstring rules and a YAML-only change gets no C++ rules at all.
+`local_review.py` pastes `common` plus the lenses for the languages a commit
+touches into the review prompt; `reviewkit.lenses` overrides that choice.
 
 ## Limits
 

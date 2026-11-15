@@ -5,25 +5,32 @@ reads), and replace `<kit>` with the absolute path of this directory.
 
 ## Before writing code
 
-1. Read `<kit>/rules/pattern_scan.md` and post the pattern-scan note it asks
-   for. No code before that note exists.
-2. Read the rule files that match the work:
+1. Read `<kit>/lenses/common/pattern_scan.md` and post the pattern-scan note
+   it asks for. No code before that note exists.
+2. Read the lenses that match the work. A lens is a reviewer's checklist for
+   one concern; the common ones apply to every change, a language lens only
+   when the diff touches that language:
 
 | When | Read |
 |---|---|
-| Every change | `rules/change_hygiene.md`, `rules/stack_shape.md`, `rules/design.md`, `rules/code_quality.md` |
-| C++ | `rules/cpp.md` |
-| Tests | `rules/testing.md` |
-| Before every push | `rules/gates.md`, `rules/review_lens.md` |
+| Every change | `lenses/common/change_hygiene.md`, `lenses/common/stack_shape.md`, `lenses/common/design.md`, `lenses/common/code_quality.md` |
+| Tests | `lenses/common/testing.md` |
+| C | `lenses/c/c.md` |
+| C++ | `lenses/cpp/cpp.md` |
+| Protobuf schemas or their readers | `lenses/protobuf/protobuf.md` |
+| Python | `lenses/python/python.md` |
+| TypeScript | `lenses/typescript/typescript.md` |
+| Before every push | `lenses/common/gates.md`, `lenses/common/review_lens.md` |
 
-Where a rule conflicts with the repository's own contributor rules or an
-explicit reviewer comment, those win. If two rules still conflict, say so
+Where a lens conflicts with the repository's own contributor rules or an
+explicit reviewer comment, those win. If two lenses still conflict, say so
 instead of picking one silently.
 
 ## While writing code
 
-- One problem per commit, under 150 changed lines, each commit a final state
-  that no later commit of the stack undoes.
+- One problem per commit, under `reviewkit.maxLines` changed lines (150
+  unless the repository sets otherwise), each commit a final state that no
+  later commit of the stack undoes.
 - Run `<kit>/scripts/cq_sweep.py` on each commit and fix what it prints.
 
 ## Before pushing
@@ -37,7 +44,7 @@ instead of picking one silently.
 - Never pass `--no-verify`. Never write a review report or a gate stamp by
   hand.
 - Verify every sentence of the checklist the truth audit prints, then run the
-  two checklists in `rules/review_lens.md` on the final diff and answer each
+  two checklists in `lenses/common/review_lens.md` on the final diff and answer each
   check in one line in your reply.
 
 ## Commit messages

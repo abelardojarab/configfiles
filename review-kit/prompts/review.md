@@ -40,12 +40,12 @@ A. **Correctness.** Does the code do what the message says, for every caller?
    input, zero, missing data, boundaries on both sides). Dead code, dead
    fields, dead parameters. Does a test fail when each new check is removed?
 B. **Senior reviewer lens.** Every numbered check under "Senior reviewer
-   lens" in the rules below.
+   lens" in the lenses below.
 C. **Independent reviewer lens.** Every numbered check under "Independent
-   reviewer lens" in the rules below.
-D. **Rules.** The rules below, for the languages in the diff, plus any
-   contributor or style rules the repository itself carries (AGENTS.md,
-   CONTRIBUTING, linter configuration). A violation on an added or edited
+   reviewer lens" in the lenses below.
+D. **Lenses.** The lenses below (the common ones and the ones for the
+   languages in the diff), plus any contributor or style rules the repository
+   itself carries (AGENTS.md, CONTRIBUTING, linter configuration). A violation on an added or edited
    line counts even when older lines of the file do the same.
 E. **Truth.** Every comment the diff adds and every sentence of the message
    is true of the code at {{SHORT}} and at this position in the stack. A
@@ -77,9 +77,9 @@ and the passes that found it. With no findings, list what each pass checked.
 
 {{CLAIMS}}
 
-## Rules
+## Lenses
 
-{{RULES}}
+{{LENSES}}
 
 ## Recurring findings checklist
 

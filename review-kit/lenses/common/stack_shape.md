@@ -1,4 +1,4 @@
-# Stack Shape
+# Stack Shape Lens
 
 How to cut work into a stack of changes, checked before splitting and before every push of a stack.
 
@@ -30,7 +30,7 @@ read it as a whole and reject one whose changes replace each other.
 - Before every stack push, run `scripts/stack_churn.py` over the stack. It
   lists each line a change removes that an earlier change of the stack added.
   Exit 1 means a change removes 5 or more such lines: fold or re-cut before
-  pushing. The gate runs the same check (`rules/gates.md`) and blocks such a
+  pushing. The gate runs the same check (`lenses/common/gates.md`) and blocks such a
   change. Below 5, look at each listed line.
 - The script only sees lines, so also read the stack as one diff (from the
   bottom change's parent to the top change). A change that hides or re-parses

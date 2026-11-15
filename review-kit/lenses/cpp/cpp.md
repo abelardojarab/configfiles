@@ -1,21 +1,20 @@
-# C++ Code Standards
+# C++ Lens
 
-C++ rules for production code and its tests: comments, compile-time checks, enum dispatch, signatures, logging, defensive code and includes.
+What a reviewer checks on C++ lines, in production code and its tests: comments, compile-time checks, enum dispatch, signatures, logging, defensive code, includes and small style.
 
-Precedence across these rule files: the more specific scope wins (a
-production-config guard rule beats a generic test rule); an explicit reviewer
-comment on the change beats any rule; if two rules still conflict, say so in
-the reply instead of picking one silently. Baseline: the C++ style guide
+Precedence across lenses: the more specific scope wins (a production-config
+guard rule beats a generic test rule); an explicit reviewer comment on the
+change beats any lens; if two still conflict, say so in the reply instead of
+picking one silently. Baseline: the C++ style guide
 (https://google.github.io/styleguide/cppguide.html) and the Abseil tips
-(https://abseil.io/tips/). Where the repository wraps the standard logging and
-status macros, use its wrappers on every line you add, even where the rest of
-the file does not.
+(https://abseil.io/tips/); the `absl::` forms below apply where the project
+uses Abseil, and their standard-library equivalents otherwise. Where the
+repository wraps the standard logging and status macros, use its wrappers on
+every line you add, even where the rest of the file does not.
 
 ## 1. Comments
 
-- Schema comments (`.proto`): 3-6 lines for the config author. State the
-  high-level rule and point to the C++ entry point for the formula. Never
-  duplicate formulas across schema, code and description; three copies drift.
+- Schema comments are covered by `lenses/protobuf/protobuf.md` §2.
 - Headers: 1-3 factual lines: what it does, caller preconditions, usage contract
   (for example, whether a limit helper is symmetric and leaves floors to another
   check). No motivation essays or derivations.
@@ -145,7 +144,42 @@ the file does not.
 
 - Strict include-what-you-use: the header for every symbol used (including the
   generated `.pb.h` of every message whose members you touch; a forward
-  declaration from another header is not enough).
+  declaration from another header is not enough). `<cstdint>` for fixed-width
+  integers, `<tuple>` for `std::tuple`, `<utility>` for `std::pair` and
+  `std::move`, in test files too (`scripts/cq_sweep.py` checks these).
+  clang-tidy's include cleaner is the authority (it flags `<compare>` as
+  unused for a defaulted `operator<=>`).
+- For every include in a touched file, name a symbol from it used in that
+  file. None: delete it and its build dependency. Never touch includes for
+  code the change didn't touch.
 - After any include edit, run the repository's dependency cleanup tool on the
   target and rebuild. A header left behind by a dropped matcher is the most
   common post-refactor clang-tidy finding.
+
+## 7. Small style
+
+- Braces on every `if`/`for` body, including one-line `continue;`.
+- Constant arrays and lookup tables live at namespace scope in the anonymous
+  namespace, not function-local (Abseil tip #140).
+- Name magic numbers that appear more than once (`kMicrosPerSecond`).
+- Pure arithmetic helpers in headers are `constexpr`, never `inline`, with
+  full parameter names.
+- A function past ~60 lines, or with a second job, gets the new part extracted.
+- Match a sibling loop's guards.
+- Hoist a map lookup whose key doesn't change out of the loop; don't follow
+  `contains()` with `[]` on the same key. Don't hoist a reference into a map
+  the loop inserts into: a rehash invalidates it.
+- Wrap a value in `std::optional(value)`, not `std::make_optional(value)`, when
+  the other branch of a ternary is `std::nullopt`.
+- Decision-record (observability) messages are filled by
+  `FillXxx(..., Msg* absl_nonnull out)` helpers, one per topic
+  (`lenses/common/design.md` §5).
+
+## 8. Tests
+
+- `ASSERT_THAT(x, SizeIs(n))` before indexing `x[0]`.
+- Bind a value-returning lookup once per iteration; never call it twice in
+  one `EXPECT_EQ(std::pair(...))`.
+- Production-config guard tests may key on `std::pair<std::string,
+  std::string>` or a concatenated string; the named-key-struct rule (§4) does
+  not apply there (`lenses/common/testing.md` §B).

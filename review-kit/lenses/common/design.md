@@ -1,6 +1,6 @@
-# Design and Observability
+# Design Lens
 
-Design rules for production code: what to expose, which branches may exist, where formulas and decisions live, and what to record.
+What a reviewer checks in the design of production code: what to expose, which branches may exist, where formulas and decisions live, and what to record. Language-neutral; the language lenses give the concrete forms.
 
 ## 1. Surface minimization
 
@@ -17,7 +17,8 @@ Design rules for production code: what to expose, which branches may exist, wher
   single-formula case of §3, not a violation of this rule.
 - No dead fields, schema messages or enum values. Schema changes live in their
   own change immediately below the code change that reads them; never add a
-  field or enum value with no reader in the stack of changes or the frontend.
+  field or enum value with no reader in the stack of changes or the frontend
+  (`lenses/protobuf/protobuf.md`).
 - No zero-entry escape hatches: an allowlist, ignore list, optional parameter,
   default argument or `Default*()` returning an empty set is a dead mechanism.
   The first real exception adds it, with a reason and a `TODO(owner)`.
@@ -35,8 +36,8 @@ Design rules for production code: what to expose, which branches may exist, wher
   change alters behavior, put the guard and its end-to-end test in that later
   change, never in an earlier one where the existing code still repairs the
   state.
-- In-process reachability: for every `if`, `value_or()`, `case`, `default` or
-  defensive check, ask whether it can run given what upstream already
+- In-process reachability: for every `if`, default-on-absent read, `case`,
+  `default` or defensive check, ask whether it can run given what upstream already
   established. If an earlier step already classified the entity (say, as
   "missing reading"), a later step must not re-check the same condition.
 - Input validation is upstream too: don't write or test branches for input
@@ -48,13 +49,14 @@ Design rules for production code: what to expose, which branches may exist, wher
 - Configuration can gate behavior at more than one level (for example a global
   enable flag and a per-entity setting). Check every level before describing
   when the behavior happens.
-- Purely defensive code against impossible state becomes a `DCHECK` (only when
-  the guarantee is non-obvious) or is deleted. Never business-logic branches
-  for impossible input. Exception: inside a per-item loop where the item has an
-  outcome to record, use `LOG(DFATAL)` + record + `continue`, never an error
-  status (`cpp.md` §5).
-- A `case` whose whole body is `LOG(DFATAL)` plus a fallback is a dead branch
-  (`cpp.md` §3).
+- Purely defensive code against impossible state becomes a debug-only
+  assertion (only when the guarantee is non-obvious) or is deleted. Never
+  business-logic branches for impossible input. Exception: inside a per-item
+  loop where the item has an outcome to record, log loudly (fatal in debug
+  builds), record the outcome and continue, never return an error for the
+  whole run (`lenses/cpp/cpp.md` §5 for the C++ form).
+- A `case` whose whole body is a fatal-in-debug log plus a fallback is a dead
+  branch (`lenses/cpp/cpp.md` §3).
 - Write a production-reachability proof for every behavior change. Test
   coverage does not show reachability: a unit test that sets a field directly
   covers a branch production never takes. For each new branch, gate or input
@@ -125,10 +127,13 @@ Design rules for production code: what to expose, which branches may exist, wher
   without explicit team approval.
 - Reset gauges at the start of each run so stale entities don't linger.
 - Decision-record messages are annotated `// Observability only`, grouped by
-  topic with section headers, and populated by `FillXxx(..., Msg*
-  absl_nonnull out)`.
+  topic with section headers, and populated by one `FillXxx` helper per topic
+  that writes into an output message.
 
 ## 6. Principles that hold in any system
+
+Each of these came from a review finding; they are written here as the
+general rule, not the incident.
 
 - Check a hard validator's exact inequality before mutating state, sharing the
   validator's canonical helper, and only in the change where later stages can
@@ -137,12 +142,13 @@ Design rules for production code: what to expose, which branches may exist, wher
   stateful reservations that later stages must undo.
 - Test a new threshold algebraically at its boundary case (the smallest
   configuration it applies to) and against a live snapshot before adding it.
-  Shares sum only entities that actually share the resource.
-- One entity missing telemetry never disqualifies its whole group: scope the
-  "missing" outcome to that entity, let it contribute zero to sums, and keep it
-  in denominators so ratios cannot inflate.
+  A share or ratio sums only the entities that actually share the resource.
+- One member missing data never disqualifies its whole group: scope the
+  "missing" outcome to that member, let it contribute zero to sums, and keep
+  it in denominators so ratios cannot inflate.
 - An operation that takes effect immediately must be proven against capacity
-  that exists now, not capacity a later step may add. Compare float coverage
-  against `1.0 - 1e-9` so exact rational sums don't fail on IEEE-754 rounding.
+  that exists now, not capacity a later step may add.
+- Compare a float sum against a boundary with an epsilon (`1.0 - 1e-9`) so
+  exact rational sums don't fail on IEEE-754 rounding.
 - A requested knob in an issue is a hypothesis: check it in code and data
   before applying it.

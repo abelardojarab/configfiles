@@ -29,16 +29,17 @@ their current form. The gate fails on any of:
   exist, a commit reference that does not exist or is unmerged and not called
   pending, a `knob = value` claim that is not in the tree, a duplicated
   paragraph.
-* A commit over 150 changed lines (added plus deleted), unless its subject
-  says pure move or golden.
-* A `.proto` enum value the commit adds that the stack's non-test code uses
-  nowhere, or only in `==`/`!=` comparisons and `case` labels: a dead enum
-  value (`rules/design.md`).
+* A commit over `reviewkit.maxLines` changed lines (added plus deleted, 150
+  by default; 0 turns the check off for repositories that take large
+  commits), unless its subject says pure move or golden.
+* In protobuf projects: a `.proto` enum value the commit adds that the
+  stack's non-test code uses nowhere, or only in `==`/`!=` comparisons and
+  `case` labels: a dead enum value (`lenses/protobuf/protobuf.md`).
 * A commit that removes 5 or more lines which earlier commits of its stack
-  added (`scripts/stack_churn.py`; `rules/stack_shape.md`): fold each edit
+  added (`scripts/stack_churn.py`; `lenses/common/stack_shape.md`): fold each edit
   into the commit that introduced the lines, or re-cut the stack.
-* A read through a map's `operator[]`, which inserts on a miss, on a line the
-  stack adds to non-test C++: use `find()`, or `at()` where every key exists
+* In C++: a read through a map's `operator[]`, which inserts on a miss, on a
+  line the stack adds to non-test code: use `find()`, or `at()` where every key exists
   by construction. The gate also prints map lookups whose key does not change
   inside the enclosing loop: hoist each or say why not.
 * A finding of a configured linter, and a finding of a configured static
@@ -83,7 +84,7 @@ sentence that depends on unmerged work says "once <that change> lands".
 
 ## 5. Reviewer pass before pushing
 
-Run `rules/review_lens.md` on the final diff and message after the gate
+Run `lenses/common/review_lens.md` on the final diff and message after the gate
 passes. Answer each check in one line; a "no" gets fixed first, then the gate
 is re-run.
 
