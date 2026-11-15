@@ -1,0 +1,29 @@
+[Unit]
+Description=Rebuild the code-server image on the latest base and recreate it
+Documentation=file:%h/workspace/configfiles/stack/code-server/Dockerfile
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/workspace/configfiles/stack
+
+# Watchtower cannot update a locally built image, so this takes its place:
+# pull the newest linuxserver/code-server, rebuild the tools layer on it,
+# and recreate the container. `up -d` recreates only when the image
+# changed, so a week with no new release does not restart the editor.
+ExecStart=/usr/bin/docker compose build --pull code-server
+ExecStart=/usr/bin/docker compose up -d code-server
+
+# Each rebuild leaves the previous image untagged, and a new base leaves
+# the old linuxserver/code-server untagged too. Prune only those two kinds,
+# by label, never other dangling images on the host. An image a container
+# still runs on is not dangling, so the live one is never removed.
+ExecStartPost=/usr/bin/docker image prune -f \
+    --filter label=configfiles.image=code-server-tools
+ExecStartPost=/usr/bin/docker image prune -f \
+    --filter label=org.opencontainers.image.source=https://github.com/linuxserver/docker-code-server
+
+# Building pulls the base image and installs the toolchain; a stuck
+# download should not hold the unit until the next firing.
+TimeoutStartSec=45min

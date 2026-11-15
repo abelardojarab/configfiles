@@ -1,0 +1,14 @@
+[Unit]
+Description=Weekly rebuild of the code-server image
+
+[Timer]
+# Early Sunday, when the editor is least likely to be in use: recreating
+# the container drops open code-server sessions for a few seconds.
+OnCalendar=Sun 04:00
+# Catch up after downtime instead of silently skipping a week.
+Persistent=true
+RandomizedDelaySec=30min
+AccuracySec=5min
+
+[Install]
+WantedBy=timers.target
