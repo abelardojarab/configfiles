@@ -1,9 +1,11 @@
 # code-server with the tools this setup needs baked in, instead of
 # installed at every start: python3 (with venv and headers) for
-# review-kit's git hooks and projects; GCC, LLVM/Clang 18, build tools,
-# debuggers and analyzers; Go, Rust and Bazel; Mull and mutmut for
-# mutation testing; the Docker CLI for the host's socket; Node and uv for
-# the MCP servers in the chat's mcp.json; and everyday command-line tools.
+# review-kit's git hooks and projects; GCC, LLVM/Clang 18, build
+# tools, debuggers and analyzers; Go, Rust and Bazel; gRPC and
+# protobuf tools (protoc and its plugins, grpcurl, buf); Mull and mutmut
+# for mutation testing; the Docker CLI for the host's socket; Node and uv
+# for the MCP servers in the chat's mcp.json; and everyday command-line
+# tools.
 #
 # Every download that is not from Ubuntu's archive is pinned and checked
 # against its published SHA-256 (Docker's apt key, against its published
@@ -31,7 +33,8 @@ RUN apt-get update \
       build-essential cmake ninja-build pkg-config ccache bear \
       gdb lldb valgrind strace ltrace lsof \
       clang clangd clang-format clang-tidy lld llvm \
-      cppcheck shellcheck protobuf-compiler \
+      cppcheck shellcheck \
+      protobuf-compiler libprotobuf-dev libgrpc++-dev protobuf-compiler-grpc \
       git-lfs ripgrep fd-find tree file zip unzip zstd rsync wget \
       sqlite3 htop tmux vim bc yq \
       dnsutils iputils-ping tcpdump \
@@ -95,6 +98,24 @@ RUN curl -fsSL -o /tmp/go.tgz \
  && tar -C /usr/local -xzf /tmp/go.tgz \
  && rm -f /tmp/go.tgz \
  && ln -s /usr/local/go/bin/go /usr/local/go/bin/gofmt /usr/local/bin/
+
+# gRPC and protobuf tools for Go and the command line: the protoc
+# plugins for Go messages and gRPC services, grpcurl to call a running
+# server, and buf to lint protos and check for breaking changes. Each is
+# a separate go install, since pinned versions of different modules cannot
+# share one; go install checks each module against Go's checksum database
+# (sum.golang.org), and GOTOOLCHAIN=local fails the build instead of
+# fetching another Go.
+ARG PROTOC_GEN_GO=google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.12
+ARG PROTOC_GEN_GO_GRPC=google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.6.2
+ARG GRPCURL=github.com/fullstorydev/grpcurl/cmd/grpcurl@v1.9.4
+ARG BUF=github.com/bufbuild/buf/cmd/buf@v1.75.0
+RUN for mod in "${PROTOC_GEN_GO}" "${PROTOC_GEN_GO_GRPC}" "${GRPCURL}" \
+      "${BUF}"; do \
+      GOBIN=/usr/local/bin GOPATH=/tmp/gopath GOCACHE=/tmp/gocache \
+      GOTOOLCHAIN=local go install "$mod" || exit 1; \
+    done \
+ && rm -rf /tmp/gopath /tmp/gocache
 
 # Bazel through bazelisk, which fetches the version each repository asks
 # for, and buildifier, both from their GitHub releases.
