@@ -97,3 +97,8 @@ rules. `scripts/checkpatch.pl` is the configured `reviewkit.lintCmd`, and
 - A behavior change comes with a kselftest or KUnit test where the
   subsystem has them, and the message says how it was tested (which
   hardware, which config, which test).
+- The test build has `CONFIG_KASAN` and `CONFIG_UBSAN` on, and
+  `CONFIG_PROVE_LOCKING` (lockdep). A change to locking, RCU or data
+  shared between CPUs also runs in a second build with `CONFIG_KCSAN` and
+  without `CONFIG_KASAN`: Kconfig makes KCSAN depend on `!KASAN`. The
+  message names the configs the tests ran with.

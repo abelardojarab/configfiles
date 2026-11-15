@@ -209,6 +209,12 @@ Python docstring rules and a YAML-only change gets no C++ rules at all.
 `local_review.py` pastes `common` plus the lenses for the languages a commit
 touches into the review prompt; `reviewkit.lenses` overrides that choice.
 
+The kit builds and runs no tests. The language lenses say which dynamic checks
+a change's tests run under, and ask for the message to say so: `-race` in Go,
+`compute-sanitizer` in CUDA, AddressSanitizer and UndefinedBehaviorSanitizer
+in C and C++ (ThreadSanitizer too for concurrency changes), and KASAN, UBSAN,
+lockdep and KCSAN in a kernel tree.
+
 ## Project profiles
 
 The kit does not ship a formatter or an analyzer; it runs the ones you name.

@@ -178,6 +178,16 @@ every line you add, even where the rest of the file does not.
 ## 8. Tests
 
 - `ASSERT_THAT(x, SizeIs(n))` before indexing `x[0]`.
+- Tests run under AddressSanitizer and UndefinedBehaviorSanitizer
+  (`-fsanitize=address,undefined -fno-sanitize-recover=undefined
+  -fno-omit-frame-pointer`) before every push, in CI or by hand, and the
+  message says so. Without `-fno-sanitize-recover=undefined`, undefined behavior
+  only prints and the test still passes.
+- A change that touches threads, atomics, locks or data shared between
+  threads also runs its tests under ThreadSanitizer (`-fsanitize=thread`),
+  in a separate build: it cannot be combined with AddressSanitizer.
+- A sanitizer report is fixed in code. A suppression is a last resort for
+  third-party code only, and names the library and the report it hides.
 - Bind a value-returning lookup once per iteration; never call it twice in
   one `EXPECT_EQ(std::pair(...))`.
 - Production-config guard tests may key on `std::pair<std::string,
