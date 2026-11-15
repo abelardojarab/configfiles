@@ -136,6 +136,12 @@ else
 fi
 export EMACS_SERVER_FILE="$HOME/.emacs.cache/server/server"
 
+# review-kit: pre-commit, commit-msg and pre-push checks (configfiles/review-kit).
+# The hooks and the editor runners find the kit through this variable. Per
+# repository settings (reviewkit.maxLines and friends) live in git config, not
+# here, so a repository that takes large commits does not loosen the others.
+export REVIEWKIT_HOME="$HOME/workspace/configfiles/review-kit"
+
 emacsclients() {
   local flag=-t
   # A graphical frame only makes sense with a display and outside tmux/screen.
