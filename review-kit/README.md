@@ -11,7 +11,7 @@ Python 3.8 and later and have been run on 3.13 only.
 
 | Path | What it is |
 |---|---|
-| `lenses/` | Review lenses as Markdown: each one is the checklist a reviewer applies to one concern. `lenses/common/` (change hygiene, stack shape, design, code quality, testing, reviewer checklists, pattern scan, push gates) applies to every change; `lenses/c/`, `lenses/cpp/`, `lenses/protobuf/`, `lenses/python/` and `lenses/typescript/` only when the diff touches that language. Load them into a coding agent or read them yourself. |
+| `lenses/` | Review lenses as Markdown: each one is the checklist a reviewer applies to one concern. `lenses/common/` (change hygiene, stack shape, design, code quality, testing, reviewer checklists, pattern scan, push gates) applies to every change; `lenses/c/`, `lenses/cpp/`, `lenses/cuda/`, `lenses/go/`, `lenses/kernel/`, `lenses/protobuf/`, `lenses/python/` and `lenses/typescript/` only when the diff touches that language. Load them into a coding agent or read them yourself. |
 | `prompts/` | The prompt for an AI review of one commit, the prompt for an independent verifier, and the checklist of recurring findings both use. |
 | `scripts/` | The checks. Each one runs on its own. |
 | `hooks/` | `pre-commit`, `commit-msg` and `pre-push` wrappers, and `install.sh`. |
@@ -86,7 +86,7 @@ environment variable `REVIEWKIT_<KEY>` in upper snake case overrides a key
 | `reviewkit.forbidMessage` | AI and tool attribution | Regular expression a commit message must not match |
 | `reviewkit.requireTrailers` | none | Comma-separated trailers every message must carry |
 | `reviewkit.knownNames` | none | Comma-separated names the truth audit must not flag as stale: product names, services, config keys that no code defines |
-| `reviewkit.lenses` | `auto` | Language lenses the AI review loads next to `common`: a comma-separated list of `c`, `cpp`, `protobuf`, `python`, `typescript`, or `auto` to pick them from the files each commit touches |
+| `reviewkit.lenses` | `auto` | Language lenses the AI review loads next to `common`: a comma-separated list of `c`, `cpp`, `cuda`, `go`, `kernel`, `protobuf`, `python`, `typescript`, or `auto` to pick them from the files each commit touches (`.cu` takes `cpp` and `cuda`; C files in a tree with `Kconfig` and `MAINTAINERS` at the root take `c` and `kernel`) |
 | `reviewkit.lintCmd` | none | Linter to run on touched files; may be set several times |
 | `reviewkit.tidyCmd` | none | Analyzer whose findings count only on added lines; may be set several times |
 | `reviewkit.reviewCmd` | none | AI reviewer: a command that reads a prompt on stdin and prints the answer |
@@ -167,6 +167,61 @@ concrete constructs for that language only, so a C++ repository never sees
 Python docstring rules and a YAML-only change gets no C++ rules at all.
 `local_review.py` pastes `common` plus the lenses for the languages a commit
 touches into the review prompt; `reviewkit.lenses` overrides that choice.
+
+## Project profiles
+
+The kit does not ship a formatter or an analyzer; it runs the ones you name.
+These are the settings that make it match what each kind of project expects
+from a reviewer. Set them per repository (`git config`), or globally with
+`--global` where every repository agrees.
+
+C++ with a compile database (`build/compile_commands.json`):
+
+```
+git config --add reviewkit.lintCmd '*.cc,*.cpp,*.h,*.hpp::clang-format --dry-run --Werror'
+git config --add reviewkit.tidyCmd '*.cc,*.cpp,*.h,*.hpp::clang-tidy -p build --quiet'
+git config reviewkit.strict true
+```
+
+CUDA, on top of the C++ profile (clang-format understands `.cu`; clang-tidy
+needs the host pass of the compile database):
+
+```
+git config --add reviewkit.lintCmd '*.cu,*.cuh::clang-format --dry-run --Werror'
+git config --add reviewkit.tidyCmd '*.cu,*.cuh::clang-tidy -p build --quiet --extra-arg=--no-cuda-version-check'
+```
+
+Go:
+
+```
+git config --add reviewkit.lintCmd '*.go::gofmt -l'
+git config --add reviewkit.lintCmd '*.go::go vet ./...'
+git config --add reviewkit.lintCmd '*.go::golangci-lint run --new-from-rev=origin/HEAD'
+```
+
+`gofmt -l` prints the unformatted files but exits 0, so pair it with
+`test -z "$(gofmt -l ...)"` in a wrapper script if it must block.
+
+Linux kernel tree (the `kernel` lens is picked up automatically from
+`Kconfig` and `MAINTAINERS`):
+
+```
+git config reviewkit.requireTrailers 'Signed-off-by'
+git config reviewkit.maxCols 80
+git config --add reviewkit.lintCmd '*.c,*.h::scripts/checkpatch.pl --no-tree --strict -f'
+git config reviewkit.base 'origin/master'
+```
+
+`checkpatch.pl -f` checks whole files; to check only the patch, run
+`git format-patch` and `checkpatch.pl` on the result before the gate, or
+wrap that in a script named by `lintCmd`.
+
+A repository that takes large commits, such as a configuration or dotfiles
+repository:
+
+```
+git config reviewkit.maxLines 0
+```
 
 ## Limits
 

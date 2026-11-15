@@ -17,6 +17,9 @@ reads), and replace `<kit>` with the absolute path of this directory.
 | Tests | `lenses/common/testing.md` |
 | C | `lenses/c/c.md` |
 | C++ | `lenses/cpp/cpp.md` |
+| CUDA (`.cu`, `.cuh`) | `lenses/cpp/cpp.md` and `lenses/cuda/cuda.md` |
+| Go | `lenses/go/go.md` |
+| Linux kernel tree | `lenses/c/c.md` and `lenses/kernel/kernel.md` |
 | Protobuf schemas or their readers | `lenses/protobuf/protobuf.md` |
 | Python | `lenses/python/python.md` |
 | TypeScript | `lenses/typescript/typescript.md` |
