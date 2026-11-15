@@ -20,7 +20,21 @@ rules. `scripts/checkpatch.pl` is the configured `reviewkit.lintCmd`, and
   `Fixes: <12+ hex> ("subject")` for a regression fix;
   `Cc: stable@vger.kernel.org` when it must reach stable; `Reported-by`,
   `Closes:` or `Link:` for a report; `Reviewed-by`, `Tested-by` and
-  `Acked-by` kept verbatim across versions. No tool or AI attribution.
+  `Acked-by` kept verbatim across versions.
+- AI and other tools (Documentation/process/coding-assistants.rst and
+  generated-content.rst): an AI agent never adds `Signed-off-by`, and
+  neither does a `Co-developed-by` name one; only a human certifies the
+  DCO, after reviewing and understanding every line. When a tool wrote a
+  meaningful part of the code or the changelog, or found the bug, the
+  changelog or cover letter says so: which tools, the prompts or a summary
+  of them, which portions they affected, and how the change was tested.
+  Mainline defines no trailer for this; follow the maintainer's preference
+  where a subsystem has one. Reformatting and identifier completion are out
+  of scope. `scripts/gate.py` enforces the DCO half: in a kernel tree its
+  message check blocks only DCO trailers naming an AI tool.
+- A bug found by a tool comes with a reproducer, a fix that builds without
+  new warnings and passes checkpatch, a `Fixes:` tag, and an explicit note
+  of whatever could not be built or tested.
 - A new version carries a changelog below the `---` line, not in the
   message. The cover letter says what the series does as a whole.
 - `scripts/get_maintainer.pl` picks the recipients; the patch touches no

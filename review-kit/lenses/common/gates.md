@@ -94,6 +94,11 @@ Never write authorship attribution to an AI or a tool into a commit message,
 in any form: no "Generated with", no AI co-author trailer, no agent name. When
 copying trailers from an existing message, drop any such line.
 
+Exception: a project whose process asks for tool disclosure wins. In a Linux
+kernel tree the changelog says which tools helped and how
+(`lenses/kernel/kernel.md` §1), and the gate blocks only a `Signed-off-by`,
+`Co-developed-by` or `Co-authored-by` that names an AI tool.
+
 ## 7. After pushing
 
 Confirm the message in the review tool matches the local one, and that the

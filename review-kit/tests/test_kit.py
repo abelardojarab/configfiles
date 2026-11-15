@@ -195,6 +195,30 @@ class CommitMsgTest(KitTestCase):
                      "Fix rate_limit\n\nCo-Authored-By: Devin <d@x.y>\n"):
             self.assertExit(self.check(text), 1, text)
 
+    def test_kernel_tree_allows_disclosure_but_not_ai_sign_off(self):
+        for name in ("Kconfig", "MAINTAINERS"):
+            self.repo.write(name, "x\n")
+        disclosure = ("net: fix the queue length\n\nThe fix was drafted "
+                      "with Claude Code and reviewed by hand.\n\n"
+                      "Assisted-by: Claude Code\n"
+                      "Signed-off-by: Test Author <author@example.com>\n")
+        self.assertExit(self.check(disclosure), 0)
+        for trailer in ("Signed-off-by: Claude <claude@example.com>",
+                        "Co-developed-by: GitHub Copilot <bot@example.com>",
+                        "Co-authored-by: Claude Code <noreply@anthropic.com>"):
+            proc = self.check("net: fix the queue length\n\n" + trailer
+                              + "\n")
+            self.assertExit(proc, 1, trailer)
+            self.assertIn("DCO trailer", proc.stdout)
+        # A person at a model vendor signs off with the vendor's domain.
+        self.assertExit(self.check(
+            "net: fix the queue length\n\nSigned-off-by: Jane Doe "
+            "<jane@anthropic.com>\nCo-developed-by: Sam Roe "
+            "<sam@openai.com>\n"), 0)
+        # Outside a kernel tree the same disclosure is blocked.
+        os.remove(os.path.join(self.repo.path, "Kconfig"))
+        self.assertExit(self.check(disclosure), 1)
+
     def test_human_co_author_and_sign_off_pass(self):
         proc = self.check("Add ComputeDiscount\n\nApplies the coupon rate.\n\n"
                           "Co-authored-by: Claude Martin <cm@example.com>\n"

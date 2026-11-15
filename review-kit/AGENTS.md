@@ -53,4 +53,6 @@ instead of picking one silently.
 ## Commit messages
 
 - Say why the change exists, what it does not do, and how it was tested.
-- No authorship attribution to an AI or a tool, in any form.
+- No authorship attribution to an AI or a tool, in any form, unless the
+  project's process asks for disclosure (a Linux kernel tree does: see
+  `lenses/kernel/kernel.md`). An agent never adds a `Signed-off-by`.

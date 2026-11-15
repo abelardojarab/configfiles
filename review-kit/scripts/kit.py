@@ -52,6 +52,21 @@ DEFAULT_FORBID_MESSAGE = (
     r"|^[ \t]*(?:assisted-by|ai-assisted)[ \t]*:"
     r"|\U0001F916")
 
+# In a Linux kernel tree, tool use is disclosed in the changelog
+# (Documentation/process/generated-content.rst), so naming a tool is
+# allowed there. What the kernel forbids is a tool certifying the DCO
+# (Documentation/process/coding-assistants.rst): a Signed-off-by, or the
+# Co-developed-by that must pair with one, naming an AI tool. A Co-authored-by
+# naming one is blocked too, as it reads as shared authorship.
+KERNEL_FORBID_MESSAGE = (
+    # Only the display name is matched, before the address: a person who
+    # works at a model vendor signs off with that vendor's mail domain.
+    r"^[ \t]*(?:signed-off-by|co-developed-by|co-authored-by)[ \t]*:[^<\n]*(?:"
+    r"\b(?:copilot|gemini|gpt|chatgpt|openai|anthropic|cursor|codex|aider)\b"
+    r"|\bclaude(?:[ \t]+(?:code|opus|sonnet|haiku|ai)\b|\.ai\b|\[bot\])"
+    r"|\bdevin(?:[- ]ai\b|\.ai\b|\[bot\])"
+    r"|\b(?:claude|devin)[ \t]*<)")
+
 DEFAULTS = {
     "base": "auto",
     "maxLines": "150",
@@ -506,8 +521,16 @@ def message_body(text):
 
 
 def forbid_regex():
-    """The compiled reviewkit.forbidMessage, or None when it is empty."""
+    """The compiled reviewkit.forbidMessage, or None when it is empty. When
+    the setting is left at its default inside a kernel tree, the kernel's
+    rule applies instead (KERNEL_FORBID_MESSAGE)."""
     pattern = config("forbidMessage")
+    if pattern == DEFAULT_FORBID_MESSAGE:
+        try:
+            if kernel_tree(root()):
+                pattern = KERNEL_FORBID_MESSAGE
+        except GitError:
+            pass
     if not pattern.strip():
         return None
     try:
@@ -564,7 +587,8 @@ def message_problems(text):
         regex = None
     for line in forbidden_lines(text, regex):
         problems.append("matches reviewkit.forbidMessage (tool or AI "
-                        "attribution): %s" % line)
+                        "attribution; in a kernel tree, a tool in a DCO "
+                        "trailer): %s" % line)
     for item in repeated_text(text):
         problems.append("repeated in the message: %s" % item[:90])
     required = [key.strip() for key in config("requireTrailers").split(",")
@@ -1003,7 +1027,8 @@ def main():
         for key in DEFAULTS:
             value = config(key)
             if key == "forbidMessage" and value == DEFAULT_FORBID_MESSAGE:
-                value = "(default)"
+                value = ("(default, kernel tree: only AI in DCO trailers)"
+                         if kernel_tree(root()) else "(default)")
             print("%s = %s" % (key, value))
         for key in ("lintCmd", "tidyCmd"):
             for value in config_all(key):

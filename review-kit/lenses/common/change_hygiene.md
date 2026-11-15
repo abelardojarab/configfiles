@@ -77,6 +77,7 @@ The step order around pushing is in `lenses/common/gates.md`; the gate itself is
   before anyone else sees it.
 - Trailers go at the bottom. No AI or tool attribution in any form: no
   "Generated with", no "Co-authored-by" naming an agent, no agent names.
+  A project whose process asks for disclosure wins (`lenses/kernel/kernel.md`).
 - If the review tool can merge a change once it is approved and checks pass,
   enable that on every change; a change that must not land says so explicitly.
   Enabling it is not sending for review: send for review only when asked.

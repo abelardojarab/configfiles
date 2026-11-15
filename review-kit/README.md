@@ -68,7 +68,7 @@ the merge base with the mainline and `HEAD`.
 | `stack_churn.py` | Lines a commit removes that an earlier commit of the same stack added. |
 | `local_review.py` | Runs the configured AI reviewer on each commit and saves its report. |
 | `gate.py` | All of the above for the whole stack, plus dead enum values, the configured linters and analyzers, and the review reports. Exit 0 records a pass. |
-| `commit_msg.py FILE` | The commit message rules. |
+| `commit_msg.py FILE` | The commit message rules. In a Linux kernel tree, with `forbidMessage` at its default, only a `Signed-off-by`, `Co-developed-by` or `Co-authored-by` naming an AI tool is blocked, since the kernel asks for tool use to be disclosed in the changelog. |
 
 ## Configuration
 
@@ -124,6 +124,7 @@ Copy `AGENTS.md` into the repository (or append it to the file your agent
 reads) and replace `<kit>` with this directory's path. The agent then reads
 the lenses before coding and runs the gate before pushing. The hooks apply to
 the agent's commits and pushes as they do to yours.
+
 
 ## With an editor
 
