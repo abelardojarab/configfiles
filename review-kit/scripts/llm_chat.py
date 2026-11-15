@@ -17,11 +17,15 @@ REVIEWKIT_LLM_KEY); with --env-file, a `VAR=value` line in that file is used
 when the variable is unset, so the key stays in the file it already lives
 in. --base-url defaults to REVIEWKIT_LLM_BASE_URL, else
 http://127.0.0.1:4000/v1. --fallback names a second model tried once when
-the first fails with a rate limit (429), an overload (503/529) or a timeout.
+the first fails with a rate limit (429), an overload (503/529), a timeout,
+or a reply that is empty or was cut off at the token limit (finish_reason
+"length"): a truncated review has no closing report marker, so printing it
+would only turn a model failure into "no report" in local_review.py.
 
 Exit codes:
   0  a reply was printed
-  1  the request failed (the error is on stderr)
+  1  the request failed, or the reply was empty or cut off (the error is on
+     stderr)
   2  bad arguments, or no prompt
 """
 import argparse
@@ -94,14 +98,23 @@ def chat(base_url, key, model, prompt, timeout, max_tokens):
     except ValueError as exc:
         raise RequestFailed("%s: reply is not JSON (%s)" % (model, exc), False)
     try:
-        content = data["choices"][0]["message"]["content"]
+        choice = data["choices"][0]
+        content = choice["message"]["content"]
     except (KeyError, IndexError, TypeError):
         raise RequestFailed("%s: reply has no message: %s"
                             % (model, json.dumps(data)[:300]), False)
     if isinstance(content, list):
         content = "".join(part.get("text", "") for part in content
                           if isinstance(part, dict))
-    return content or ""
+    content = content or ""
+    finish = choice.get("finish_reason")
+    if finish == "length":
+        raise RequestFailed("%s: reply cut off at the token limit after %d "
+                            "characters" % (model, len(content)), True)
+    if not content.strip():
+        raise RequestFailed("%s: empty reply (finish_reason %s)"
+                            % (model, finish), True)
+    return content
 
 
 def main(argv):

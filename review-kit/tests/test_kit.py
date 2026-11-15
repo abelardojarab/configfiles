@@ -991,7 +991,8 @@ class ClaudeStopHookTest(KitTestCase):
 
 class _FakeChat(BaseHTTPRequestHandler):
     """Answers /chat/completions. Models "busy", "gateway" and "bad" get
-    HTTP 429, 524 and 400."""
+    HTTP 429, 524 and 400; "cut" gets a reply stopped at the token limit
+    and "empty" a reply with no text."""
 
     seen = []
 
@@ -1005,8 +1006,15 @@ class _FakeChat(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b'{"error": "refused"}')
             return
-        reply = {"choices": [{"message": {"content": "echo: %s %s" % (
-            body["model"], body["messages"][0]["content"])}}]}
+        text = "echo: %s %s" % (body["model"],
+                                body["messages"][0]["content"])
+        finish = "stop"
+        if body["model"] == "cut":
+            finish = "length"
+        elif body["model"] == "empty":
+            text = ""
+        reply = {"choices": [{"message": {"content": text},
+                              "finish_reason": finish}]}
         data = json.dumps(reply).encode()
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
@@ -1075,6 +1083,24 @@ class LlmChatTest(KitTestCase):
         self.assertExit(proc, 1)
         self.assertIn("HTTP 400", proc.stderr)
         self.assertEqual([seen[1] for seen in _FakeChat.seen], ["bad"])
+
+    def test_cut_off_reply_falls_back(self):
+        proc = self.chat("--model", "cut", "--fallback", "m2")
+        self.assertExit(proc, 0)
+        self.assertEqual(proc.stdout.strip(), "echo: m2 review this")
+        self.assertIn("cut: reply cut off at the token limit", proc.stderr)
+
+    def test_empty_reply_falls_back(self):
+        proc = self.chat("--model", "empty", "--fallback", "m2")
+        self.assertExit(proc, 0)
+        self.assertEqual(proc.stdout.strip(), "echo: m2 review this")
+        self.assertIn("empty: empty reply (finish_reason stop)", proc.stderr)
+
+    def test_empty_reply_without_fallback_exits_one(self):
+        proc = self.chat("--model", "empty")
+        self.assertExit(proc, 1)
+        self.assertEqual(proc.stdout, "")
+        self.assertIn("empty: empty reply", proc.stderr)
 
     def test_failure_and_empty_prompt(self):
         self.assertExit(self.chat("--model", "busy"), 1)

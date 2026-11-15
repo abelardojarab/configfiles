@@ -129,8 +129,13 @@ Without `reviewCmd` the gate skips the AI review and says so. With
 ```
 git config reviewkit.reviewCmd "python3 $REVIEWKIT_HOME/scripts/llm_chat.py \
   --base-url http://127.0.0.1:4001/v1 --env-file ~/stack/.env \
-  --key-env LITELLM_MASTER_KEY --model gemini-3.8-flash-high --fallback laguna-s-2.1"
+  --key-env LITELLM_MASTER_KEY --model gemini-3.8-flash-high"
 ```
+
+`--fallback NAME` adds a second model, tried once when the first fails.
+Name one that can write a whole review: a model whose server caps its
+output, or that is too slow to finish within `TIMEOUT_S`, fails the review
+anyway.
 
 Once `reviewCmd` is set, the gate requires a clean report for every commit,
 so run `local_review.py` before `gate.py`.
