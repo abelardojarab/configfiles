@@ -1,7 +1,7 @@
 # code-server with the tools this setup needs baked in, instead of
 # installed at every start: python3 (with venv and headers) for
-# review-kit's git hooks and projects; GCC, LLVM/Clang 18, build
-# tools, debuggers and analyzers; Go, Rust and Bazel; gRPC and
+# review-kit's git hooks and projects; GCC, LLVM/Clang 23 (18 for Mull),
+# build tools, debuggers and analyzers; Go, Rust and Bazel; gRPC and
 # protobuf tools (protoc and its plugins, grpcurl, buf); Mull and mutmut
 # for mutation testing; the Docker CLI for the host's socket; Node and uv
 # for the MCP servers in the chat's mcp.json; and everyday command-line
@@ -66,6 +66,39 @@ RUN install -m 0755 -d /etc/apt/keyrings \
       group=dockerhost; groupadd -g "${DOCKER_GID}" "$group"; \
     fi \
  && usermod -aG "$group" abc
+
+# LLVM 23, the current stable branch, from apt.llvm.org, as the default
+# clang, clangd, clang-format, clang-tidy, lld and lldb (linked into
+# /usr/local/bin, ahead of Ubuntu's 18 in /usr/bin; a tool missing from
+# the packages fails the build rather than leave a dangling link). The
+# repository is trusted only after its key matches LLVM's published
+# fingerprint.
+# Ubuntu's LLVM 18 stays installed as clang-18 and friends: Mull's plugin
+# is built for it, and Mull has no build for LLVM 23.
+ARG LLVM=23
+ARG LLVM_KEY_FPR=6084F3CF814B57C1CF12EFD515CF4D18AF4F7421
+RUN curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key -o /tmp/llvm.asc \
+ && gpg --show-keys --with-colons /tmp/llvm.asc \
+      | grep -q "^fpr:::::::::${LLVM_KEY_FPR}:" \
+ && mv /tmp/llvm.asc /etc/apt/keyrings/llvm.asc \
+ && . /etc/os-release \
+ && echo "deb [signed-by=/etc/apt/keyrings/llvm.asc]" \
+      "https://apt.llvm.org/${VERSION_CODENAME}/" \
+      "llvm-toolchain-${VERSION_CODENAME}-${LLVM} main" \
+      > /etc/apt/sources.list.d/llvm.list \
+ && apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+      clang-${LLVM} clangd-${LLVM} clang-format-${LLVM} \
+      clang-tidy-${LLVM} clang-tools-${LLVM} lld-${LLVM} lldb-${LLVM} \
+      llvm-${LLVM} libclang-rt-${LLVM}-dev \
+ && rm -rf /var/lib/apt/lists/* \
+ && for tool in clang clang++ clangd clang-format clang-tidy \
+      run-clang-tidy clang-apply-replacements ld.lld lld lldb lldb-dap \
+      llvm-config llvm-symbolizer llvm-cov llvm-profdata llvm-objdump; do \
+      src="/usr/bin/${tool}-${LLVM}"; \
+      [ -e "$src" ] || { echo "missing $src"; exit 1; }; \
+      ln -sf "$src" "/usr/local/bin/${tool}"; \
+    done
 
 # Mull, pinned: the core package and its plugin for LLVM 18, matching
 # Ubuntu 24.04's clang. Each is checked against the SHA-256 that GitHub
