@@ -2,6 +2,9 @@
 
 Before any design or code, for every change: learn how the directory already solves similar problems.
 
+A small change (see "Small changes" in the kit's AGENTS.md) needs only a
+one-line note: the closest precedent and why the change follows it.
+
 A solution that ignores the local pattern costs a review round at best, and at
 worst hides a bug the local pattern would have caught. Logic with branches
 written inline in a test, where the directory keeps such logic in a helper

@@ -50,6 +50,25 @@ review-kit/scripts/gate.py
   the two checklists in `review-kit/lenses/common/review_lens.md` on the
   final diff and answer each check in one line in your reply.
 
+## Small changes
+
+A change is small when it is one commit of at most 20 changed lines that
+adds no branch, function, test, file or dependency: a typo, a comment, doc
+wording, a version or configuration value, a rename within one file. For
+a small change:
+
+- The pattern-scan note is one line: the closest precedent and why the
+  change follows it.
+- Read `review-kit/lenses/common/change_hygiene.md` and the lens of the
+  language the diff touches, not the whole list.
+- After the truth audit, say in one line which checks of
+  `review-kit/lenses/common/review_lens.md` apply, instead of answering
+  each.
+
+Everything else stays: `cq_sweep.py`, the AI review, the gate, the commit
+message rules. When the change outgrows these limits, or the reviewer or
+the gate flags anything, switch to the full path.
+
 ## Commit messages
 
 - Say why the change exists, what it does not do, and how it was tested.
