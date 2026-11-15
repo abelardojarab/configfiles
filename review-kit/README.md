@@ -226,9 +226,14 @@ C++ with a compile database (`build/compile_commands.json`):
 
 ```
 git config --add reviewkit.lintCmd '*.cc,*.cpp,*.h,*.hpp::clang-format --dry-run --Werror'
-git config --add reviewkit.tidyCmd '*.cc,*.cpp,*.h,*.hpp::clang-tidy -p build --quiet'
+git config --add reviewkit.tidyCmd '*.cc,*.cpp,*.h,*.hpp::clang-tidy -p build --quiet --checks=clang-analyzer-*'
 git config reviewkit.strict true
 ```
+
+`--checks=clang-analyzer-*` adds the Clang Static Analyzer's path-sensitive
+checks (null dereferences, leaks, use after free on some path) to whatever the
+repository's `.clang-tidy` enables; clang-tidy appends `--checks` to the
+file's list rather than replacing it.
 
 CUDA, on top of the C++ profile (clang-format understands `.cu`; clang-tidy
 needs the host pass of the compile database):
