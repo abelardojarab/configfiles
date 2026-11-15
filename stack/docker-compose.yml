@@ -542,6 +542,8 @@ services:
        - /var/run/docker.sock:/var/run/docker.sock
        - ~/containers/code-server/config:/config
        - ~/workspace:/home/abelardojara/workspace
+       # The host's CUDA toolkit, for Nsight and clangd's CUDA support.
+       - /usr/local/cuda-12.9:/usr/local/cuda:ro
 
   drawio:
     image: jgraph/drawio
