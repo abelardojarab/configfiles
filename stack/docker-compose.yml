@@ -518,11 +518,16 @@ services:
       - ~/containers/nextcloud/data:/var/www/html/data
 
   code-server:
-    image: linuxserver/code-server
+    # Built from code-server/Dockerfile, which adds the build, debug,
+    # analysis and mutation-testing tools to linuxserver/code-server.
+    # Watchtower cannot update a local build; rebuild with
+    #   docker compose build --pull code-server
+    build: ./code-server
+    image: code-server-tools:local
     container_name: code-server
     restart: unless-stopped
     labels:
-      - "com.centurylinklabs.watchtower.enable=true"
+      - "com.centurylinklabs.watchtower.enable=false"
     ports:
       - "8085:8443"
     environment:
@@ -532,16 +537,6 @@ services:
       - PASSWORD=qitlrtsx
       - SUDO_PASSWORD=qitlrtsx
       - PROXY_DOMAIN=/code-server
-      # Reinstalled on every recreate: python3 for review-kit's git hooks;
-      # GCC, LLVM/Clang, build tools, debuggers and analyzers for building,
-      # debugging and linting in the editor; Node and uv for the MCP servers
-      # in the chat's mcp.json. Ubuntu's Node is 18, too old for them;
-      # nodejs-wheel brings a current one.
-      - DOCKER_MODS=linuxserver/mods:universal-package-install
-      - "INSTALL_PACKAGES=python3|build-essential|cmake|ninja-build|\
-        pkg-config|ccache|bear|gdb|lldb|valgrind|clang|clangd|\
-        clang-format|clang-tidy|lld|llvm|cppcheck|shellcheck"
-      - INSTALL_PIP_PACKAGES=uv|nodejs-wheel
     volumes:
        - /var/run/docker.sock:/var/run/docker.sock
        - ~/containers/code-server/config:/config
