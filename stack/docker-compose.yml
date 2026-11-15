@@ -532,9 +532,12 @@ services:
       - PASSWORD=qitlrtsx
       - SUDO_PASSWORD=qitlrtsx
       - PROXY_DOMAIN=/code-server
-      # review-kit's git hooks need python3; reinstalled on every recreate.
+      # Reinstalled on every recreate: python3 for review-kit's git hooks,
+      # Node and uv for the MCP servers in the chat's mcp.json. Ubuntu's
+      # Node is 18, too old for them; nodejs-wheel brings a current one.
       - DOCKER_MODS=linuxserver/mods:universal-package-install
       - INSTALL_PACKAGES=python3
+      - INSTALL_PIP_PACKAGES=uv|nodejs-wheel
     volumes:
        - /var/run/docker.sock:/var/run/docker.sock
        - ~/containers/code-server/config:/config
