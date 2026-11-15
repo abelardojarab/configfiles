@@ -812,6 +812,30 @@ class LocalReviewTest(KitTestCase):
         self.assertExit(self.repo.run("local_review.py"), 1)
         self.assertFalse(os.path.exists(self.report_path()))
 
+    def test_no_report_and_silent_reviewer_shows_only_the_exit_code(self):
+        with open(os.path.join(self.reviewer, "fake.py"), "w") as handle:
+            handle.write("print('nothing to see')\n")
+        proc = self.repo.run("local_review.py")
+        self.assertIn("no report in the reviewer's output (exit 0);",
+                      proc.stdout)
+
+    def test_no_report_shows_the_reviewers_last_error_line(self):
+        with open(os.path.join(self.reviewer, "fake.py"), "w") as handle:
+            handle.write("import sys\nsys.stderr.write('first\\n"
+                         "m1: reply cut off\\n')\nsys.exit(1)\n")
+        proc = self.repo.run("local_review.py")
+        self.assertExit(proc, 1)
+        self.assertIn("(exit 1: m1: reply cut off)", proc.stdout)
+        self.assertNotIn("first", proc.stdout)
+
+    def test_no_report_keeps_the_start_of_a_long_error_line(self):
+        with open(os.path.join(self.reviewer, "fake.py"), "w") as handle:
+            handle.write("import sys\nsys.stderr.write('m1: timed out '"
+                         " + 'x' * 300 + 'END')\nsys.exit(1)\n")
+        proc = self.repo.run("local_review.py")
+        self.assertIn("(exit 1: m1: timed out " + "x" * 186 + ");",
+                      proc.stdout)
+
     def test_unconfigured_reviewer_exits_two(self):
         self.repo.git("config", "--unset", "reviewkit.reviewCmd")
         self.assertExit(self.repo.run("local_review.py"), 2)

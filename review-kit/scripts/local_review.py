@@ -168,8 +168,13 @@ def review(commit, ctx):
     # format example the prompt gives.
     found = REPORT.findall(out)
     if not found:
-        return ("FAILED: no report in the reviewer's output (exit %d); "
-                "re-run, never write a report by hand" % code)
+        # The reviewer's own last stderr line usually says why (a timeout,
+        # a cut-off reply); without it only the exit code is left. Its
+        # start names the model and the failure, so a long line keeps that.
+        lines = err.strip().splitlines()
+        why = ": %s" % lines[-1][:200] if lines else ""
+        return ("FAILED: no report in the reviewer's output (exit %d%s); "
+                "re-run, never write a report by hand" % (code, why))
     report = found[-1].strip()
     kit.write_atomic(path, kit.provenance_line(short, fp) + "\n"
                      + report + "\n")
