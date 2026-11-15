@@ -2,16 +2,21 @@
 """Code-quality sweep: prints suspected nits on the lines a change adds.
 
 Usage:
-  cq_sweep.py [--staged | --commit REV | --range A..B] [--strict]
+  cq_sweep.py [--staged | --worktree | --commit REV | --range A..B]
+              [--strict]
 
   --staged      the index against HEAD (what the pre-commit hook checks)
+  --worktree    HEAD against the work tree, staged or not, with untracked
+                files as added (what an agent's Stop hook checks); the size
+                limit is skipped, since work in progress is not a commit
   --commit REV  one commit (default: --commit HEAD)
   --range A..B  the combined diff of a range
   --strict      exit 1 when anything is printed
 
 Each check prints a named section of `file: text` lines, only when it has
 findings, and `clean` when none has. Files are read as they are at the
-checked revision (the index for --staged), never from the work tree. The
+checked revision (the index for --staged), never from the work tree,
+except with --worktree. The
 column limit is reviewkit.maxCols and the size limit is reviewkit.maxLines;
 0 disables either.
 
@@ -226,6 +231,7 @@ def main(argv):
         description="Code-quality sweep over the lines a change adds.")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--staged", action="store_true")
+    mode.add_argument("--worktree", action="store_true")
     mode.add_argument("--commit", metavar="REV")
     mode.add_argument("--range", metavar="A..B", dest="rev_range")
     parser.add_argument("--strict", action="store_true")
@@ -236,6 +242,9 @@ def main(argv):
         if args.staged:
             found = sweep(kit.staged_diff(), lambda p: kit.file_text(None, p),
                           max_lines, max_cols)
+        elif args.worktree:
+            found = sweep(kit.worktree_diff(), kit.worktree_text,
+                          max_lines, max_cols, size_exempt=True)
         elif args.rev_range:
             old, sep, new = args.rev_range.partition("..")
             if not sep or not old or not new or new.startswith("."):

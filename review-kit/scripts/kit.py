@@ -254,6 +254,44 @@ def staged_diff():
     return git("diff", "--cached", *DIFF_FLAGS, "--")
 
 
+MAX_UNTRACKED = 200
+
+
+def worktree_diff():
+    """HEAD against the work tree, staged or not, plus every untracked file
+    that is not ignored, as if each were added. Before the first commit the
+    index stands in for HEAD."""
+    code, _, _ = run_git(["rev-parse", "--verify", "--quiet", "HEAD"])
+    base = ["HEAD"] if code == 0 else ["--cached"]
+    parts = [git("diff", *DIFF_FLAGS, *base, "--")]
+    others = git("ls-files", "-z", "--others", "--exclude-standard")
+    # An untracked nested repository is listed as "dir/"; it is not part of
+    # this repository's change, and diffing a directory against /dev/null
+    # is an error whose exit code differs between git versions.
+    top = root()
+    untracked = [name for name in others.split("\0")
+                 if name and os.path.isfile(os.path.join(top, name))]
+    for path in untracked[:MAX_UNTRACKED]:
+        # --no-index exits 1 when the files differ, which they always do.
+        code, out, err = run_git(["diff", "--no-index", *DIFF_FLAGS,
+                                  "--", "/dev/null", path])
+        if code > 1:
+            raise GitError("git diff --no-index %s failed: %s"
+                           % (path, err.strip()[-200:]))
+        parts.append(out)
+    return "".join(parts)
+
+
+def worktree_text(path):
+    """Contents of `path` in the work tree, or None if absent."""
+    try:
+        with open(os.path.join(root(), path), encoding="utf-8",
+                  errors="replace") as handle:
+            return handle.read()
+    except OSError:
+        return None
+
+
 def changed_files(old, new):
     """Paths that exist at `new` and differ between the two commits."""
     out = git("diff", "--name-only", "-z", "--no-ext-diff", "-M",

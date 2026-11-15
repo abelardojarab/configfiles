@@ -14,7 +14,7 @@ Python 3.8 and later and have been run on 3.13 only.
 | `lenses/` | Review lenses as Markdown: each one is the checklist a reviewer applies to one concern. `lenses/common/` (change hygiene, stack shape, design, code quality, testing, reviewer checklists, pattern scan, push gates) applies to every change; `lenses/c/`, `lenses/cpp/`, `lenses/cuda/`, `lenses/go/`, `lenses/kernel/`, `lenses/protobuf/`, `lenses/python/` and `lenses/typescript/` only when the diff touches that language. Load them into a coding agent or read them yourself. |
 | `prompts/` | The prompt for an AI review of one commit, the prompt for an independent verifier, and the checklist of recurring findings both use. |
 | `scripts/` | The checks. Each one runs on its own. |
-| `hooks/` | `pre-commit`, `commit-msg` and `pre-push` wrappers, and `install.sh`. |
+| `hooks/` | `pre-commit`, `commit-msg` and `pre-push` wrappers, `install.sh`, and `claude-stop.sh`, a Claude Code Stop hook. |
 | `editors/` | VS Code tasks and an Emacs package that run the scripts. |
 | `AGENTS.md` | Instructions that tell a coding agent when to read which lens and when to run which script. |
 | `tests/` | Tests of the scripts. |
@@ -63,7 +63,7 @@ the merge base with the mainline and `HEAD`.
 
 | Script | What it checks |
 |---|---|
-| `cq_sweep.py [--staged \| --commit REV \| --range A..B] [--strict]` | Size over the limit, line numbers in comments, issue references outside a TODO, unbraced one-line bodies, missing or unused standard headers, long lines, single-letter names, map reads through `operator[]`, and similar nits on added lines. |
+| `cq_sweep.py [--staged \| --worktree \| --commit REV \| --range A..B] [--strict]` | Size over the limit, line numbers in comments, issue references outside a TODO, unbraced one-line bodies, missing or unused standard headers, long lines, single-letter names, map reads through `operator[]`, and similar nits on added lines. |
 | `truth_audit.py [REV]` | Names in source-code comments and in the message that exist nowhere in the code, commit references that do not exist or are unmerged, `knob = value` claims that are not in the tree, duplicated paragraphs. Lines of prose files (Markdown, YAML, TOML, Dockerfiles) only reach the checklist. Then prints every added sentence as a checklist to verify by hand. |
 | `stack_churn.py` | Lines a commit removes that an earlier commit of the same stack added. |
 | `local_review.py` | Runs the configured AI reviewer on each commit and saves its report. |
@@ -92,6 +92,7 @@ environment variable `REVIEWKIT_<KEY>` in upper snake case overrides a key
 | `reviewkit.tidyCmd` | none | Analyzer whose findings count only on added lines; may be set several times |
 | `reviewkit.reviewCmd` | none | AI reviewer: a command that reads a prompt on stdin and prints the answer |
 | `reviewkit.verifyCmd` | none | A second, independent reviewer, ideally another model |
+| `reviewkit.agentStop` | true | Whether `hooks/claude-stop.sh` acts in this repository |
 | `reviewkit.stateDir` | `review-kit/` inside `.git` | Where reports, overrides and gate passes are kept; a path inside the work tree is refused |
 
 `lintCmd` and `tidyCmd` take the form `globs::command`. The command runs from
@@ -131,11 +132,28 @@ The hooks read `reviewkit.strict` and `reviewkit.home` from git config only;
 
 ## With a coding agent
 
+Claude Code reads `AGENTS.md` at the repository root natively (v2.1.277 and
+later) as long as the repository has no `CLAUDE.md` or `CLAUDE.local.md`;
+adding either one makes Claude Code read that file instead. Codex, Cursor,
+Copilot, opencode and Gemini CLI read `AGENTS.md` too.
+
+`hooks/claude-stop.sh` makes the sweep part of the agent loop: as a Claude
+Code Stop hook it sweeps the files the agent changed, uncommitted and
+untracked, and refuses to let the turn end while findings remain, feeding
+them back to the agent. It acts only in repositories where `reviewkit.home`
+is set, lets the agent stop on its second attempt so a finding it cannot fix
+never loops, and `git config reviewkit.agentStop false` turns it off per
+repository:
+
+```json
+{"hooks": {"Stop": [{"hooks": [{"type": "command",
+  "command": "sh \"$REVIEWKIT_HOME/hooks/claude-stop.sh\""}]}]}}
+```
+
 Copy `AGENTS.md` into the repository (or append it to the file your agent
 reads) and replace `<kit>` with this directory's path. The agent then reads
 the lenses before coding and runs the gate before pushing. The hooks apply to
 the agent's commits and pushes as they do to yours.
-
 
 ## With an editor
 

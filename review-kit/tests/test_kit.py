@@ -933,6 +933,62 @@ class SweepTest(KitTestCase):
         self.assertNotIn("maxCols", proc.stdout)
 
 
+class WorktreeSweepTest(KitTestCase):
+
+    def test_worktree_sees_unstaged_and_untracked_lines(self):
+        self.repo.write("README.txt", "start\n// see line 12 of the docs\n")
+        self.repo.write("new/tool.cc",
+                        "int f(int a) {\n  if (a) return 1;\n  return 0;\n}\n")
+        self.repo.write(".gitignore", "build/\n")
+        self.repo.write("build/gen.cc", "  if (x) return 1;\n")
+        proc = self.repo.run("cq_sweep.py", "--worktree", "--strict")
+        self.assertExit(proc, 1)
+        self.assertIn("new/tool.cc:2", proc.stdout)
+        self.assertNotIn("build/gen.cc", proc.stdout)
+        self.assertNotIn("Size over", proc.stdout)
+        self.assertExit(self.repo.run("cq_sweep.py", "--staged",
+                                      "--strict"), 0)
+
+    def test_untracked_nested_repository_is_skipped(self):
+        nested = Repo(os.path.join(self.repo.path, "vendor", "lib"))
+        nested.write("x.cc", "  if (a) return 1;\n")
+        self.repo.write("tool.cc", "  if (a) return 1;\n")
+        proc = self.repo.run("cq_sweep.py", "--worktree", "--strict")
+        self.assertExit(proc, 1)
+        self.assertIn("tool.cc:1", proc.stdout)
+        self.assertNotIn("vendor/lib", proc.stdout + proc.stderr)
+
+    def test_clean_worktree_is_clean(self):
+        proc = self.repo.run("cq_sweep.py", "--worktree", "--strict")
+        self.assertExit(proc, 0)
+        self.assertIn("clean", proc.stdout)
+
+
+class ClaudeStopHookTest(KitTestCase):
+
+    def hook(self, payload='{"stop_hook_active": false}'):
+        return subprocess.run(
+            ["sh", os.path.join(HOOKS, "claude-stop.sh")], cwd=self.repo.path,
+            input=payload, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            universal_newlines=True)
+
+    def test_only_acts_in_opted_in_repositories(self):
+        self.repo.write("a.cc", "void f(int a) {\n  if (a) return;\n}\n")
+        self.assertExit(self.hook(), 0)
+        self.repo.git("config", "reviewkit.home", KIT)
+        proc = self.hook()
+        self.assertExit(proc, 2)
+        self.assertIn("a.cc:2", proc.stderr)
+        self.assertExit(self.hook('{"stop_hook_active": true}'), 0)
+        self.repo.git("config", "reviewkit.agentStop", "false")
+        self.assertExit(self.hook(), 0)
+
+    def test_clean_change_lets_the_agent_stop(self):
+        self.repo.git("config", "reviewkit.home", KIT)
+        self.repo.write("notes.txt", "fine\n")
+        self.assertExit(self.hook(), 0)
+
+
 class _FakeChat(BaseHTTPRequestHandler):
     """Answers /chat/completions. Models "busy", "gateway" and "bad" get
     HTTP 429, 524 and 400."""
