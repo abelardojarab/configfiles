@@ -69,6 +69,7 @@ the merge base with the mainline and `HEAD`.
 | `local_review.py` | Runs the configured AI reviewer on each commit and saves its report. |
 | `gate.py` | All of the above for the whole stack, plus dead enum values, the configured linters and analyzers, and the review reports. Exit 0 records a pass. |
 | `commit_msg.py FILE` | The commit message rules. In a Linux kernel tree, with `forbidMessage` at its default, only a `Signed-off-by`, `Co-developed-by` or `Co-authored-by` naming an AI tool is blocked, since the kernel asks for tool use to be disclosed in the changelog. |
+| `llm_chat.py --model M [--fallback M2] [--base-url URL] [--key-env VAR] [--env-file PATH]` | Sends stdin (or `--prompt-file`) to an OpenAI-compatible endpoint and prints the reply: a ready-made `reviewCmd` or `verifyCmd` for a litellm proxy, vLLM, Ollama or a hosted API. Retries once on the fallback model after a 429, 5xx or timeout. |
 
 ## Configuration
 
@@ -110,7 +111,17 @@ git config --global reviewkit.reviewCmd 'my-agent --print'
 git config --global reviewkit.verifyCmd 'other-agent --read {prompt_file}'
 ```
 
-Without `reviewCmd` the gate skips the AI review and says so.
+Without `reviewCmd` the gate skips the AI review and says so. With
+`llm_chat.py` and a litellm proxy holding its key in an env file:
+
+```
+git config reviewkit.reviewCmd "python3 $REVIEWKIT_HOME/scripts/llm_chat.py \
+  --base-url http://127.0.0.1:4001/v1 --env-file ~/stack/.env \
+  --key-env LITELLM_MASTER_KEY --model gemini-3.8-flash-high --fallback laguna-s-2.1"
+```
+
+Once `reviewCmd` is set, the gate requires a clean report for every commit,
+so run `local_review.py` before `gate.py`.
 `local_review.py` also reads two environment variables: `PARALLEL`, the
 number of reviews run at once (default 2), and `TIMEOUT_S`, the seconds
 allowed per review (default 3600).

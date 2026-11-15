@@ -15,7 +15,9 @@ import subprocess
 import sys
 import tempfile
 import textwrap
+import threading
 import unittest
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 KIT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCRIPTS = os.path.join(KIT, "scripts")
@@ -929,6 +931,117 @@ class SweepTest(KitTestCase):
         proc = self.repo.run("cq_sweep.py", "--staged",
                              env={"REVIEWKIT_MAX_COLS": "0"})
         self.assertNotIn("maxCols", proc.stdout)
+
+
+class _FakeChat(BaseHTTPRequestHandler):
+    """Answers /chat/completions. Models "busy", "gateway" and "bad" get
+    HTTP 429, 524 and 400."""
+
+    seen = []
+
+    def do_POST(self):
+        body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+        _FakeChat.seen.append((self.headers.get("Authorization"),
+                               body["model"], body.get("max_tokens")))
+        status = {"busy": 429, "gateway": 524, "bad": 400}.get(body["model"])
+        if status:
+            self.send_response(status)
+            self.end_headers()
+            self.wfile.write(b'{"error": "refused"}')
+            return
+        reply = {"choices": [{"message": {"content": "echo: %s %s" % (
+            body["model"], body["messages"][0]["content"])}}]}
+        data = json.dumps(reply).encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(data)
+
+    def log_message(self, *args):
+        pass
+
+
+class LlmChatTest(KitTestCase):
+
+    def setUp(self):
+        super().setUp()
+        _FakeChat.seen = []
+        self.server = HTTPServer(("127.0.0.1", 0), _FakeChat)
+        threading.Thread(target=self.server.serve_forever,
+                         daemon=True).start()
+        self.url = "http://127.0.0.1:%d/v1" % self.server.server_port
+
+    def tearDown(self):
+        self.server.shutdown()
+        self.server.server_close()
+        super().tearDown()
+
+    def chat(self, *args, input_text="review this", env=None):
+        return self.repo.run("llm_chat.py", "--base-url", self.url, *args,
+                             input_text=input_text, env=env)
+
+    def test_prints_the_reply_with_the_key_from_an_env_file(self):
+        env_file = os.path.join(self.tmp, "stack.env")
+        with open(env_file, "w") as handle:
+            handle.write("OTHER=1\nexport PROXY_KEY = sk-test\n")
+        proc = self.chat("--model", "m1", "--key-env", "PROXY_KEY",
+                         "--env-file", env_file)
+        self.assertExit(proc, 0)
+        self.assertEqual(proc.stdout.strip(), "echo: m1 review this")
+        self.assertEqual(_FakeChat.seen, [("Bearer sk-test", "m1", None)])
+
+    def test_environment_key_wins_and_max_tokens_is_sent(self):
+        env_file = os.path.join(self.tmp, "stack.env")
+        with open(env_file, "w") as handle:
+            handle.write("PROXY_KEY=sk-file\n")
+        proc = self.chat("--model", "m1", "--key-env", "PROXY_KEY",
+                         "--env-file", env_file, "--max-tokens", "64",
+                         env={"PROXY_KEY": "sk-env"})
+        self.assertExit(proc, 0)
+        self.assertEqual(_FakeChat.seen, [("Bearer sk-env", "m1", 64)])
+
+    def test_falls_back_on_rate_limit_and_reads_a_prompt_file(self):
+        path = os.path.join(self.tmp, "prompt.md")
+        with open(path, "w") as handle:
+            handle.write("from file")
+        proc = self.chat("--model", "busy", "--fallback", "m2",
+                         "--prompt-file", path, input_text="")
+        self.assertExit(proc, 0)
+        self.assertIn("echo: m2 from file", proc.stdout)
+        self.assertIn("trying m2", proc.stderr)
+
+    def test_any_5xx_falls_back_but_a_4xx_does_not(self):
+        proc = self.chat("--model", "gateway", "--fallback", "m2")
+        self.assertExit(proc, 0)
+        self.assertIn("echo: m2", proc.stdout)
+        _FakeChat.seen = []
+        proc = self.chat("--model", "bad", "--fallback", "m2")
+        self.assertExit(proc, 1)
+        self.assertIn("HTTP 400", proc.stderr)
+        self.assertEqual([seen[1] for seen in _FakeChat.seen], ["bad"])
+
+    def test_failure_and_empty_prompt(self):
+        self.assertExit(self.chat("--model", "busy"), 1)
+        self.assertExit(self.chat("--model", "m1", input_text=" "), 2)
+
+    def test_drives_local_review_end_to_end(self):
+        report = ("<<<LOCAL_REVIEW_REPORT\n## Findings\nNone.\n\n" + PAD * 4
+                  + "\nLOCAL_REVIEW_REPORT>>>")
+        responder = os.path.join(self.tmp, "respond.py")
+        with open(responder, "w") as handle:
+            handle.write("import sys\nsys.stdin.read()\nprint(%r)\n" % report)
+        # The reviewer is llm_chat.py; the fake server echoes, so wrap it to
+        # check that the prompt reaches the endpoint and the report is saved.
+        self.repo.git("config", "reviewkit.reviewCmd",
+                      "%s %s --base-url %s --model m1 >/dev/null && %s %s"
+                      % (sys.executable, os.path.join(SCRIPTS, "llm_chat.py"),
+                         self.url, sys.executable, responder))
+        self.feature()
+        self.repo.commit(CLEAN_MESSAGE, {"notes.txt": "fixes\n"})
+        proc = self.repo.run("local_review.py")
+        self.assertExit(proc, 0)
+        self.assertIn("clean ->", proc.stdout)
+        self.assertEqual([seen[1] for seen in _FakeChat.seen], ["m1"])
 
 
 class LensSelectionTest(KitTestCase):
