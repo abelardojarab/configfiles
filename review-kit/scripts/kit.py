@@ -78,9 +78,10 @@ PROVENANCE_RE = re.compile(
     r"fingerprint=([0-9a-f]{12}) -->$")
 
 C_FAMILY_EXT = {".c", ".cc", ".cpp", ".cxx", ".c++", ".h", ".hh", ".hpp",
-                ".hxx", ".h++", ".inl", ".m", ".mm"}
+                ".hxx", ".h++", ".inl", ".m", ".mm", ".cu", ".cuh"}
 CPP_EXT = C_FAMILY_EXT - {".c", ".m"}
-HEADER_EXT = {".h", ".hh", ".hpp", ".hxx", ".h++"}
+CUDA_EXT = {".cu", ".cuh"}
+HEADER_EXT = {".h", ".hh", ".hpp", ".hxx", ".h++", ".cuh"}
 SLASH_EXT = C_FAMILY_EXT | {
     ".java", ".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".mts", ".cts",
     ".go", ".rs", ".kt", ".kts", ".swift", ".proto"}
@@ -719,27 +720,53 @@ def issue_refs(text):
 # ---------------------------------------------------------------- lenses
 
 # Which language lens a file falls under. A lone header is read as C++, the
-# more common case; a stack with .c files gets the C lens as well.
+# more common case; a stack with .c files gets the C lens as well. CUDA
+# sources are C++ with device code on top, so they take both lenses.
 LENS_EXT = {".c": "c", ".proto": "protobuf", ".py": "python",
             ".pyi": "python", ".ts": "typescript", ".tsx": "typescript",
-            ".mts": "typescript", ".cts": "typescript"}
-LENS_NAMES = ("common", "c", "cpp", "protobuf", "python", "typescript")
+            ".mts": "typescript", ".cts": "typescript", ".go": "go"}
+LENS_NAMES = ("common", "c", "cpp", "cuda", "go", "kernel", "protobuf",
+              "python", "typescript")
+KERNEL_MARKERS = ("Kconfig", "MAINTAINERS")
 
 
-def lenses_for(paths):
+def kernel_tree(top):
+    """Whether `top` is a Linux kernel tree (it carries Kconfig and
+    MAINTAINERS at its root)."""
+    return all(os.path.isfile(os.path.join(top, name))
+               for name in KERNEL_MARKERS)
+
+
+def lenses_for(paths, top=None):
     """The lens directories a change needs: `common`, plus the language
     lenses reviewkit.lenses names, or, when it is `auto`, the languages the
-    files in `paths` are written in."""
+    files in `paths` are written in. In a kernel tree (`top`, default the
+    current repository) C files take the `kernel` lens too."""
     wanted = config("lenses").strip() or "auto"
     if wanted != "auto":
         chosen = [name.strip() for name in wanted.split(",") if name.strip()]
     else:
         chosen = []
+        if top is None:
+            try:
+                top = root()
+            except GitError:
+                top = None
+        kernel = top is not None and kernel_tree(top)
         for path in paths:
             ext = _ext(path)
-            name = ("cpp" if ext in CPP_EXT else LENS_EXT.get(ext))
-            if name and name not in chosen:
-                chosen.append(name)
+            names = []
+            if ext in CUDA_EXT:
+                names = ["cpp", "cuda"]
+            elif ext in CPP_EXT:
+                names = ["cpp"]
+            elif ext in LENS_EXT:
+                names = [LENS_EXT[ext]]
+            if kernel and ext in C_FAMILY_EXT:
+                names = ["c", "kernel"]
+            for name in names:
+                if name not in chosen:
+                    chosen.append(name)
     out = ["common"]
     for name in chosen:
         if name not in out:

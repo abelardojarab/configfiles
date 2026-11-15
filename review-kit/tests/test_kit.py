@@ -907,6 +907,36 @@ class SweepTest(KitTestCase):
         self.assertNotIn("maxCols", proc.stdout)
 
 
+class LensSelectionTest(KitTestCase):
+
+    def test_lenses_follow_file_types(self):
+        self.in_repo()
+        self.assertEqual(kit.lenses_for([]), ["common"])
+        self.assertEqual(kit.lenses_for(["a/b.go", "README.md"]),
+                         ["common", "go"])
+        self.assertEqual(kit.lenses_for(["k.cu", "k.cuh", "x.proto"]),
+                         ["common", "cpp", "cuda", "protobuf"])
+        self.assertEqual(kit.lenses_for(["m.c", "m.h", "t.py", "u.ts"]),
+                         ["common", "c", "cpp", "python", "typescript"])
+
+    def test_kernel_tree_adds_the_kernel_lens(self):
+        self.in_repo()
+        self.assertEqual(kit.lenses_for(["drivers/net/x.c"]), ["common", "c"])
+        for name in ("Kconfig", "MAINTAINERS"):
+            self.repo.write(name, "x\n")
+        self.assertEqual(kit.lenses_for(["drivers/net/x.c", "include/x.h"]),
+                         ["common", "c", "kernel"])
+
+    def test_setting_overrides_detection(self):
+        self.in_repo()
+        os.environ["REVIEWKIT_LENSES"] = "go, kernel"
+        try:
+            self.assertEqual(kit.lenses_for(["k.cu"]),
+                             ["common", "go", "kernel"])
+        finally:
+            del os.environ["REVIEWKIT_LENSES"]
+
+
 class InstallTest(KitTestCase):
 
     def install(self, repo_dir):
