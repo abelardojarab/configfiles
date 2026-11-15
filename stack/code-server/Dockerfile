@@ -5,7 +5,7 @@
 # protobuf tools (protoc and its plugins, grpcurl, buf); Mull and mutmut
 # for mutation testing; the Docker CLI for the host's socket; Node and uv
 # for the MCP servers in the chat's mcp.json; and everyday command-line
-# tools.
+# tools, nvtop among them.
 #
 # Every download that is not from Ubuntu's archive is pinned and checked
 # against its published SHA-256 (Docker's apt key, against its published
@@ -36,7 +36,7 @@ RUN apt-get update \
       cppcheck shellcheck \
       protobuf-compiler libprotobuf-dev libgrpc++-dev protobuf-compiler-grpc \
       git-lfs ripgrep fd-find tree file zip unzip zstd rsync wget \
-      sqlite3 htop tmux vim bc yq \
+      sqlite3 htop nvtop tmux vim bc yq \
       dnsutils iputils-ping tcpdump \
       curl ca-certificates gnupg \
  && ln -s /usr/bin/fdfind /usr/local/bin/fd \
@@ -179,7 +179,10 @@ RUN curl -fsSL -o /tmp/rustup-init "${RUSTUP_URL}/${RUSTUP_INIT}" \
       --default-toolchain stable --component rustfmt,clippy \
  && rm -f /tmp/rustup-init \
  && chown -R "${PUID}:${PUID}" /opt/rust
-ENV PATH=/opt/rust/cargo/bin:$PATH
+# The CUDA toolkit (nvcc, ncu, nsys, compute-sanitizer, cuda-gdb) is the
+# host's, mounted at /usr/local/cuda by docker-compose.yml; last on PATH,
+# so a tool in the mount never shadows one of the same name in the image.
+ENV PATH=/opt/rust/cargo/bin:$PATH:/usr/local/cuda/bin
 
 # Ubuntu's Node is 18, too old for the MCP servers; nodejs-wheel brings a
 # current one. A venv keeps these out of the system Python, and only the

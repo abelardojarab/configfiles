@@ -548,6 +548,10 @@ services:
        - ~/workspace:/home/abelardojara/workspace
        # The host's CUDA toolkit, for Nsight and clangd's CUDA support.
        - /usr/local/cuda-12.9:/usr/local/cuda:ro
+       # The host's Nsight Compute and Systems, at the paths CUDA's ncu and
+       # nsys wrappers in /usr/local/cuda/bin look for them.
+       - /opt/nvidia/nsight-compute:/opt/nvidia/nsight-compute:ro
+       - /opt/nvidia/nsight-systems:/opt/nvidia/nsight-systems:ro
 
   drawio:
     image: jgraph/drawio
