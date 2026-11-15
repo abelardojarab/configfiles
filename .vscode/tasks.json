@@ -1,0 +1,49 @@
+{
+  // From review-kit/editors/vscode-tasks.json, pointed at the kit in this repo.
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "review-kit: sweep staged changes",
+      "type": "shell",
+      "command": "python3 \"${workspaceFolder}/review-kit/scripts/cq_sweep.py\" --staged",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "review-kit: sweep last commit",
+      "type": "shell",
+      "command": "python3 \"${workspaceFolder}/review-kit/scripts/cq_sweep.py\" --commit HEAD",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "review-kit: truth audit of last commit",
+      "type": "shell",
+      "command": "python3 \"${workspaceFolder}/review-kit/scripts/truth_audit.py\" HEAD",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "review-kit: stack churn",
+      "type": "shell",
+      "command": "python3 \"${workspaceFolder}/review-kit/scripts/stack_churn.py\"",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "review-kit: AI review of the stack",
+      "type": "shell",
+      "command": "python3 \"${workspaceFolder}/review-kit/scripts/local_review.py\"",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "review-kit: gate",
+      "type": "shell",
+      "command": "python3 \"${workspaceFolder}/review-kit/scripts/gate.py\"",
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": "test",
+      "problemMatcher": []
+    }
+  ]
+}
