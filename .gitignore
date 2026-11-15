@@ -8,3 +8,4 @@ stack/.env
 *.html
 
 __pycache__/
+.claude/settings.local.json
