@@ -526,11 +526,16 @@ services:
     image: code-server-tools:local
     container_name: code-server
     restart: unless-stopped
+    runtime: nvidia
     labels:
       - "com.centurylinklabs.watchtower.enable=false"
     ports:
       - "8085:8443"
     environment:
+      # The RTX 4090 only, for CUDA, PyTorch and profiling; vLLM holds the
+      # two L4s. By UUID, since indices follow PCI order and can shift.
+      - NVIDIA_VISIBLE_DEVICES=GPU-5d4daa52-e465-858b-2776-9554de351315
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
       - PUID=501
       - PGID=501
       - TZ=Etc/UTC
