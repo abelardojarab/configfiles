@@ -2,7 +2,8 @@
 # installed at every start: python3 (with venv and headers) for
 # review-kit's git hooks and projects; GCC, LLVM/Clang 23 (18 for Mull),
 # build tools, debuggers and analyzers; lcov and gcovr for coverage
-# reports; Go, Rust and Bazel; gRPC and
+# reports; GoogleTest, GoogleMock and Google Benchmark; Go, Rust and
+# Bazel; gRPC and
 # protobuf tools (protoc and its plugins, grpcurl, buf); Mull and mutmut
 # for mutation testing; the Docker CLI for the host's socket; kubectl
 # for the host's Kubernetes cluster, with helm and k9s; Node and uv
@@ -46,6 +47,7 @@ RUN echo 'path-include=/usr/share/doc/fzf/examples/*' \
       clang clangd clang-format clang-tidy lld llvm \
       cppcheck shellcheck lcov gcovr \
       protobuf-compiler libprotobuf-dev libgrpc++-dev protobuf-compiler-grpc \
+      libgtest-dev libgmock-dev libbenchmark-dev \
       git-lfs ripgrep fd-find tree file zip unzip zstd rsync wget \
       sqlite3 htop nvtop tmux vim bc yq tig fzf \
       global exuberant-ctags bat \
