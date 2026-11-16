@@ -1,7 +1,8 @@
 # code-server with the tools this setup needs baked in, instead of
 # installed at every start: python3 (with venv and headers) for
 # review-kit's git hooks and projects; GCC, LLVM/Clang 23 (18 for Mull),
-# build tools, debuggers and analyzers; lcov and gcovr for coverage
+# build tools, debuggers and analyzers; hyperfine and heaptrack for
+# timing and heap profiling; lcov and gcovr for coverage
 # reports; GoogleTest, GoogleMock and Google Benchmark; Go, Rust and
 # Bazel; pandoc; gRPC and
 # protobuf tools (protoc and its plugins, grpcurl, buf); Mull and mutmut
@@ -43,7 +44,7 @@ RUN echo 'path-include=/usr/share/doc/fzf/examples/*' \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       python3 python3-venv python3-dev \
       build-essential cmake ninja-build pkg-config ccache bear \
-      gdb lldb valgrind strace ltrace lsof \
+      gdb lldb valgrind strace ltrace lsof hyperfine heaptrack \
       clang clangd clang-format clang-tidy lld llvm \
       cppcheck shellcheck lcov gcovr \
       protobuf-compiler libprotobuf-dev libgrpc++-dev protobuf-compiler-grpc \
