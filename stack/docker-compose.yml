@@ -552,6 +552,11 @@ services:
        - ~/.kube/config:/kube/config:ro
        - ~/containers/code-server/config:/config
        - ~/workspace:/home/abelardojara/workspace
+       # The host's GNU Global index, at the host's path so its relative
+       # links (../workspace/...) resolve; /media/workspace, read-only,
+       # for the links that point there.
+       - ~/.gtags:/home/abelardojara/.gtags
+       - /media/workspace:/media/workspace:ro
        # The host's CUDA toolkit, for Nsight and clangd's CUDA support.
        - /usr/local/cuda-12.9:/usr/local/cuda:ro
        # The host's Nsight Compute and Systems, at the paths CUDA's ncu and
