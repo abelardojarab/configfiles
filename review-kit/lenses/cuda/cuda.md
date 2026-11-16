@@ -58,6 +58,10 @@ sources as C++.
 - `__launch_bounds__` on kernels whose occupancy matters, and the message
   cites the register and shared-memory report (`-Xptxas -v`) or an `ncu`
   summary for a performance claim. "Faster" without numbers is a finding.
+- Before and after numbers for a kernel change (`change_hygiene.md` §3)
+  come from the same GPU, and the message says which. When the change can
+  alter results (reordered math, a new precision, fast-math), it also shows
+  the outputs still match the CPU reference within the tolerance of §5.
 
 ## 4. Portability
 

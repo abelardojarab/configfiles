@@ -99,6 +99,10 @@ The step order around pushing is in `lenses/common/gates.md`; the gate itself is
     the recorded error.
   - Run the query yourself before citing its numbers, or say whose reading
     it is.
+- A change to code on a hot path (a kernel, an inner loop, an allocator, a
+  serialization path) shows before and after numbers from the same
+  benchmark, inputs and machine, each run more than once, even when the
+  change is not meant to change speed. A slowdown in a cleanup is a finding.
 - Add a flow diagram (at most 12 lines, in a fenced block) when the change reads
   more than one input or sits in the middle of a pipeline: inputs, this change,
   outcome, each box naming the real file or function.
