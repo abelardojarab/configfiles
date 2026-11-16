@@ -7,7 +7,7 @@
 # for mutation testing; the Docker CLI for the host's socket; kubectl
 # for the host's Kubernetes cluster, with helm and k9s; Node and uv
 # for the MCP servers in the chat's mcp.json; jj for Jujutsu repositories
-# and the editor's jj extensions; and everyday command-line
+# and the editor's jj extensions; gh for GitHub; and everyday command-line
 # tools, nvtop among them.
 #
 # Every download that is not from Ubuntu's archive is pinned and checked
@@ -107,6 +107,17 @@ RUN curl -fsSL -o /tmp/jj.tgz "${JJ_URL}/${JJ_TGZ}" \
  && echo "${JJ_SUM}  /tmp/jj.tgz" | sha256sum -c - \
  && tar -C /usr/local/bin -xzf /tmp/jj.tgz ./jj \
  && rm -f /tmp/jj.tgz
+
+# gh, the GitHub CLI, from its GitHub release. It signs in with
+# `gh auth login`, which keeps the token in ~/.config/gh on /config.
+ARG GH_URL=https://github.com/cli/cli/releases/download
+ARG GH_TGZ=v2.103.3/gh_2.103.3_linux_amd64.tar.gz
+ARG GH_SUM=4c806978ffce1cec70853302a56d70ac6da4f19bae7adca4e1a8ab00633dd91d
+RUN curl -fsSL -o /tmp/gh.tgz "${GH_URL}/${GH_TGZ}" \
+ && echo "${GH_SUM}  /tmp/gh.tgz" | sha256sum -c - \
+ && tar -C /usr/local/bin -xzf /tmp/gh.tgz --strip-components=2 \
+      gh_2.103.3_linux_amd64/bin/gh \
+ && rm -f /tmp/gh.tgz
 
 # LLVM 23, the current stable branch, from apt.llvm.org, as the default
 # clang, clangd, clang-format, clang-tidy, lld and lldb (linked into
