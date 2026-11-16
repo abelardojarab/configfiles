@@ -22,6 +22,11 @@ What a reviewer checks in the design of production code: what to expose, which b
 - No zero-entry escape hatches: an allowlist, ignore list, optional parameter,
   default argument or `Default*()` returning an empty set is a dead mechanism.
   The first real exception adds it, with a reason and a `TODO(owner)`.
+- One way to do each thing in a public API: no alias for an existing name,
+  no overload or extra accepted type that only saves the caller a
+  conversion, no implicit default that hides a choice, no convenience hook.
+  Convenience alone does not justify new public surface; a new entry point
+  says in the description why the existing one is not enough.
 - No test-only public methods on core classes; verify through observable
   outputs or keep internals private.
 - Scaffolding is proportional to the logic it exercises. If the test file is
