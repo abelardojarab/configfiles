@@ -83,6 +83,10 @@ What a reviewer checks in the design of production code: what to expose, which b
   test or caller. Parameterize an existing helper (`GetRateLimits(policy,
   current_load)`) so callers reuse its edge-case logic ("0 means no limit")
   instead of restating it inline.
+- Behavior implemented twice (a CPU reference and a GPU kernel, a Python
+  library and its C++ core, two language clients) changes in both in the
+  same stack. If one side cannot change yet, the description names it and
+  the test that will catch the two drifting apart.
 - Build-graph layering: the code under test never depends on the code that
   checks its output (validators, conformance checks). Put shared limit and math
   helpers in a low-level target both already depend on. If B needs a symbol
