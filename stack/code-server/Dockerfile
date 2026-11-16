@@ -6,7 +6,8 @@
 # protobuf tools (protoc and its plugins, grpcurl, buf); Mull and mutmut
 # for mutation testing; the Docker CLI for the host's socket; kubectl
 # for the host's Kubernetes cluster, with helm and k9s; Node and uv
-# for the MCP servers in the chat's mcp.json; jj for Jujutsu repositories
+# for the MCP servers in the chat's mcp.json; ruff for Python linting
+# and formatting; jj for Jujutsu repositories
 # and the editor's jj extensions; gh for GitHub; and everyday command-line
 # tools, nvtop among them.
 #
@@ -243,6 +244,7 @@ ENV PATH=/opt/rust/cargo/bin:$PATH:/usr/local/cuda/bin
 # into.
 RUN python3 -m venv /opt/tools \
  && /opt/tools/bin/pip install --no-cache-dir uv nodejs-wheel mutmut \
- && for tool in node npm npx uv uvx mutmut; do \
+      ruff==0.17.3 \
+ && for tool in node npm npx uv uvx mutmut ruff; do \
       ln -s "/opt/tools/bin/$tool" "/usr/local/bin/$tool"; \
     done
