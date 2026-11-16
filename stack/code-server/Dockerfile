@@ -9,7 +9,7 @@
 # for the MCP servers in the chat's mcp.json; ruff for Python linting
 # and formatting; jj for Jujutsu repositories
 # and the editor's jj extensions; gh for GitHub; gcloud for Google Cloud
-# and Gemini Code Assist; Claude Code and the Gemini CLI; and everyday
+# and Gemini Code Assist; Claude Code, the Gemini CLI and aider; and everyday
 # command-line tools, nvtop among them.
 #
 # Every download that is not from Ubuntu's archive is pinned and checked
@@ -298,3 +298,10 @@ RUN python3 -m venv /opt/tools \
  && for tool in node npm npx uv uvx mutmut ruff; do \
       ln -s "/opt/tools/bin/$tool" "/usr/local/bin/$tool"; \
     done
+
+# aider, at the host's version, in a venv of its own: it pins most of
+# its dependencies, which would clash with the tools above in
+# /opt/tools. Only aider itself is linked onto PATH.
+RUN python3 -m venv /opt/aider \
+ && /opt/aider/bin/pip install --no-cache-dir aider-chat==0.86.2 \
+ && ln -s /opt/aider/bin/aider /usr/local/bin/aider
