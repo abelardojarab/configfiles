@@ -58,6 +58,20 @@ RUN echo 'path-include=/usr/share/doc/fzf/examples/*' \
  && ln -s /usr/bin/batcat /usr/local/bin/bat \
  && rm -rf /var/lib/apt/lists/*
 
+# perf and rr. Ubuntu packages no perf for the host's 5.15 kernel, so
+# this is the newest 6.x one from linux-tools-generic, which reads an
+# older kernel's events; it is linked onto PATH directly, ahead of
+# Ubuntu's /usr/bin/perf wrapper, which only looks for a perf matching
+# the running kernel. Both need perf_event_open, which docker-compose.yml
+# lets through for this container; see the comment there.
+RUN apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+      rr linux-tools-generic \
+ && rm -rf /var/lib/apt/lists/* \
+ && set -- /usr/lib/linux-tools/*/perf \
+ && [ "$#" -eq 1 ] && [ -x "$1" ] \
+ && ln -s "$1" /usr/local/bin/perf
+
 # Docker CLI, Compose and Buildx from Docker's apt repository (Ubuntu's
 # docker.io would also bring a daemon). The key must match Docker's
 # published fingerprint before the repository is trusted. abc joins a

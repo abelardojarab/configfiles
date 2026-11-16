@@ -527,6 +527,18 @@ services:
     container_name: code-server
     restart: unless-stopped
     runtime: nvidia
+    # perf and rr (code-server/Dockerfile) need perf_event_open, which
+    # Docker's default seccomp profile only allows to a container with
+    # CAP_PERFMON; rr also needs CAP_SYS_PTRACE, and its fast recording
+    # mode makes syscalls numbered above 1000, which that profile blocks
+    # outright, so seccomp is off here, as rr's docs advise for
+    # containers. This container already has the host's Docker socket,
+    # which is root on the host, so this widens little.
+    cap_add:
+      - PERFMON
+      - SYS_PTRACE
+    security_opt:
+      - seccomp=unconfined
     labels:
       - "com.centurylinklabs.watchtower.enable=false"
     ports:
