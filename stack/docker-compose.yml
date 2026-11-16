@@ -542,8 +542,12 @@ services:
       - PASSWORD=qitlrtsx
       - SUDO_PASSWORD=qitlrtsx
       - PROXY_DOMAIN=/code-server
+      # The host's admin kubeconfig, for kubectl; outside /config so
+      # kubectl's cache in ~/.kube stays writable.
+      - KUBECONFIG=/kube/config
     volumes:
        - /var/run/docker.sock:/var/run/docker.sock
+       - ~/.kube/config:/kube/config:ro
        - ~/containers/code-server/config:/config
        - ~/workspace:/home/abelardojara/workspace
        # The host's CUDA toolkit, for Nsight and clangd's CUDA support.

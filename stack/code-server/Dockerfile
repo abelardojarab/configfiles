@@ -3,7 +3,8 @@
 # review-kit's git hooks and projects; GCC, LLVM/Clang 23 (18 for Mull),
 # build tools, debuggers and analyzers; Go, Rust and Bazel; gRPC and
 # protobuf tools (protoc and its plugins, grpcurl, buf); Mull and mutmut
-# for mutation testing; the Docker CLI for the host's socket; Node and uv
+# for mutation testing; the Docker CLI for the host's socket; kubectl
+# for the host's Kubernetes cluster; Node and uv
 # for the MCP servers in the chat's mcp.json; and everyday command-line
 # tools, nvtop among them.
 #
@@ -66,6 +67,17 @@ RUN install -m 0755 -d /etc/apt/keyrings \
       group=dockerhost; groupadd -g "${DOCKER_GID}" "$group"; \
     fi \
  && usermod -aG "$group" abc
+
+# kubectl from dl.k8s.io, at the cluster's version (v1.28.15) so the
+# client stays within the supported skew. The kubeconfig is the host's,
+# mounted read-only by docker-compose.yml.
+ARG KUBECTL_VERSION=v1.28.15
+ARG KUBECTL_SUM=1f7651ad0b50ef4561aa82e77f3ad06599b5e6b0b2a5fb6c4f474d95a77e41c5
+RUN curl -fsSL -o /tmp/kubectl \
+      "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" \
+ && echo "${KUBECTL_SUM}  /tmp/kubectl" | sha256sum -c - \
+ && install -m 0755 /tmp/kubectl /usr/local/bin/kubectl \
+ && rm -f /tmp/kubectl
 
 # LLVM 23, the current stable branch, from apt.llvm.org, as the default
 # clang, clangd, clang-format, clang-tidy, lld and lldb (linked into
