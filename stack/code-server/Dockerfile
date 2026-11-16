@@ -5,7 +5,7 @@
 # timing and heap profiling; lcov and gcovr for coverage
 # reports; the mold linker; GoogleTest, GoogleMock and Google Benchmark;
 # Go, Rust and
-# Bazel; pandoc; gRPC and
+# Bazel; dtc for device trees; pandoc; gRPC and
 # protobuf tools (protoc and its plugins, grpcurl, buf); Mull and mutmut
 # for mutation testing; the Docker CLI for the host's socket; kubectl
 # for the host's Kubernetes cluster, with helm and k9s; Node and uv
@@ -55,6 +55,7 @@ RUN echo 'path-include=/usr/share/doc/fzf/examples/*' \
       sqlite3 htop nvtop tmux vim bc yq tig fzf \
       global exuberant-ctags bat \
       dnsutils iputils-ping tcpdump \
+      device-tree-compiler \
       curl ca-certificates gnupg \
  && ln -s /usr/bin/fdfind /usr/local/bin/fd \
  && ln -s /usr/bin/batcat /usr/local/bin/bat \
