@@ -71,6 +71,10 @@ cannot see. Goal: zero code-quality comments. The language lenses
   built object, name them `item_spec` and `item`.
 - Name magic numbers that appear more than once.
 - A function past ~60 lines, or with a second job, gets the new part extracted.
+- ASCII in code, comments and commit messages: `-` for a dash, `->` for
+  an arrow, `x` for a multiplication sign, `...` for an ellipsis. Text a
+  program must hold outside ASCII goes in an escape (`"\u00b5s"`) or a
+  data file.
 - Match a sibling loop's guards.
 - A "keep these lists in sync" comment becomes shared code, or a machine-checked
   sync guard if the repository has one. A guard that ties a text format to a
