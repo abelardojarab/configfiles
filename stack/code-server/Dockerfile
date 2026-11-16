@@ -305,3 +305,7 @@ RUN python3 -m venv /opt/tools \
 RUN python3 -m venv /opt/aider \
  && /opt/aider/bin/pip install --no-cache-dir aider-chat==0.86.2 \
  && ln -s /opt/aider/bin/aider /usr/local/bin/aider
+
+# aider-gemini, which points aider at cli-proxy-api's Gemini 3.8 Flash
+# or Gemini 4 Carbon; see the script for how it reaches the proxy here.
+COPY --chmod=0755 aider-gemini /usr/local/bin/aider-gemini

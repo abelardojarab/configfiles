@@ -545,6 +545,8 @@ services:
       # The host's admin kubeconfig, for kubectl; outside /config so
       # kubectl's cache in ~/.kube stays writable.
       - KUBECONFIG=/kube/config
+      # For aider-gemini, which calls cli-proxy-api with it.
+      - CLI_PROXY_API_KEY=${CLI_PROXY_API_KEY}
     volumes:
        - /var/run/docker.sock:/var/run/docker.sock
        - ~/.kube/config:/kube/config:ro
