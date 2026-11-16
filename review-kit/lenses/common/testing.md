@@ -29,6 +29,10 @@ reviewer asks to shrink.
   clamp (`max(0.0, ...)`) and floor inside a new function, not only the
   whole gate. A branch whose deletion leaves every test green is redundant
   (delete it) or needs a test that tells the two paths apart.
+- A bug fix comes with a regression test that reproduces the bug: run it
+  before the fix and see it fail for the reported reason, then after the fix
+  and see it pass. The description names the test and the failure it showed
+  before the fix. A fix without such a test says why none can be written.
 - No default-valued assertions: an expected value equal to the field's default
   (0, 0.0, false, "", enum value 0) still passes when the setter is deleted.
   Pick inputs that give a non-default value, or assert presence.
