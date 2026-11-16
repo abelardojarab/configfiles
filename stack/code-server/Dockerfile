@@ -10,7 +10,8 @@
 # and formatting; jj for Jujutsu repositories
 # and the editor's jj extensions; gh for GitHub; gcloud for Google Cloud
 # and Gemini Code Assist; Claude Code, the Gemini CLI, aider and opencode;
-# and everyday command-line tools, nvtop among them.
+# GNU Global with exuberant-ctags for source tagging; and everyday
+# command-line tools, tig, fzf and nvtop among them.
 #
 # Every download that is not from Ubuntu's archive is pinned and checked
 # against its published SHA-256 (Docker's and LLVM's apt keys, against
@@ -33,7 +34,11 @@ ARG PUID=501
 # The host's docker group, which owns /var/run/docker.sock.
 ARG DOCKER_GID=135
 
-RUN apt-get update \
+# The base image drops /usr/share/doc on install; fzf keeps its shell
+# key bindings there, so they are let through.
+RUN echo 'path-include=/usr/share/doc/fzf/examples/*' \
+      > /etc/dpkg/dpkg.cfg.d/fzf-examples \
+ && apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       python3 python3-venv python3-dev \
       build-essential cmake ninja-build pkg-config ccache bear \
@@ -42,7 +47,8 @@ RUN apt-get update \
       cppcheck shellcheck lcov gcovr \
       protobuf-compiler libprotobuf-dev libgrpc++-dev protobuf-compiler-grpc \
       git-lfs ripgrep fd-find tree file zip unzip zstd rsync wget \
-      sqlite3 htop nvtop tmux vim bc yq \
+      sqlite3 htop nvtop tmux vim bc yq tig fzf \
+      global exuberant-ctags \
       dnsutils iputils-ping tcpdump \
       curl ca-certificates gnupg \
  && ln -s /usr/bin/fdfind /usr/local/bin/fd \
