@@ -16,6 +16,11 @@ The step order around pushing is in `lenses/common/gates.md`; the gate itself is
 - Schema changes (messages, fields, enum values, schema comments) go in their
   own change, never mixed with code or configuration
   (`lenses/protobuf/protobuf.md` for protobuf schemas).
+- A removal (a public function, a flag, a default, an overload, an
+  accepted input) is the stated purpose of its own change, never a side
+  effect of another. A removal callers can see is deprecated first where
+  the project has a process for it, and the description says what replaces
+  it and how to migrate.
 - Keep every change under 150 changed lines (added plus deleted, tests
   included, as `scripts/cq_sweep.py` counts them). A modified line counts
   twice. Over 150 means split before pushing, not explain in the description.
