@@ -9,8 +9,8 @@
 # for the MCP servers in the chat's mcp.json; ruff for Python linting
 # and formatting; jj for Jujutsu repositories
 # and the editor's jj extensions; gh for GitHub; gcloud for Google Cloud
-# and Gemini Code Assist; Claude Code; and everyday command-line
-# tools, nvtop among them.
+# and Gemini Code Assist; Claude Code and the Gemini CLI; and everyday
+# command-line tools, nvtop among them.
 #
 # Every download that is not from Ubuntu's archive is pinned and checked
 # against its published SHA-256 (Docker's and LLVM's apt keys, against
@@ -156,6 +156,19 @@ RUN curl -fsSL -o /tmp/claude \
  && echo "${CLAUDE_SUM}  /tmp/claude" | sha256sum -c - \
  && install -m 0755 /tmp/claude /usr/local/bin/claude \
  && rm -f /tmp/claude
+
+# Gemini CLI, the bundle from its GitHub release, at the host's version,
+# checked against the SHA-256 GitHub publishes for the asset. It runs on
+# the Node linked into /usr/local/bin below. It signs in through Google
+# and keeps the token in ~/.gemini/oauth_creds.json on /config.
+ARG GEMINI_URL=https://github.com/google-gemini/gemini-cli/releases/download
+ARG GEMINI_ZIP=v0.64.0/gemini-cli-bundle.zip
+ARG GEMINI_SUM=9d4ad33d15dcf35098919c69eb9d98b6dc640567f141d6fc4f8f053c8cbd8dae
+RUN curl -fsSL -o /tmp/gemini.zip "${GEMINI_URL}/${GEMINI_ZIP}" \
+ && echo "${GEMINI_SUM}  /tmp/gemini.zip" | sha256sum -c - \
+ && unzip -q /tmp/gemini.zip -d /opt/gemini-cli \
+ && ln -s /opt/gemini-cli/gemini.js /usr/local/bin/gemini \
+ && rm -f /tmp/gemini.zip
 
 # LLVM 23, the current stable branch, from apt.llvm.org, as the default
 # clang, clangd, clang-format, clang-tidy, lld and lldb (linked into
