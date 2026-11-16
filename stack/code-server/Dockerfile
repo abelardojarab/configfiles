@@ -9,8 +9,8 @@
 # for the MCP servers in the chat's mcp.json; ruff for Python linting
 # and formatting; jj for Jujutsu repositories
 # and the editor's jj extensions; gh for GitHub; gcloud for Google Cloud
-# and Gemini Code Assist; Claude Code, the Gemini CLI and aider; and everyday
-# command-line tools, nvtop among them.
+# and Gemini Code Assist; Claude Code, the Gemini CLI, aider and opencode;
+# and everyday command-line tools, nvtop among them.
 #
 # Every download that is not from Ubuntu's archive is pinned and checked
 # against its published SHA-256 (Docker's and LLVM's apt keys, against
@@ -169,6 +169,20 @@ RUN curl -fsSL -o /tmp/gemini.zip "${GEMINI_URL}/${GEMINI_ZIP}" \
  && unzip -q /tmp/gemini.zip -d /opt/gemini-cli \
  && ln -s /opt/gemini-cli/gemini.js /usr/local/bin/gemini \
  && rm -f /tmp/gemini.zip
+
+# opencode, the binary from its GitHub release, at the host's version,
+# checked against the SHA-256 GitHub publishes for the asset. A rebuild
+# with a new pin updates it, so its self-updater, which cannot replace a
+# root-owned binary, is off. It keeps its state in ~/.local/share/opencode
+# on /config.
+ARG OC_URL=https://github.com/anomalyco/opencode/releases/download
+ARG OC_TGZ=v1.18.22/opencode-linux-x64.tar.gz
+ARG OC_SUM=23eca6a892c6b53c0f9ba2333b6906bdc31902634631d54cf17500e7e8cbfa20
+ENV OPENCODE_DISABLE_AUTOUPDATE=1
+RUN curl -fsSL -o /tmp/opencode.tgz "${OC_URL}/${OC_TGZ}" \
+ && echo "${OC_SUM}  /tmp/opencode.tgz" | sha256sum -c - \
+ && tar -C /usr/local/bin -xzf /tmp/opencode.tgz opencode \
+ && rm -f /tmp/opencode.tgz
 
 # LLVM 23, the current stable branch, from apt.llvm.org, as the default
 # clang, clangd, clang-format, clang-tidy, lld and lldb (linked into
