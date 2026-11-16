@@ -3,7 +3,8 @@
 # review-kit's git hooks and projects; GCC, LLVM/Clang 23 (18 for Mull),
 # build tools, debuggers and analyzers; hyperfine and heaptrack for
 # timing and heap profiling; lcov and gcovr for coverage
-# reports; GoogleTest, GoogleMock and Google Benchmark; Go, Rust and
+# reports; the mold linker; GoogleTest, GoogleMock and Google Benchmark;
+# Go, Rust and
 # Bazel; pandoc; gRPC and
 # protobuf tools (protoc and its plugins, grpcurl, buf); Mull and mutmut
 # for mutation testing; the Docker CLI for the host's socket; kubectl
@@ -43,7 +44,7 @@ RUN echo 'path-include=/usr/share/doc/fzf/examples/*' \
  && apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       python3 python3-venv python3-dev \
-      build-essential cmake ninja-build pkg-config ccache bear \
+      build-essential cmake ninja-build pkg-config ccache bear mold \
       gdb lldb valgrind strace ltrace lsof hyperfine heaptrack \
       clang clangd clang-format clang-tidy lld llvm \
       cppcheck shellcheck lcov gcovr \
