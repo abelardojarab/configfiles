@@ -5,7 +5,7 @@
 # reports; Go, Rust and Bazel; gRPC and
 # protobuf tools (protoc and its plugins, grpcurl, buf); Mull and mutmut
 # for mutation testing; the Docker CLI for the host's socket; kubectl
-# for the host's Kubernetes cluster; Node and uv
+# for the host's Kubernetes cluster, with helm and k9s; Node and uv
 # for the MCP servers in the chat's mcp.json; jj for Jujutsu repositories
 # and the editor's jj extensions; and everyday command-line
 # tools, nvtop among them.
@@ -80,6 +80,23 @@ RUN curl -fsSL -o /tmp/kubectl \
  && echo "${KUBECTL_SUM}  /tmp/kubectl" | sha256sum -c - \
  && install -m 0755 /tmp/kubectl /usr/local/bin/kubectl \
  && rm -f /tmp/kubectl
+
+# helm and k9s for the same cluster, through the same kubeconfig. helm
+# stays on 3.x, the host's major version (helm 4 changed plugins).
+ARG HELM_TGZ=https://get.helm.sh/helm-v3.22.1-linux-amd64.tar.gz
+ARG HELM_SUM=896cf63684a42a723d61c980369d6e588330927deb13676ca0d85006dd6da0ea
+ARG K9S_URL=https://github.com/derailed/k9s/releases/download
+ARG K9S_TGZ=v0.51.0/k9s_Linux_amd64.tar.gz
+ARG K9S_SUM=c3752ad51a5a4015a113819c4eeb6e55a4d0e4b8e652494797532f6fc8161dd7
+RUN cd /tmp \
+ && curl -fsSL -o helm.tgz "${HELM_TGZ}" \
+ && curl -fsSL -o k9s.tgz "${K9S_URL}/${K9S_TGZ}" \
+ && printf '%s  %s\n' "${HELM_SUM}" helm.tgz \
+      "${K9S_SUM}" k9s.tgz | sha256sum -c - \
+ && tar -C /usr/local/bin -xzf helm.tgz --strip-components=1 \
+      linux-amd64/helm \
+ && tar -C /usr/local/bin -xzf k9s.tgz k9s \
+ && rm -f helm.tgz k9s.tgz
 
 # jj (Jujutsu) from its GitHub release, the static musl build, for the
 # editor's jj extensions (jjk, VisualJJ), which run it.
