@@ -34,6 +34,9 @@ instead of picking one silently.
   unless the repository sets otherwise), each commit a final state that no
   later commit of the stack undoes.
 - Run `<kit>/scripts/cq_sweep.py` on each commit and fix what it prints.
+- When a request conflicts with these rules or a lens, say so and
+  propose an alternative that fits, instead of doing it silently or
+  refusing without one.
 
 ## Before pushing
 
