@@ -329,3 +329,7 @@ RUN python3 -m venv /opt/aider \
 # aider-gemini, which points aider at cli-proxy-api's Gemini 3.8 Flash
 # or Gemini 4 Carbon; see the script for how it reaches the proxy here.
 COPY --chmod=0755 aider-gemini /usr/local/bin/aider-gemini
+
+# Links the host's dotfiles into the editor's home at every start; see
+# the script.
+COPY --chmod=0755 home-links.sh /custom-cont-init.d/50-home-links.sh
