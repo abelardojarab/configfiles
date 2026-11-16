@@ -10,7 +10,8 @@
 # for mutation testing; the Docker CLI for the host's socket; kubectl
 # for the host's Kubernetes cluster, with helm and k9s; Node and uv
 # for the MCP servers in the chat's mcp.json; ruff for Python linting
-# and formatting; jj for Jujutsu repositories
+# and formatting; shfmt, hadolint and cmake-format for shell scripts,
+# Dockerfiles and CMake files; jj for Jujutsu repositories
 # and the editor's jj extensions; gh for GitHub; gcloud for Google Cloud
 # and Gemini Code Assist; Claude Code, the Gemini CLI, aider and opencode;
 # GNU Global with exuberant-ctags for source tagging; and everyday
@@ -47,7 +48,7 @@ RUN echo 'path-include=/usr/share/doc/fzf/examples/*' \
       build-essential cmake ninja-build pkg-config ccache bear mold \
       gdb lldb valgrind strace ltrace lsof hyperfine heaptrack \
       clang clangd clang-format clang-tidy lld llvm \
-      cppcheck shellcheck lcov gcovr \
+      cppcheck shellcheck shfmt lcov gcovr \
       protobuf-compiler libprotobuf-dev libgrpc++-dev protobuf-compiler-grpc \
       libgtest-dev libgmock-dev libbenchmark-dev pandoc \
       git-lfs ripgrep fd-find tree file zip unzip zstd rsync wget \
@@ -146,6 +147,16 @@ RUN curl -fsSL -o /tmp/gh.tgz "${GH_URL}/${GH_TGZ}" \
  && tar -C /usr/local/bin -xzf /tmp/gh.tgz --strip-components=2 \
       gh_2.103.3_linux_amd64/bin/gh \
  && rm -f /tmp/gh.tgz
+
+# hadolint, the Dockerfile linter, from its GitHub release, checked
+# against the SHA-256 GitHub publishes for the asset.
+ARG HL_URL=https://github.com/hadolint/hadolint/releases/download
+ARG HL_BIN=v2.15.1/hadolint-linux-x86_64
+ARG HL_SUM=c7187db94eeeeca956519a6af171adc31453941a1e777961f6e680f697c8c507
+RUN curl -fsSL -o /tmp/hadolint "${HL_URL}/${HL_BIN}" \
+ && echo "${HL_SUM}  /tmp/hadolint" | sha256sum -c - \
+ && install -m 0755 /tmp/hadolint /usr/local/bin/hadolint \
+ && rm -f /tmp/hadolint
 
 # gcloud, the Google Cloud CLI, from Google's apt repository, for Gemini
 # Code Assist's project and application-default credentials. The key must
@@ -333,8 +344,8 @@ ENV PATH=/opt/rust/cargo/bin:$PATH:/usr/local/cuda/bin
 # into.
 RUN python3 -m venv /opt/tools \
  && /opt/tools/bin/pip install --no-cache-dir uv nodejs-wheel mutmut \
-      ruff==0.17.3 \
- && for tool in node npm npx uv uvx mutmut ruff; do \
+      ruff==0.17.3 cmakelang==0.6.13 \
+ && for tool in node npm npx uv uvx mutmut ruff cmake-format; do \
       ln -s "/opt/tools/bin/$tool" "/usr/local/bin/$tool"; \
     done
 
