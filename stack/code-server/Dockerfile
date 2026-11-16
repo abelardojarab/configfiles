@@ -1,7 +1,8 @@
 # code-server with the tools this setup needs baked in, instead of
 # installed at every start: python3 (with venv and headers) for
 # review-kit's git hooks and projects; GCC, LLVM/Clang 23 (18 for Mull),
-# build tools, debuggers and analyzers; Go, Rust and Bazel; gRPC and
+# build tools, debuggers and analyzers; lcov and gcovr for coverage
+# reports; Go, Rust and Bazel; gRPC and
 # protobuf tools (protoc and its plugins, grpcurl, buf); Mull and mutmut
 # for mutation testing; the Docker CLI for the host's socket; kubectl
 # for the host's Kubernetes cluster; Node and uv
@@ -35,7 +36,7 @@ RUN apt-get update \
       build-essential cmake ninja-build pkg-config ccache bear \
       gdb lldb valgrind strace ltrace lsof \
       clang clangd clang-format clang-tidy lld llvm \
-      cppcheck shellcheck \
+      cppcheck shellcheck lcov gcovr \
       protobuf-compiler libprotobuf-dev libgrpc++-dev protobuf-compiler-grpc \
       git-lfs ripgrep fd-find tree file zip unzip zstd rsync wget \
       sqlite3 htop nvtop tmux vim bc yq \
