@@ -71,6 +71,14 @@ Everything else stays: `cq_sweep.py`, the AI review, the gate, the commit
 message rules. When the change outgrows these limits, or the reviewer or
 the gate flags anything, switch to the full path.
 
+## Known agent mistakes
+
+Mistakes agents have made in this repository, each with what to do
+instead. Add one when an agent makes a mistake that the rules and
+lenses do not already prevent.
+
+- None recorded yet.
+
 ## Commit messages
 
 - Say why the change exists, what it does not do, and how it was tested.

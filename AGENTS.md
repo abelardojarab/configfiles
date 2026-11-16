@@ -72,6 +72,25 @@ Everything else stays: `cq_sweep.py`, the AI review, the gate, the commit
 message rules. When the change outgrows these limits, or the reviewer or
 the gate flags anything, switch to the full path.
 
+## Known agent mistakes
+
+Mistakes agents have made in this repository, each with what to do
+instead. Add one when an agent makes a mistake that the rules and
+lenses do not already prevent.
+
+- The kit's tests use unittest, not pytest, which is not installed on
+  the host or in code-server: run
+  `python3 -m unittest review-kit/tests/test_kit.py` from the
+  repository root.
+- The litellm proxy is `http://127.0.0.1:4001/v1` on the host and
+  `http://litellm-claude-proxy:4000/v1` inside a container on the
+  stack's network. A `reviewkit.reviewCmd` written for one fails in the
+  other, so the host's and code-server's git configs each have their
+  own.
+- A truth-audit override repeats the whole flag line exactly as the
+  gate prints it, then ` :: ` and a reason of 20 or more characters.
+  The flagged name alone, or a shortened line, does not match.
+
 ## Commit messages
 
 - Say why the change exists, what it does not do, and how it was tested.
