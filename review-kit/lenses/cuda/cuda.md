@@ -62,6 +62,14 @@ sources as C++.
   come from the same GPU, and the message says which. When the change can
   alter results (reordered math, a new precision, fast-math), it also shows
   the outputs still match the CPU reference within the tolerance of §5.
+- A new kernel, or a change whose message claims a speedup, is benchmarked
+  against the CPU implementation of the same operation when one already
+  exists in the tree or earlier in the stack; never write a CPU version
+  only to have something to compare. Use Google Benchmark at several
+  sizes, including small ones where the CPU may win, after warm-up runs,
+  timing the GPU with CUDA events. Count host-device copies or say they
+  are excluded. The message names the CPU and GPU and the size at which
+  the GPU starts to win, or says it never does in the range measured.
 
 ## 4. Portability
 
