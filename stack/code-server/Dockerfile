@@ -5,7 +5,8 @@
 # protobuf tools (protoc and its plugins, grpcurl, buf); Mull and mutmut
 # for mutation testing; the Docker CLI for the host's socket; kubectl
 # for the host's Kubernetes cluster; Node and uv
-# for the MCP servers in the chat's mcp.json; and everyday command-line
+# for the MCP servers in the chat's mcp.json; jj for Jujutsu repositories
+# and the editor's jj extensions; and everyday command-line
 # tools, nvtop among them.
 #
 # Every download that is not from Ubuntu's archive is pinned and checked
@@ -78,6 +79,16 @@ RUN curl -fsSL -o /tmp/kubectl \
  && echo "${KUBECTL_SUM}  /tmp/kubectl" | sha256sum -c - \
  && install -m 0755 /tmp/kubectl /usr/local/bin/kubectl \
  && rm -f /tmp/kubectl
+
+# jj (Jujutsu) from its GitHub release, the static musl build, for the
+# editor's jj extensions (jjk, VisualJJ), which run it.
+ARG JJ_URL=https://github.com/jj-vcs/jj/releases/download
+ARG JJ_TGZ=v0.46.0/jj-v0.46.0-x86_64-unknown-linux-musl.tar.gz
+ARG JJ_SUM=fce0271158e665ceb82dc66c5eb95b1728649094e9133074f3b5baece345fc08
+RUN curl -fsSL -o /tmp/jj.tgz "${JJ_URL}/${JJ_TGZ}" \
+ && echo "${JJ_SUM}  /tmp/jj.tgz" | sha256sum -c - \
+ && tar -C /usr/local/bin -xzf /tmp/jj.tgz ./jj \
+ && rm -f /tmp/jj.tgz
 
 # LLVM 23, the current stable branch, from apt.llvm.org, as the default
 # clang, clangd, clang-format, clang-tidy, lld and lldb (linked into
