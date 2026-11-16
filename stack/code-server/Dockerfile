@@ -11,7 +11,7 @@
 # and the editor's jj extensions; gh for GitHub; gcloud for Google Cloud
 # and Gemini Code Assist; Claude Code, the Gemini CLI, aider and opencode;
 # GNU Global with exuberant-ctags for source tagging; and everyday
-# command-line tools, tig, fzf and nvtop among them.
+# command-line tools, tig, fzf, bat and nvtop among them.
 #
 # Every download that is not from Ubuntu's archive is pinned and checked
 # against its published SHA-256 (Docker's and LLVM's apt keys, against
@@ -48,10 +48,11 @@ RUN echo 'path-include=/usr/share/doc/fzf/examples/*' \
       protobuf-compiler libprotobuf-dev libgrpc++-dev protobuf-compiler-grpc \
       git-lfs ripgrep fd-find tree file zip unzip zstd rsync wget \
       sqlite3 htop nvtop tmux vim bc yq tig fzf \
-      global exuberant-ctags \
+      global exuberant-ctags bat \
       dnsutils iputils-ping tcpdump \
       curl ca-certificates gnupg \
  && ln -s /usr/bin/fdfind /usr/local/bin/fd \
+ && ln -s /usr/bin/batcat /usr/local/bin/bat \
  && rm -rf /var/lib/apt/lists/*
 
 # Docker CLI, Compose and Buildx from Docker's apt repository (Ubuntu's
