@@ -9,7 +9,7 @@
 # for the MCP servers in the chat's mcp.json; ruff for Python linting
 # and formatting; jj for Jujutsu repositories
 # and the editor's jj extensions; gh for GitHub; gcloud for Google Cloud
-# and Gemini Code Assist; and everyday command-line
+# and Gemini Code Assist; Claude Code; and everyday command-line
 # tools, nvtop among them.
 #
 # Every download that is not from Ubuntu's archive is pinned and checked
@@ -138,6 +138,24 @@ RUN curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg \
  && apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y google-cloud-cli \
  && rm -rf /var/lib/apt/lists/*
+
+# Claude Code, the native binary from Anthropic's release bucket, at the
+# host's version, checked against the SHA-256 in that release's
+# manifest.json. A rebuild with a new pin updates it, so the
+# self-updater, which cannot write to /usr/local/bin, is off. It signs
+# in with /login and keeps the token in ~/.claude/.credentials.json and
+# its settings in ~/.claude.json, both on /config.
+ARG CLAUDE_GCS=https://storage.googleapis.com
+ARG CLAUDE_BUCKET=claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819
+ARG CLAUDE_URL=${CLAUDE_GCS}/${CLAUDE_BUCKET}/claude-code-releases
+ARG CLAUDE_VERSION=2.1.325
+ARG CLAUDE_SUM=0dc4f4a9a165fc60746d7ae8489712e5fc352f1e7ad4eb22e7141bd0812eb0cf
+ENV DISABLE_AUTOUPDATER=1
+RUN curl -fsSL -o /tmp/claude \
+      "${CLAUDE_URL}/${CLAUDE_VERSION}/linux-x64/claude" \
+ && echo "${CLAUDE_SUM}  /tmp/claude" | sha256sum -c - \
+ && install -m 0755 /tmp/claude /usr/local/bin/claude \
+ && rm -f /tmp/claude
 
 # LLVM 23, the current stable branch, from apt.llvm.org, as the default
 # clang, clangd, clang-format, clang-tidy, lld and lldb (linked into
