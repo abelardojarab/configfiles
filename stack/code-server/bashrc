@@ -1,0 +1,70 @@
+# shellcheck shell=bash
+# shellcheck disable=SC1091  # sourced files are system or shared dotfiles
+# code-server's ~/.bashrc, linked into /config by home-links.sh. It takes
+# the portable parts of the host's dotfiles/.bashrc (readline, history,
+# colors, prompt, editor and GPG settings) and sources the same
+# dotfiles/.bashrc.gtags for the GNU Global and fzf helpers. It does not
+# source the host's .bashrc itself: that one points KUBECONFIG at
+# ~/.kube/config (the container's is /kube/config), turns off TLS checks
+# in curl, and mostly sets up tools that exist only on the host.
+
+# Only for interactive shells
+[[ $- != *i* ]] && return
+
+# Readline: the key bindings come from ~/.inputrc, the host's.
+bind "set completion-ignore-case on"
+bind "set completion-map-case on"
+bind "set show-all-if-ambiguous on"
+
+# History: big, timestamped, shared across terminals (PROMPT_COMMAND).
+export HISTCONTROL=ignoreboth
+export HISTIGNORE="&:ls:[bf]g:[cb]d:b:history:exit:[ ]*"
+export HISTSIZE=50000 HISTFILESIZE=50000
+export HISTTIMEFORMAT=$'\033[0;34m[%F %T] \033[0m'
+shopt -s histappend cmdhist checkwinsize
+
+[[ -x /usr/bin/lesspipe ]] && eval "$(SHELL=/bin/sh lesspipe)"
+eval "$(dircolors -b)"
+alias ls='ls --color=auto' grep='grep --color=auto'
+alias ll='ls -alF' la='ls -A' l='ls -CF'
+
+if ! shopt -oq posix \
+    && [[ -f /usr/share/bash-completion/bash_completion ]]; then
+  . /usr/share/bash-completion/bash_completion
+fi
+
+export VISUAL=vim EDITOR=vim
+# In the editor's integrated terminal, open files in the editor.
+[[ -n "$VSCODE_IPC_HOOK_CLI" ]] && export EDITOR="code -w"
+# Tells gpg-agent which terminal pinentry-curses asks for a passphrase on.
+GPG_TTY=$(tty)
+export GPG_TTY
+export COLORTERM=truecolor
+export REVIEWKIT_HOME=/home/abelardojara/workspace/configfiles/review-kit
+export CTEST_OUTPUT_ON_FAILURE=1
+export TSAN_OPTIONS="halt_on_error=1:abort_on_error=1:die_after_fork=0"
+export ASAN_OPTIONS=abort_on_error=1:detect_leaks=0
+
+# GNU Global and fzf helpers (gti, ggrep, gfind, ...), shared with the host.
+. /home/abelardojara/workspace/configfiles/dotfiles/.bashrc.gtags
+
+# fzf: Ctrl-R searches history, Ctrl-T inserts a file, Alt-C changes
+# directory; files come from fd, skipping .git.
+export FZF_DEFAULT_COMMAND='fd --type f --hidden --exclude .git'
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+. /usr/share/doc/fzf/examples/key-bindings.bash
+
+# Prompt: the host's layout, [time] host [directory] (branch) $, with
+# its colors defined (the host's .bashrc uses them without setting
+# them). "code-server" stands in for the container's random hostname.
+_prompt_git() {
+  local branch
+  branch=$(git symbolic-ref -q --short HEAD 2>/dev/null) \
+    || branch=$(git rev-parse --short=7 HEAD 2>/dev/null) \
+    || return
+  printf '(%s) ' "$branch"
+}
+PS1='\[\e[0;34m\][\t] \[\e[0;32m\]code-server \[\e[0;33m\][\w] '
+PS1+='\[\e[0;36m\]$(_prompt_git)\[\e[0;32m\]\$ \[\e[0m\]'
+PROMPT_COMMAND="history -a; history -c; history -r\
+${PROMPT_COMMAND:+; $PROMPT_COMMAND}"

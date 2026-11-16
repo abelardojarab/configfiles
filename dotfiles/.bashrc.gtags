@@ -2,7 +2,8 @@
 # Source-navigation helpers for GNU Global and fzf: the ~/.gtags index
 # (GTAGSROOT, gupdate, gregenerate), interactive symbol, file and text
 # search (gti, gtir, gtib, gfile, ggrep, ggrepi, gfind, grecent) and
-# their completions. Sourced by ~/.bashrc.
+# their completions. Sourced by ~/.bashrc and by code-server's bashrc
+# (stack/code-server/bashrc), so both shells share one copy.
 
 # ==== Detect commands (FreeBSD vs Linux compatibility) ====
 

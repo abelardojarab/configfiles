@@ -34,5 +34,6 @@ link .gnupg "$workspace/Documents/GnuPG/.gnupg"
 link .fonts "$workspace/configfiles/Fonts"
 link .vimrc "$workspace/vim-config/.vimrc"
 link .vim "$workspace/vim-config/.vim"
+link .bashrc "$workspace/configfiles/stack/code-server/bashrc"
 # Mounted by docker-compose.yml at the host's path, not under workspace.
 link .gtags /home/abelardojara/.gtags
