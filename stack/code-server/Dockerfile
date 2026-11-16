@@ -8,12 +8,14 @@
 # for the host's Kubernetes cluster, with helm and k9s; Node and uv
 # for the MCP servers in the chat's mcp.json; ruff for Python linting
 # and formatting; jj for Jujutsu repositories
-# and the editor's jj extensions; gh for GitHub; and everyday command-line
+# and the editor's jj extensions; gh for GitHub; gcloud for Google Cloud
+# and Gemini Code Assist; and everyday command-line
 # tools, nvtop among them.
 #
 # Every download that is not from Ubuntu's archive is pinned and checked
-# against its published SHA-256 (Docker's apt key, against its published
-# fingerprint).
+# against its published SHA-256 (Docker's and LLVM's apt keys, against
+# their published fingerprints; Google Cloud's, against the fingerprint
+# of the key that signs its repository, since Google publishes none).
 #
 # Rebuild to pick up a new code-server or new packages (Watchtower cannot
 # update a locally built image; systemd/code-server-rebuild.timer does
@@ -119,6 +121,23 @@ RUN curl -fsSL -o /tmp/gh.tgz "${GH_URL}/${GH_TGZ}" \
  && tar -C /usr/local/bin -xzf /tmp/gh.tgz --strip-components=2 \
       gh_2.103.3_linux_amd64/bin/gh \
  && rm -f /tmp/gh.tgz
+
+# gcloud, the Google Cloud CLI, from Google's apt repository, for Gemini
+# Code Assist's project and application-default credentials. The key must
+# match the fingerprint of the key that signs the repository before it is
+# trusted. gcloud keeps its sign-in in ~/.config/gcloud on /config.
+ARG GCLOUD_KEY_FPR=35BAA0B33E9EB396F59CA838C0BA5CE6DC6315A3
+RUN curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg \
+      -o /tmp/gcloud.asc \
+ && gpg --show-keys --with-colons /tmp/gcloud.asc \
+      | grep -q "^fpr:::::::::${GCLOUD_KEY_FPR}:" \
+ && mv /tmp/gcloud.asc /etc/apt/keyrings/gcloud.asc \
+ && echo "deb [signed-by=/etc/apt/keyrings/gcloud.asc]" \
+      "https://packages.cloud.google.com/apt cloud-sdk main" \
+      > /etc/apt/sources.list.d/google-cloud-sdk.list \
+ && apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y google-cloud-cli \
+ && rm -rf /var/lib/apt/lists/*
 
 # LLVM 23, the current stable branch, from apt.llvm.org, as the default
 # clang, clangd, clang-format, clang-tidy, lld and lldb (linked into
