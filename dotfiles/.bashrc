@@ -76,6 +76,10 @@ alias ll='ls -alF'; alias la='ls -A'; alias l='ls -CF'
 
 # Tools
 alias gpg='gpg'  # modern distros ship gpg v2 as 'gpg'
+# Tells gpg-agent which terminal its pinentry (pinentry-curses, set in
+# ~/.gnupg/gpg-agent.conf) asks for a passphrase on.
+GPG_TTY=$(tty)
+export GPG_TTY
 alias curl='curl --insecure'  # DANGEROUS: Disables TLS verification!
 
 # rsync helpers
