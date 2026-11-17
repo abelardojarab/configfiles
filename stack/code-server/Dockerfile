@@ -5,7 +5,8 @@
 # GCC 14 cross compilers for arm64, armhf and riscv64 Linux, and
 # GCC 13 for bare-metal ARM;
 # build tools, debuggers and analyzers; hyperfine and heaptrack for
-# timing and heap profiling; lcov and gcovr for coverage
+# timing and heap profiling; the Linux kernel's build tools, with
+# sparse and coccinelle; lcov and gcovr for coverage
 # reports; the mold linker; GoogleTest, GoogleMock and Google Benchmark;
 # Go, Rust and
 # Bazel; dtc for device trees; pandoc; graphviz; gRPC and
@@ -116,6 +117,16 @@ RUN apt-get update \
         ln -s "$src" "/usr/local/bin/${triple}-${tool}"; \
       done; \
     done
+
+# What building a Linux kernel or an out-of-tree module needs beyond the
+# tools above: flex and bison for its parsers, libelf-dev for objtool,
+# pahole (dwarves) for BTF, cpio for the in-kernel headers archive and
+# kmod for modules_install; and sparse (make C=1) and coccinelle (make
+# coccicheck) for its static checks.
+RUN apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+      flex bison libelf-dev dwarves cpio kmod sparse coccinelle \
+ && rm -rf /var/lib/apt/lists/*
 
 # Docker CLI, Compose and Buildx from Docker's apt repository (Ubuntu's
 # docker.io would also bring a daemon). The key must match Docker's
