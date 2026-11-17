@@ -2,6 +2,8 @@
 # installed at every start: python3 (with venv and headers) for
 # review-kit's git hooks and projects; GCC 14, LLVM/Clang 23 (18 for
 # Mull),
+# GCC 14 cross compilers for arm64, armhf and riscv64 Linux, and
+# GCC 13 for bare-metal ARM;
 # build tools, debuggers and analyzers; hyperfine and heaptrack for
 # timing and heap profiling; lcov and gcovr for coverage
 # reports; the mold linker; GoogleTest, GoogleMock and Google Benchmark;
@@ -90,6 +92,30 @@ RUN apt-get update \
  && set -- /usr/lib/linux-tools/*/perf \
  && [ "$#" -eq 1 ] && [ -x "$1" ] \
  && ln -s "$1" /usr/local/bin/perf
+
+# GCC 14 cross compilers for the cluster's other architectures, arm64
+# (thunderx2, honeycomb) and riscv64 (sifive-unmatched), and for 32-bit
+# armhf, each with its binutils and C library; and Ubuntu's bare-metal
+# arm-none-eabi GCC (13) with newlib, for microcontrollers. The packages
+# name the compilers <triple>-gcc-14; the unversioned <triple>-gcc that
+# CROSS_COMPILE=<triple>- and most build systems look for is linked into
+# /usr/local/bin, so it matches the native default, GCC 14. A tool
+# missing from the packages fails the build.
+RUN apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+      gcc-14-aarch64-linux-gnu g++-14-aarch64-linux-gnu \
+      gcc-14-arm-linux-gnueabihf g++-14-arm-linux-gnueabihf \
+      gcc-14-riscv64-linux-gnu g++-14-riscv64-linux-gnu \
+      gcc-arm-none-eabi libnewlib-arm-none-eabi \
+ && rm -rf /var/lib/apt/lists/* \
+ && for triple in aarch64-linux-gnu arm-linux-gnueabihf \
+      riscv64-linux-gnu; do \
+      for tool in gcc g++ cpp gcc-ar gcc-nm gcc-ranlib gcov; do \
+        src="/usr/bin/${triple}-${tool}-14"; \
+        [ -e "$src" ] || { echo "missing $src"; exit 1; }; \
+        ln -s "$src" "/usr/local/bin/${triple}-${tool}"; \
+      done; \
+    done
 
 # Docker CLI, Compose and Buildx from Docker's apt repository (Ubuntu's
 # docker.io would also bring a daemon). The key must match Docker's
