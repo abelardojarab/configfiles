@@ -1,0 +1,17 @@
+#!/bin/bash
+# Runs the Slurm command it is called as (sinfo, sbatch, srun, ...) on
+# the host through `ssh host` (~/.ssh/config on /config), in the current
+# directory. The cluster runs Slurm 19.05, which the newest client
+# Ubuntu 24.04 packages (23.11) cannot talk to; the host is a node of the
+# cluster, with a matching client and munge. The directory must exist at
+# the same path on the host, as everything under ~/workspace does, and a
+# job gets the host's environment, not this terminal's. A terminal is
+# passed through, for srun --pty and salloc, only when standard input,
+# output and error all are one: on a terminal, ssh sends the remote
+# error output to standard output, past any redirect of it.
+command=${0##*/}
+tty=-T
+if [ -t 0 ] && [ -t 1 ] && [ -t 2 ]; then
+  tty=-t
+fi
+exec ssh -q "$tty" host "cd ${PWD@Q} && exec $command ${*@Q}"

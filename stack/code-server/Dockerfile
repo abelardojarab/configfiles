@@ -20,7 +20,8 @@
 # for Jujutsu repositories
 # and the editor's jj extensions; gh for GitHub; gcloud for Google Cloud
 # and Gemini Code Assist; Claude Code, the Gemini CLI, aider and opencode;
-# GNU Global with exuberant-ctags for source tagging; and everyday
+# GNU Global with exuberant-ctags for source tagging; the Slurm
+# commands, run on the host for its cluster; and everyday
 # command-line tools, tig, fzf, bat and nvtop among them.
 #
 # Every download that is not from Ubuntu's archive is pinned and checked
@@ -423,6 +424,14 @@ RUN python3 -m venv /opt/aider \
 # aider-gemini, which points aider at cli-proxy-api's Gemini 3.8 Flash
 # or Gemini 4 Carbon; see the script for how it reaches the proxy here.
 COPY --chmod=0755 aider-gemini /usr/local/bin/aider-gemini
+
+# sinfo, squeue, sbatch, srun, salloc, scancel, sacct and scontrol, each
+# run on the host; see the script for why.
+COPY --chmod=0755 slurm-via-host /usr/local/bin/slurm-via-host
+RUN for command in sinfo squeue sbatch srun salloc scancel sacct \
+      scontrol; do \
+      ln -s slurm-via-host "/usr/local/bin/$command"; \
+    done
 
 # Links the host's dotfiles into the editor's home at every start; see
 # the script.
