@@ -9,7 +9,8 @@
 # sparse and coccinelle; lcov and gcovr for coverage
 # reports; the mold linker; GoogleTest, GoogleMock and Google Benchmark;
 # Go, Rust and
-# Bazel; dtc for device trees; pandoc; graphviz; gRPC and
+# Bazel; QEMU and gdb-multiarch to boot and debug arm64 kernels;
+# dtc for device trees; pandoc; graphviz; gRPC and
 # protobuf tools (protoc and its plugins, grpcurl, buf); Mull and mutmut
 # for mutation testing; the Docker CLI for the host's socket; kubectl
 # for the host's Kubernetes cluster, with helm and k9s; Node and uv
@@ -126,6 +127,14 @@ RUN apt-get update \
 RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       flex bison libelf-dev dwarves cpio kmod sparse coccinelle \
+ && rm -rf /var/lib/apt/lists/*
+
+# QEMU to boot an arm64 kernel without the hardware
+# (qemu-system-aarch64 -M virt -cpu max -kernel arch/arm64/boot/Image),
+# and gdb-multiarch to debug it through QEMU's gdbstub (-s -S).
+RUN apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+      qemu-system-arm gdb-multiarch \
  && rm -rf /var/lib/apt/lists/*
 
 # Docker CLI, Compose and Buildx from Docker's apt repository (Ubuntu's
