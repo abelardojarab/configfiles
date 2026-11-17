@@ -1,6 +1,7 @@
 # code-server with the tools this setup needs baked in, instead of
 # installed at every start: python3 (with venv and headers) for
-# review-kit's git hooks and projects; GCC, LLVM/Clang 23 (18 for Mull),
+# review-kit's git hooks and projects; GCC 14, LLVM/Clang 23 (18 for
+# Mull),
 # build tools, debuggers and analyzers; hyperfine and heaptrack for
 # timing and heap profiling; lcov and gcovr for coverage
 # reports; the mold linker; GoogleTest, GoogleMock and Google Benchmark;
@@ -40,12 +41,21 @@ ARG DOCKER_GID=135
 
 # The base image drops /usr/share/doc on install; fzf keeps its shell
 # key bindings there, so they are let through.
+#
+# GCC 14, the newest in Ubuntu 24.04 and the newest the host's CUDA 12.9
+# nvcc accepts as a host compiler, is linked into /usr/local/bin as cc,
+# c++, gcc, g++ and their tools, ahead of the GCC 13 that /usr/bin's
+# names point to, which stays installed as gcc-13 and g++-13. gcov comes
+# along because lcov and gcovr need the gcov of the compiler that built
+# the code. A CMake build directory already configured keeps the
+# compiler path in its cache until it is configured afresh.
 RUN echo 'path-include=/usr/share/doc/fzf/examples/*' \
       > /etc/dpkg/dpkg.cfg.d/fzf-examples \
  && apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       python3 python3-venv python3-dev \
       build-essential cmake ninja-build pkg-config ccache bear mold \
+      gcc-14 g++-14 \
       gdb lldb valgrind strace ltrace lsof hyperfine heaptrack \
       clang clangd clang-format clang-tidy lld llvm \
       cppcheck shellcheck shfmt lcov gcovr \
@@ -59,6 +69,12 @@ RUN echo 'path-include=/usr/share/doc/fzf/examples/*' \
       curl ca-certificates gnupg \
  && ln -s /usr/bin/fdfind /usr/local/bin/fd \
  && ln -s /usr/bin/batcat /usr/local/bin/bat \
+ && for tool in cc:gcc c++:g++ gcc g++ cpp gcov gcov-dump gcov-tool \
+      gcc-ar gcc-nm gcc-ranlib; do \
+      src="/usr/bin/${tool#*:}-14"; \
+      [ -e "$src" ] || { echo "missing $src"; exit 1; }; \
+      ln -s "$src" "/usr/local/bin/${tool%%:*}"; \
+    done \
  && rm -rf /var/lib/apt/lists/*
 
 # perf and rr. Ubuntu packages no perf for the host's 5.15 kernel, so
