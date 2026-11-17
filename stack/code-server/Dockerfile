@@ -16,7 +16,8 @@
 # for the host's Kubernetes cluster, with helm and k9s; Node and uv
 # for the MCP servers in the chat's mcp.json; ruff for Python linting
 # and formatting; shfmt, hadolint and cmake-format for shell scripts,
-# Dockerfiles and CMake files; jj for Jujutsu repositories
+# Dockerfiles and CMake files; Verilator for HDL simulation; jj
+# for Jujutsu repositories
 # and the editor's jj extensions; gh for GitHub; gcloud for Google Cloud
 # and Gemini Code Assist; Claude Code, the Gemini CLI, aider and opencode;
 # GNU Global with exuberant-ctags for source tagging; and everyday
@@ -69,7 +70,7 @@ RUN echo 'path-include=/usr/share/doc/fzf/examples/*' \
       sqlite3 htop nvtop tmux vim bc yq tig fzf \
       global exuberant-ctags bat \
       dnsutils iputils-ping tcpdump \
-      device-tree-compiler \
+      device-tree-compiler verilator \
       curl ca-certificates gnupg \
  && ln -s /usr/bin/fdfind /usr/local/bin/fd \
  && ln -s /usr/bin/batcat /usr/local/bin/bat \
