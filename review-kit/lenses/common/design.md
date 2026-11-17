@@ -72,6 +72,14 @@ What a reviewer checks in the design of production code: what to expose, which b
   stack: delete it or move it to the change that makes it reachable. A
   dark-launch flag counts only if the description names where it is (or will
   be) enabled.
+- Fix the producer, not the consumer. Before writing logic that recovers
+  from or compensates for a bad input (handling A by producing B), ask
+  whether A should be prevented where it is produced. A discrepancy
+  between producers is a bug, not a reachability proof: if a downstream
+  branch fires only because one producer omits a field its siblings set,
+  fix that producer and drop the branch. Keep downstream recovery only
+  for inputs no producer can prevent (external data, user input,
+  partial failures), and say in the description why the source cannot.
 
 ## 3. One canonical formula, ordering and dispatch
 
