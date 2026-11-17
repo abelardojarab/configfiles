@@ -580,6 +580,12 @@ services:
        # nsys wrappers in /usr/local/cuda/bin look for them.
        - /opt/nvidia/nsight-compute:/opt/nvidia/nsight-compute:ro
        - /opt/nvidia/nsight-systems:/opt/nvidia/nsight-systems:ro
+       # The host's kernel modules and headers, for building
+       # out-of-tree modules (NVIDIA's among them) for the running
+       # kernel; code-server/kernel-headers.sh links the headers
+       # into /usr/src, which holds the image's own sources.
+       - /lib/modules:/lib/modules:ro
+       - /usr/src:/host/usr/src:ro
 
   drawio:
     image: jgraph/drawio
