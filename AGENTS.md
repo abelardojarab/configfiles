@@ -87,6 +87,12 @@ lenses do not already prevent.
   stack's network. A `reviewkit.reviewCmd` written for one fails in the
   other, so the host's and code-server's git configs each have their
   own.
+- The AI reviewer is a fallback chain set in `reviewkit.reviewCmd` in
+  the host's and code-server's global git configs (`~/.gitconfig` on the
+  host, `/config/.gitconfig` in code-server), not in this repository;
+  each entry runs when the one before it fails. Read it with
+  `git config --global --get reviewkit.reviewCmd` before saying which
+  model reviews or in what order, and update both git configs together.
 - A truth-audit override repeats the whole flag line exactly as the
   gate prints it, then ` :: ` and a reason of 20 or more characters.
   The flagged name alone, or a shortened line, does not match.
