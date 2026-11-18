@@ -556,8 +556,8 @@ services:
       - PUID=501
       - PGID=501
       - TZ=Etc/UTC
-      - PASSWORD=qitlrtsx
-      - SUDO_PASSWORD=qitlrtsx
+      - PASSWORD=${CODE_SERVER_PASSWORD:?set it in stack/.env}
+      - SUDO_PASSWORD=${CODE_SERVER_SUDO_PASSWORD:?set it in stack/.env}
       - PROXY_DOMAIN=/code-server
       # The host's admin kubeconfig, for kubectl; outside /config so
       # kubectl's cache in ~/.kube stays writable.

@@ -6,7 +6,7 @@ services:
       - "127.0.0.1:8080:8080"
     environment:
       - DOCKER_USER=${USER}
-      - PASSWORD=qitlrtsx
+      - PASSWORD=${CODE_SERVER_PASSWORD:?set it in stack/.env}
     user: "${UID:-1000}:${GID:-1000}"
     volumes:
       # Persist code-server config
