@@ -844,7 +844,18 @@ server {
     }
 
     # Code server
+    # Behind Authentik forward-auth, like File Browser above and Portainer
+    # and Hermes below: its terminal has sudo, the Docker socket and an SSH
+    # key into this host, so its own password should not be the only lock.
+    # The provider and application come from the local/portainer.yaml
+    # blueprint under ~/containers/authentik, outside this repository.
+    # Only requests through nginx are checked: a client connecting
+    # straight to the container's published port 8085
+    # (stack/docker-compose.yml), which this route proxies to, skips it.
     location /code-server/ {
+        auth_request     /outpost.goauthentik.io/auth/nginx;
+        error_page 401 = @goauthentik_proxy_signin;
+
         proxy_pass http://code-server/;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
