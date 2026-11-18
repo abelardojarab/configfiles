@@ -132,6 +132,12 @@ git config reviewkit.reviewCmd "python3 $REVIEWKIT_HOME/scripts/llm_chat.py \
   --key-env LITELLM_MASTER_KEY --model gemini-3.8-flash-high"
 ```
 
+`--model` takes a name the endpoint serves. Against a provider's API
+that is the provider's model ID; behind a litellm proxy it is the
+proxy's alias, as `gemini-3.8-flash-high` is here. When a provider
+renames or drops a model, pointing the alias at its replacement in the
+proxy's config keeps every `reviewCmd` that uses it working.
+
 `--fallback NAME` adds a second model, tried once when the first fails.
 Name one that can write a whole review: a model whose server caps its
 output, or that is too slow to finish within `TIMEOUT_S`, fails the review
