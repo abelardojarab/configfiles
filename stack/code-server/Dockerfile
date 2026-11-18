@@ -10,6 +10,8 @@
 # reports; the mold linker; GoogleTest, GoogleMock and Google Benchmark;
 # Go, Rust and
 # Bazel; QEMU and gdb-multiarch to boot and debug arm64 kernels;
+# TeX Live's XeLaTeX and LuaLaTeX, with latexmk, for PDFs from LaTeX
+# and pandoc;
 # dtc for device trees; pandoc; graphviz; gRPC and
 # protobuf tools (protoc and its plugins, grpcurl, buf); Mull and mutmut
 # for mutation testing; the Docker CLI for the host's socket; kubectl
@@ -137,6 +139,19 @@ RUN apt-get update \
 RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y \
       qemu-system-arm gdb-multiarch \
+ && rm -rf /var/lib/apt/lists/*
+
+# XeLaTeX and LuaLaTeX from Ubuntu's TeX Live (2023), with latexmk to
+# drive them and pandoc's --pdf-engine. latex-extra brings the packages
+# most documents and pandoc templates such as eisvogel use, and
+# fonts-recommended the standard PostScript fonts; fontspec finds the
+# fonts in ~/.fonts through fontconfig. The full TeX Live (texlive-full)
+# would add about 7 GB more: language packs, extra fonts and subject
+# collections, and their documentation.
+RUN apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+      texlive-xetex texlive-luatex texlive-latex-extra \
+      texlive-fonts-recommended latexmk \
  && rm -rf /var/lib/apt/lists/*
 
 # Docker CLI, Compose and Buildx from Docker's apt repository (Ubuntu's
