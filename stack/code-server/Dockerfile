@@ -21,15 +21,17 @@
 # Dockerfiles and CMake files; Verilator for HDL simulation; jj
 # for Jujutsu repositories
 # and the editor's jj extensions; gh for GitHub; gcloud for Google Cloud
-# and Gemini Code Assist; Claude Code, the Gemini CLI, aider and opencode;
+# and Gemini Code Assist; Claude Code, the Gemini CLI, aider, opencode
+# and xAI's Grok CLI;
 # GNU Global with exuberant-ctags for source tagging; the Slurm
 # commands, run on the host for its cluster; and everyday
 # command-line tools, tig, fzf, bat and nvtop among them.
 #
 # Every download that is not from Ubuntu's archive is pinned and checked
-# against its published SHA-256 (Docker's and LLVM's apt keys, against
-# their published fingerprints; Google Cloud's, against the fingerprint
-# of the key that signs its repository, since Google publishes none).
+# against its published SHA-256 (Grok's npm tarball, against the SHA-512
+# the npm registry publishes; Docker's and LLVM's apt keys, against their
+# published fingerprints; Google Cloud's, against the fingerprint of the
+# key that signs its repository, since Google publishes none).
 #
 # Rebuild to pick up a new code-server or new packages (Watchtower cannot
 # update a locally built image; systemd/code-server-rebuild.timer does
@@ -299,6 +301,29 @@ RUN curl -fsSL -o /tmp/opencode.tgz "${OC_URL}/${OC_TGZ}" \
  && echo "${OC_SUM}  /tmp/opencode.tgz" | sha256sum -c - \
  && tar -C /usr/local/bin -xzf /tmp/opencode.tgz opencode \
  && rm -f /tmp/opencode.tgz
+
+# xAI's Grok CLI (Grok Build), the Linux x64 binary from xAI's npm
+# package @xai-official/grok-linux-x64, checked against the SHA-512 the
+# registry publishes for it (its dist.integrity, in hex). The
+# package ships it Brotli-compressed; code-server's own Node unpacks it,
+# as the npm package's postinstall would. A rebuild with a new pin
+# updates it, so its auto-updater is off (GROK_DISABLE_AUTOUPDATER, the
+# variable its built-in docs name). It signs in to an xAI account
+# (or reads XAI_API_KEY) and keeps its state in ~/.grok on /config.
+ARG GROK_URL=https://registry.npmjs.org/@xai-official/grok-linux-x64/-
+ARG GROK_TGZ=grok-linux-x64-1.0.89.tgz
+ARG GROK_SUM=3e7f0598112997faffac69a729b1c51e639d25dcbf713d206893433baedb3c81\
+7462a0835afa51a3f31d0e7cd2fb51760d5233ba7ca9b0c45311d11207c1fbcf
+ENV GROK_DISABLE_AUTOUPDATER=1
+RUN curl -fsSL -o /tmp/grok.tgz "${GROK_URL}/${GROK_TGZ}" \
+ && echo "${GROK_SUM}  /tmp/grok.tgz" | sha512sum -c - \
+ && tar -C /tmp -xzf /tmp/grok.tgz package/bin/grok.br \
+ && /app/code-server/lib/node -e \
+      'const z = require("zlib"), f = require("fs");\
+       f.writeFileSync("/tmp/grok", \
+         z.brotliDecompressSync(f.readFileSync("/tmp/package/bin/grok.br")))' \
+ && install -m 0755 /tmp/grok /usr/local/bin/grok \
+ && rm -rf /tmp/grok.tgz /tmp/package /tmp/grok
 
 # LLVM 23, the current stable branch, from apt.llvm.org, as the default
 # clang, clangd, clang-format, clang-tidy, lld and lldb (linked into
