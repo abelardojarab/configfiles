@@ -146,6 +146,10 @@ The step order around pushing is in `lenses/common/gates.md`; the gate itself is
     file that defines them, not from memory.
   - `scripts/gate.py` warns when a commit adds, changes or deletes a file
     matching `reviewkit.impactPaths` and has neither form.
+- Name the precedent in the description: write
+  `Precedent: <change> (<file>)` for the closest precedent the pattern scan
+  found (`lenses/common/pattern_scan.md`), or
+  `Precedent: none (<what the scan searched>)` when it found none.
 
 ## 4. Pre-push
 
