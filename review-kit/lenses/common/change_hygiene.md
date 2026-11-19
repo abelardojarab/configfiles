@@ -157,6 +157,9 @@ The step order around pushing is in `lenses/common/gates.md`; the gate itself is
   that turns something on does change behavior and does not use this
   wording; an option with no reader in the stack stays out (`design.md`
   §1).
+- A trailer that tells CI an output difference or a skipped check is
+  intended states what changed and how it was checked (the diff reviewed,
+  the command run), never a bare value.
 
 ## 4. Pre-push
 
