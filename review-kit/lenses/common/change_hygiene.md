@@ -111,6 +111,41 @@ The step order around pushing is in `lenses/common/gates.md`; the gate itself is
 - Add a flow diagram (at most 12 lines, in a fenced block) when the change reads
   more than one input or sits in the middle of a pipeline: inputs, this change,
   outcome, each box naming the real file or function.
+- End the description of every change that alters runtime behavior,
+  production configuration, monitoring (queries, alerts, dashboards) or a
+  binary's inputs with a production impact table, collapsed where the review
+  tool renders HTML:
+
+      <details>
+
+      <summary>Production impact</summary>
+
+      | Dimension | Details |
+      | :--- | :--- |
+      | Blast radius | ... |
+      | Rollout | ... |
+      | Monitoring / watch | ... |
+      | Rollback | ... |
+
+      </details>
+
+  - Blast radius: the files, binaries and environments the change reaches,
+    and what it leaves unchanged (a flag off by default, alternatives only
+    added to a pattern).
+  - Rollout: one entry per binary or config that ships the change, with the
+    file that defines its stages. Say in bold when something pushes
+    everywhere at once with no canary.
+  - Monitoring / watch: the metric, log or table to check after it lands,
+    filtered to production, and the alerts that must stay at zero.
+  - Rollback: the revert command plus any state a revert does not undo
+    (records written, capacity moved, traffic already served) and what to do
+    first.
+  - A test-only or doc-only change writes one line instead:
+    "Production impact: none (<why>)."
+  - Check every cell like any other sentence: rollout stages come from the
+    file that defines them, not from memory.
+  - `scripts/gate.py` warns when a commit adds, changes or deletes a file
+    matching `reviewkit.impactPaths` and has neither form.
 
 ## 4. Pre-push
 

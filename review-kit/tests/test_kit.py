@@ -498,6 +498,69 @@ class GateTest(KitTestCase):
                          {commit: kit.fingerprint_of(commit)})
         self.assertEqual(stamp["base"], "main")
 
+    def test_config_change_without_impact_block_warns_not_blocks(self):
+        self.feature()
+        self.repo.commit(CLEAN_MESSAGE, {"deploy/app.yaml": "replicas: 3\n"})
+        proc = self.gate()
+        self.assertExit(proc, 0)
+        self.assertIn("touches deploy/app.yaml and has no 'Production "
+                      "impact' block", proc.stdout)
+
+    def test_deleting_a_config_file_without_impact_block_warns(self):
+        # Removing an alert or deploy file changes production as well.
+        self.repo.commit(CLEAN_MESSAGE, {"deploy/app.yaml": "replicas: 3\n"})
+        self.feature()
+        self.repo.commit(CLEAN_MESSAGE, {"deploy/app.yaml": None})
+        proc = self.gate()
+        self.assertExit(proc, 0)
+        self.assertIn("touches deploy/app.yaml and has no 'Production "
+                      "impact' block", proc.stdout)
+
+    def test_impact_block_or_none_line_silences_the_warning(self):
+        self.feature()
+        self.repo.commit(CLEAN_MESSAGE.rstrip("\n") + "\n\n<details>\n\n"
+                         "<summary>Production impact</summary>\n\n"
+                         "</details>\n", {"deploy/app.yaml": "replicas: 3\n"})
+        self.repo.commit(CLEAN_MESSAGE.rstrip("\n") + "\n\nProduction "
+                         "impact: none (comment only).\n",
+                         {"deploy/app.yaml": "replicas: 3  # pods\n"})
+        proc = self.gate()
+        self.assertExit(proc, 0)
+        self.assertNotIn("WARNING (not blocking)", proc.stdout)
+        self.assertIn("######## Production impact (not blocking)\nok",
+                      proc.stdout)
+
+    def test_doc_commit_beside_a_config_commit_with_block_does_not_warn(self):
+        # Only the commit that touches the config file needs the block.
+        self.feature()
+        self.repo.commit(CLEAN_MESSAGE.rstrip("\n") + "\n\n<details>\n\n"
+                         "<summary>Production impact</summary>\n\n"
+                         "</details>\n", {"deploy/app.yaml": "replicas: 3\n"})
+        self.repo.commit(CLEAN_MESSAGE, {"notes.txt": "fixes\n"})
+        proc = self.gate()
+        self.assertExit(proc, 0)
+        self.assertIn("######## Production impact (not blocking)\nok",
+                      proc.stdout)
+
+    def test_impact_paths_match_file_names_not_directories(self):
+        # `*deploy*` must not match a file that only sits under deploy/.
+        self.feature()
+        self.repo.commit(CLEAN_MESSAGE, {"docs/deploy/notes.txt": "fixes\n"})
+        proc = self.gate()
+        self.assertExit(proc, 0)
+        self.assertIn("######## Production impact (not blocking)\nok",
+                      proc.stdout)
+
+    def test_empty_impact_paths_turns_the_warning_off(self):
+        # deploy/app.yaml warns under the defaults; an empty setting must
+        # silence it rather than fall back to them or flag every file.
+        self.feature()
+        self.repo.commit(CLEAN_MESSAGE, {"deploy/app.yaml": "replicas: 3\n"})
+        proc = self.gate(env={"REVIEWKIT_IMPACT_PATHS": ""})
+        self.assertExit(proc, 0)
+        self.assertIn("######## Production impact (not blocking)\nok",
+                      proc.stdout)
+
     def test_dirty_work_tree_fails(self):
         self.feature()
         self.repo.commit(CLEAN_MESSAGE, {"notes.txt": "fixes\n"})

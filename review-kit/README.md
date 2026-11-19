@@ -99,6 +99,7 @@ environment variable `REVIEWKIT_<KEY>` in upper snake case overrides a key
 | `reviewkit.requireTrailers` | none | Comma-separated trailers every message must carry |
 | `reviewkit.knownNames` | none | Comma-separated names the truth audit must not flag as stale: product names, services, config keys that no code defines |
 | `reviewkit.lenses` | `auto` | Language lenses the AI review loads next to `common`: a comma-separated list of `c`, `cpp`, `cuda`, `go`, `kernel`, `protobuf`, `python`, `typescript`, or `auto` to pick them from the files each commit touches (`.cu` takes `cpp` and `cuda`; C files in a tree with `Kconfig` and `MAINTAINERS` at the root take `c` and `kernel`) |
+| `reviewkit.impactPaths` | config, deploy and monitoring file patterns (`*.yaml`, `*.tf`, `Dockerfile`, `*alert*`, `*dashboard*`, ...) | Comma-separated globs, matched case-sensitively against each file name. When a commit adds, changes or deletes a matching file and its message has no `<summary>Production impact</summary>` block or `Production impact: none (` line, the gate warns without blocking; empty turns the warning off |
 | `reviewkit.lintCmd` | none | Linter to run on touched files; may be set several times |
 | `reviewkit.tidyCmd` | none | Analyzer whose findings count only on added lines; may be set several times |
 | `reviewkit.reviewCmd` | none | AI reviewer: a command that reads a prompt on stdin and prints the answer |

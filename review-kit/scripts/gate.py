@@ -13,9 +13,11 @@ may be overridden in <stateDir>/truth_overrides/<fingerprint>.txt with lines
 when reviewkit.maxLines is 0), unused
 proto enum values, stack churn, reads through a C++ map's operator[],
 lintCmd and tidyCmd, and, when reviewCmd is set, the saved AI review reports.
-The code-quality sweep is printed for each commit without failing. On a pass
-it writes a stamp to <stateDir>/gate_pass/ that the pre-push check accepts
-for 7 days while the commits keep their fingerprints.
+The code-quality sweep, and a warning for each commit that touches
+reviewkit.impactPaths without a Production impact block or a "Production
+impact: none (" line, are printed without failing. On a pass it writes a
+stamp to <stateDir>/gate_pass/ that the pre-push check accepts for 7 days
+while the commits keep their fingerprints.
 
 With --check-push it reads git's pre-push lines on stdin and accepts the
 push only when one stamp younger than 7 days holds the fingerprint of every
@@ -215,6 +217,30 @@ def run_commands(top, files, added, failures):
                                 % (command, code))
 
 
+_IMPACT_BLOCK = re.compile(r"<summary>\s*Production impact\s*</summary>"
+                           r"|^Production impact: none \(", re.I | re.M)
+
+
+def _missing_impact(commits):
+    """Returns (commit, matching files) for each commit lacking an impact note.
+
+    A commit lacks one when it touches a file whose name matches a glob of
+    reviewkit.impactPaths and its message has neither a Production impact
+    block nor a `Production impact: none (` line. An empty setting lists none.
+    """
+    globs = [pattern.strip()
+             for pattern in kit.config("impactPaths").split(",")
+             if pattern.strip()]
+    if not globs:
+        return []
+    lacking = []
+    for commit in commits:
+        touched = matching(kit.commit_files(commit), globs)
+        if touched and not _IMPACT_BLOCK.search(kit.message(commit)):
+            lacking.append((commit, touched))
+    return lacking
+
+
 def stamp_key(commits):
     return hashlib.sha256("\n".join(sorted(commits)).encode()).hexdigest()[:16]
 
@@ -389,6 +415,15 @@ def run_gate(base_arg):
                         "inserts into the map; not blocking):\n"
                         + "\n".join(invariants))
         section("C++ map lookups", "\n\n".join(body) or "ok")
+
+        body = "\n".join(
+            "WARNING (not blocking): %s touches %s and has no 'Production "
+            "impact' block or 'Production impact: none (<why>)' line "
+            "(lenses/common/change_hygiene.md section 3)"
+            % (commit[:12], ", ".join(touched))
+            for commit, touched in _missing_impact(commits))
+        body = body or "ok"
+        section("Production impact (not blocking)", body)
 
         run_commands(top, files, added, failures)
 

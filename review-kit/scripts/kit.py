@@ -76,6 +76,9 @@ DEFAULTS = {
     "requireTrailers": "",
     "knownNames": "",
     "lenses": "auto",
+    "impactPaths": ("*.yaml,*.yml,*.toml,*.ini,*.conf,*.cfg,*.tf,*.tfvars,"
+                    "Dockerfile,*.service,*alert*,*dashboard*,*monitor*,"
+                    "*rollout*,*deploy*,*manifest*"),
     "reviewCmd": "",
     "verifyCmd": "",
     "stateDir": "",
@@ -296,6 +299,13 @@ def changed_files(old, new):
     """Paths that exist at `new` and differ between the two commits."""
     out = git("diff", "--name-only", "-z", "--no-ext-diff", "-M",
               "--diff-filter=d", old, new, "--")
+    return [name for name in out.split("\0") if name]
+
+
+def commit_files(rev):
+    """Returns the paths `rev` adds, modifies, renames or deletes."""
+    out = git("diff", "--name-only", "-z", "--no-ext-diff", "-M",
+              rev + "^", rev, "--")
     return [name for name in out.split("\0") if name]
 
 
