@@ -23,6 +23,14 @@ cannot see. Goal: zero code-quality comments. The language lenses
   statements about it and about its siblings. A new mode makes neighboring
   sentences wrong ("No effect when the cap is unset", a heading that no longer
   covers a new row).
+- Edit an existing comment in place by default: for a rename, a behavior
+  change or an accuracy fix, change only the words or clauses the change made
+  wrong. Keep the surrounding sentences: a condensed rewrite drops context the
+  author put there and hides the real edit from the reviewer. A touched line
+  that was already untrue gets that clause fixed in place, not its whole block
+  rewritten. Rewrite more only when the change makes the rest wrong too or
+  restructures the code the whole comment describes, and say so in the
+  description.
 - Declaration and definition comments move together: when one changes, re-read
   the other.
 - Comments name real parameters. After a rename, search for the old name in
