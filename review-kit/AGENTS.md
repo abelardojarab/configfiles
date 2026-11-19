@@ -62,7 +62,9 @@ a small change:
 - The pattern-scan note is one line: the closest precedent and why the
   change follows it.
 - Read `<kit>/lenses/common/change_hygiene.md` and the lens of the
-  language the diff touches, not the whole list.
+  language the diff touches, not the whole list. When the change edits an
+  existing comment or doc, also read section 1 of
+  `<kit>/lenses/common/code_quality.md`.
 - After the truth audit, say in one line which checks of
   `<kit>/lenses/common/review_lens.md` apply, instead of answering
   each.
