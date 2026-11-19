@@ -150,6 +150,13 @@ The step order around pushing is in `lenses/common/gates.md`; the gate itself is
   `Precedent: <change> (<file>)` for the closest precedent the pattern scan
   found (`lenses/common/pattern_scan.md`), or
   `Precedent: none (<what the scan searched>)` when it found none.
+- A change that only adds a schema, an option that a later change of the
+  same stack reads, or a switch that stays off until a later change turns
+  it on says "no behavior changes with this change alone" and why it is
+  split ("so it can be rolled back on its own"). A configuration change
+  that turns something on does change behavior and does not use this
+  wording; an option with no reader in the stack stays out (`design.md`
+  §1).
 
 ## 4. Pre-push
 
