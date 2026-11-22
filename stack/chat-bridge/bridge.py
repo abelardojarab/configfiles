@@ -36,6 +36,9 @@ from pathlib import Path
 import httpx
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+# httpx logs every request URL at INFO, and Telegram's Bot API puts the
+# bot token in the URL, so at INFO the token went into docker logs.
+logging.getLogger("httpx").setLevel(logging.WARNING)
 log = logging.getLogger("chat-bridge")
 
 OPENHANDS_BASE_URL = os.environ.get("OPENHANDS_BASE_URL", "http://openhands:8000")
