@@ -1,8 +1,8 @@
 #!/bin/sh
-# Aider against cli-proxy-api's Gemini models. It starts on Gemini 3.8
-# Flash, high effort (the model of the host's ~/.local/bin/aider-gemini);
+# Aider against cli-proxy-api's Gemini models. It starts on Gemini 4
+# Neon, xhigh effort (the model of the host's ~/.local/bin/aider-gemini);
 # /model carbon switches the chat to Gemini 4 Carbon, high effort, and
-# /model flash back. --model carbon starts on Carbon. Inside the
+# /model neon back. --model carbon starts on Carbon. Inside the
 # container cli-proxy-api is reached by name on the stack's network, not
 # through the host's port 8317, and its key comes from
 # CLI_PROXY_API_KEY, which docker-compose.yml passes in from stack/.env.
@@ -14,6 +14,6 @@
 # URL-like string it writes into the chat.
 export OPENAI_API_BASE="http://cli-proxy-api:8317/v1"
 export OPENAI_API_KEY="${CLI_PROXY_API_KEY:?set in docker-compose.yml}"
-exec aider --alias flash:openai/gemini-3.8-flash-high \
-  --alias carbon:openai/gemini-4-carbon-high --model flash \
+exec aider --alias neon:openai/gemini-4-neon-xhigh \
+  --alias carbon:openai/gemini-4-carbon-high --model neon \
   --no-show-model-warnings --no-detect-urls "$@"
