@@ -17,8 +17,8 @@ Each check prints a named section of `file: text` lines, only when it has
 findings, and `clean` when none has. Files are read as they are at the
 checked revision (the index for --staged), never from the work tree,
 except with --worktree. The
-column limit is reviewkit.maxCols and the size limit is reviewkit.maxLines;
-0 disables either.
+column limit is reviewkit.maxCols and the size soft ceiling is
+reviewkit.maxLines; 0 disables either.
 
 Exit codes:
   0  clean, or findings without --strict
@@ -85,8 +85,9 @@ def sweep(diff, read_file, max_lines, max_cols, size_exempt=False):
     added = kit.added_lines(diff)
     size = kit.changed_line_count(diff)
     if max_lines > 0 and size > max_lines and not size_exempt:
-        section("Size over reviewkit.maxLines (split it by problem)",
-                ["%d changed lines (limit %d)" % (size, max_lines)])
+        section("Size over reviewkit.maxLines (a soft ceiling: check it is "
+                "one problem)",
+                ["%d changed lines (soft ceiling %d)" % (size, max_lines)])
 
     texts = {}
 

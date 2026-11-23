@@ -18,8 +18,10 @@ new class of finding here, so every reviewer runs the same list.
    field): its presence rule names every case the producer leaves it absent,
    at 0, negative or at a fail-closed value. Check against the producer code,
    not the field name.
-5. Changed lines (added plus deleted) over 150: a finding, unless the subject
-   says the change is a pure move or a golden-file update.
+5. Changed lines (added plus deleted) well over 150: a Low note only when the
+   extra size comes from a second, separable problem. 150 is a soft ceiling:
+   a single-problem change that is a final state is not a finding over it,
+   nor is a pure move or a golden-file update.
 6. Test claims in the commit message (which tests ran, mutation results,
    coverage) match the code and tests in the change.
 7. Every line the change adds or edits follows the repository's current
@@ -78,3 +80,21 @@ new class of finding here, so every reviewer runs the same list.
     The producing layer decides and passes the result; the consumer renders
     it. Also Medium: a structured value printed into a string and parsed
     back, and one term decided in two places or two languages.
+16. Fix the producer, not the consumer (`lenses/common/design.md` §2). Every
+    branch the change adds to recover from or compensate for a bad input
+    (handling A by producing B): name where A is produced and whether sibling
+    producers already prevent it (set the companion field, apply the guard).
+    A branch that fires only because one producer omits what its siblings
+    set is High, with the fix "set it at that producer, or block A, and drop
+    the branch". So is a description that cites that omission as proof the
+    branch is reachable. Downstream recovery stays only for inputs no
+    producer can prevent (external data, user input, partial failures), and
+    the description says why the source cannot.
+17. Edits to existing comments (`lenses/common/code_quality.md` §1). When the
+    change updates an existing comment or doc (a rename, a local behavior
+    change, a targeted fix) and condenses, deletes or rewrites surrounding
+    sentences that the change did not make wrong: Medium, with the fix
+    "restore the original structure and edit only the affected words in
+    place". Do not flag simplifications on untouched lines of the block
+    unless this change made them false or an added line states something
+    false.

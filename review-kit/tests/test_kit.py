@@ -457,27 +457,29 @@ class GateTest(KitTestCase):
         return self.repo.run("gate.py", *args, env=env,
                              input_text=input_text)
 
-    def test_too_many_changed_lines_fail(self):
+    def test_too_many_changed_lines_warn_not_block(self):
         self.feature()
         self.repo.commit(CLEAN_MESSAGE, {"notes.txt": numbered(151)})
         proc = self.gate()
-        self.assertExit(proc, 1)
-        self.assertIn("151 changed lines (limit 150)", proc.stdout)
-        self.assertIn("Push blocked.", proc.stdout)
+        self.assertExit(proc, 0)
+        self.assertIn("######## Size (not blocking)\nWARNING (not blocking): ",
+                      proc.stdout)
+        self.assertIn("151 changed lines (soft ceiling 150)", proc.stdout)
+        self.assertNotIn("Push blocked.", proc.stdout)
 
     def test_max_lines_setting_is_read(self):
         self.feature()
         self.repo.commit(CLEAN_MESSAGE, {"notes.txt": numbered(20)})
         proc = self.gate(env={"REVIEWKIT_MAX_LINES": "10"})
-        self.assertExit(proc, 1)
-        self.assertIn("20 changed lines (limit 10)", proc.stdout)
+        self.assertExit(proc, 0)
+        self.assertIn("20 changed lines (soft ceiling 10)", proc.stdout)
 
     def test_max_lines_zero_disables_the_size_check(self):
         self.feature()
         self.repo.commit(CLEAN_MESSAGE, {"notes.txt": numbered(400)})
         proc = self.gate(env={"REVIEWKIT_MAX_LINES": "0"})
         self.assertExit(proc, 0)
-        self.assertNotIn("changed lines (limit", proc.stdout)
+        self.assertNotIn("changed lines (soft ceiling", proc.stdout)
         proc = self.repo.run("cq_sweep.py", "--commit", "HEAD",
                              env={"REVIEWKIT_MAX_LINES": "0"})
         self.assertNotIn("maxLines", proc.stdout)

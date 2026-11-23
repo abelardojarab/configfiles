@@ -21,11 +21,18 @@ The step order around pushing is in `lenses/common/gates.md`; the gate itself is
   effect of another. A removal callers can see is deprecated first where
   the project has a process for it, and the description says what replaces
   it and how to migrate.
-- Keep every change under 150 changed lines (added plus deleted, tests
-  included, as `scripts/cq_sweep.py` counts them). A modified line counts
-  twice. Over 150 means split before pushing, not explain in the description.
-  The only exceptions are a pure move and a generated or golden-file update,
-  and those say so in the first line of the description.
+- Aim to keep every change under 150 changed lines (added plus deleted,
+  tests included, as `scripts/cq_sweep.py` counts them; a modified line
+  counts twice). It is a soft ceiling, not a hard limit. Get under it by
+  keeping the change tight (no speculative code, test scaffolding no larger
+  than the logic, a pure refactor or a schema change in its own change), not
+  by cutting one problem in half. Going over it is a prompt to ask "is this
+  one problem?", not an automatic split: split when the size comes from a
+  second problem, never where the halves would break `stack_shape.md` §1 or
+  leave a helper with no user, and say in the reply why a single-problem
+  change stays whole. Well past ~200 lines a split is expected, except for a
+  pure move or a generated or golden-file update, which say so in the first
+  line of the description.
 - Cut a feature into these slices:
   1. A schema-only change (the schema plus 3-6 line comments for config
      authors).
@@ -146,6 +153,20 @@ The step order around pushing is in `lenses/common/gates.md`; the gate itself is
     file that defines them, not from memory.
   - `scripts/gate.py` warns when a commit adds, changes or deletes a file
     matching `reviewkit.impactPaths` and has neither form.
+- Show the result where the user sees it. A change that reaches a UI (a
+  dashboard, a web page, a rendered table) includes a screenshot of the new
+  or changed view, captured from a local or test server running the change,
+  with one line saying what it shows. A change that reaches a CLI or a log
+  includes the relevant output excerpt in a fenced block (at most 15 lines)
+  or a link to it, produced by running the change. Put either in a
+  collapsed `Screenshot` or `Example output` block where the review tool
+  renders HTML. A backend-only or schema-only change that nothing renders
+  yet says which later change of the stack shows it.
+- No internal process targets in descriptions. Don't cite the line-count
+  ceiling, gate names, local review reports or other workflow targets as
+  the reason for a split or a design ("keeps each change under 150 lines").
+  Give the reviewer-facing reason instead: one problem per change, can be
+  rolled back on its own, a layer boundary.
 - Name the precedent in the description: write
   `Precedent: <change> (<file>)` for the closest precedent the pattern scan
   found (`lenses/common/pattern_scan.md`), or

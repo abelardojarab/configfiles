@@ -5,7 +5,7 @@ How to cut work into a stack of changes, checked before splitting and before eve
 A change should be one self-contained change, small enough to review and not
 so small that its implications are hard to understand
 (https://google.github.io/eng-practices/review/developer/small-cls.html). The
-size limit and slice list in `change_hygiene.md` §1 apply inside these rules.
+size ceiling and slice list in `change_hygiene.md` §1 apply inside these rules.
 Every change being under 150 lines does not make a stack reviewable: reviewers
 read it as a whole and reject one whose changes replace each other.
 
@@ -35,10 +35,11 @@ read it as a whole and reject one whose changes replace each other.
 - The script only sees lines, so also read the stack as one diff (from the
   bottom change's parent to the top change). A change that hides or re-parses
   an earlier change's output without touching its lines shows up only there.
-- Small and final together. If the only cut under 150 lines leaves a state a
-  later change replaces, cut along a layer (§3) or a complete feature instead.
-  If no cut gives both, keep the final-state cut, stop, and tell the user the
-  change is over the limit and why.
+- Small and final together. Aim to stay under 150 lines; it is a soft
+  ceiling, not a hard limit. If the only cut under it leaves a state a later
+  change replaces, cut along a layer (§3) or a complete feature instead. If
+  no cut gives both, keep the final-state change whole and tell the user it
+  is over 150 and why.
 
 ## 2. One layer decides; the others display
 

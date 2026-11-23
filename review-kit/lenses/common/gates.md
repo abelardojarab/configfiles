@@ -29,9 +29,6 @@ their current form. The gate fails on any of:
   exist, a commit reference that does not exist or is unmerged and not called
   pending, a `knob = value` claim that is not in the tree, a duplicated
   paragraph.
-* A commit over `reviewkit.maxLines` changed lines (added plus deleted, 150
-  by default; 0 turns the check off for repositories that take large
-  commits), unless its subject says pure move or golden.
 * In protobuf projects: a `.proto` enum value the commit adds that the
   stack's non-test code uses nowhere, or only in `==`/`!=` comparisons and
   `case` labels: a dead enum value (`lenses/protobuf/protobuf.md`).
@@ -50,6 +47,12 @@ their current form. The gate fails on any of:
   with a reason blocks. So does a declined reason under 20 characters, or one
   that cites a `Class::member` found neither in the stack's code nor in the
   tree.
+
+It also warns, without failing, on a commit over `reviewkit.maxLines`
+changed lines (added plus deleted, 150 by default; 0 turns the warning off
+for repositories that take large commits), unless its subject says pure move
+or golden. 150 is a soft ceiling to stay under, not a hard limit: a
+single-problem commit may go over it (`change_hygiene.md` §1).
 
 Every failure is fixed, then the gate is re-run until it exits 0. Never pass
 `--no-verify` to get around a hook.

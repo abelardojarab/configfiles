@@ -74,7 +74,7 @@ the merge base with the mainline and `HEAD`.
 
 | Script | What it checks |
 |---|---|
-| `cq_sweep.py [--staged \| --worktree \| --commit REV \| --range A..B] [--strict]` | Size over the limit, line numbers in comments, issue references outside a TODO, unbraced one-line bodies, missing or unused standard headers, long lines, single-letter names, map reads through `operator[]`, and similar nits on added lines. |
+| `cq_sweep.py [--staged \| --worktree \| --commit REV \| --range A..B] [--strict]` | Size over the soft ceiling, line numbers in comments, issue references outside a TODO, unbraced one-line bodies, missing or unused standard headers, long lines, single-letter names, map reads through `operator[]`, and similar nits on added lines. |
 | `truth_audit.py [REV]` | Names in source-code comments and in the message that exist nowhere in the code, commit references that do not exist or are unmerged, `knob = value` claims that are not in the tree, duplicated paragraphs. Lines of prose files (Markdown, YAML, TOML, Dockerfiles) only reach the checklist. Then prints every added sentence as a checklist to verify by hand. |
 | `stack_churn.py` | Lines a commit removes that an earlier commit of the same stack added. |
 | `local_review.py` | Runs the configured AI reviewer on each commit and saves its report. |
@@ -91,7 +91,7 @@ environment variable `REVIEWKIT_<KEY>` in upper snake case overrides a key
 | Key | Default | Meaning |
 |---|---|---|
 | `reviewkit.base` | `origin/HEAD`, else `origin/main`, `origin/master`, `main`, `master` | Mainline ref the stack is measured from |
-| `reviewkit.maxLines` | 150 | Changed lines (added plus deleted) per commit; 0 turns the check off, for a repository that takes large commits |
+| `reviewkit.maxLines` | 150 | Soft ceiling on changed lines (added plus deleted) per commit: the gate warns above it; 0 turns the warning off, for a repository that takes large commits |
 | `reviewkit.maxCols` | 80 | Column limit in the sweep; 0 turns it off |
 | `reviewkit.churnLimit` | 5 | Lines of an earlier commit a later one may remove |
 | `reviewkit.strict` | false | Make the pre-commit sweep block the commit |

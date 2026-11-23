@@ -30,9 +30,9 @@ instead of picking one silently.
 
 ## While writing code
 
-- One problem per commit, under `reviewkit.maxLines` changed lines (150
-  unless the repository sets otherwise), each commit a final state that no
-  later commit of the stack undoes.
+- One problem per commit, each commit a final state that no later commit of
+  the stack undoes. Aim to stay under `reviewkit.maxLines` changed lines (150
+  unless the repository sets otherwise): a soft ceiling, not a hard limit.
 - Run `<kit>/scripts/cq_sweep.py` on each commit and fix what it prints.
 - When a request conflicts with these rules or a lens, say so and
   propose an alternative that fits, instead of doing it silently or

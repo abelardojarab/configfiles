@@ -9,15 +9,15 @@ Without --check-push it checks the stack merge-base(B, HEAD)..HEAD (B
 defaults to reviewkit.base) and prints one `######## <name>` section per
 check: a clean work tree, the commit message rules, the truth audit (flags
 may be overridden in <stateDir>/truth_overrides/<fingerprint>.txt with lines
-`<exact flag line> :: <reason of 20+ characters>`), the size limit (off
-when reviewkit.maxLines is 0), unused
+`<exact flag line> :: <reason of 20+ characters>`), unused
 proto enum values, stack churn, reads through a C++ map's operator[],
 lintCmd and tidyCmd, and, when reviewCmd is set, the saved AI review reports.
-The code-quality sweep, and a warning for each commit that touches
-reviewkit.impactPaths without a Production impact block or a "Production
-impact: none (" line, are printed without failing. On a pass it writes a
-stamp to <stateDir>/gate_pass/ that the pre-push check accepts for 7 days
-while the commits keep their fingerprints.
+The code-quality sweep, a warning for each commit over reviewkit.maxLines
+changed lines (a soft ceiling; off when it is 0), and a warning for each
+commit that touches reviewkit.impactPaths without a Production impact block
+or a "Production impact: none (" line, are printed without failing. On a
+pass it writes a stamp to <stateDir>/gate_pass/ that the pre-push check
+accepts for 7 days while the commits keep their fingerprints.
 
 With --check-push it reads git's pre-push lines on stdin and accepts the
 push only when one stamp younger than 7 days holds the fingerprint of every
@@ -309,6 +309,7 @@ def run_gate(base_arg):
                             "stash them, so the checks see what is pushed"
                             % ", ".join(dirty[:10]))
 
+        size_warnings = []
         for commit in commits:
             short = commit[:12]
             msg = kit.message(commit)
@@ -344,12 +345,17 @@ def run_gate(base_arg):
             size = kit.changed_line_count(diff)
             if (max_lines > 0 and size > max_lines
                     and not kit.MOVE_ONLY.search(kit.subject(msg))):
-                failures.append("%s: %d changed lines (limit %d): split it "
-                                "by problem" % (short, size, max_lines))
+                size_warnings.append(
+                    "WARNING (not blocking): %s: %d changed lines (soft "
+                    "ceiling %d): check it is one problem "
+                    "(lenses/common/change_hygiene.md section 1)"
+                    % (short, size, max_lines))
 
             section("Code-quality sweep %s (not blocking)" % short,
                     cq_sweep.render(cq_sweep.sweep_commit(commit, max_lines,
                                                           max_cols)))
+
+        section("Size (not blocking)", "\n".join(size_warnings) or "ok")
 
         files = kit.changed_files(base_commit, head_start)
         code_files = {}
