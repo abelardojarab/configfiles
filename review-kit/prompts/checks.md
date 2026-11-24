@@ -18,10 +18,13 @@ new class of finding here, so every reviewer runs the same list.
    field): its presence rule names every case the producer leaves it absent,
    at 0, negative or at a fail-closed value. Check against the producer code,
    not the field name.
-5. Changed lines (added plus deleted) well over 150: a Low note only when the
-   extra size comes from a second, separable problem. 150 is a soft ceiling:
-   a single-problem change that is a final state is not a finding over it,
-   nor is a pure move or a golden-file update.
+5. Changed lines (added plus deleted) well over 150: up to ~200 lines, a Low
+   note only when the extra size comes from a second, separable problem. 150 is
+   a soft ceiling: a single-problem change that is a final state is not a
+   finding between 150 and ~200, nor is a pure move or a golden-file update at
+   any size. Well past ~200 lines, where `lenses/common/change_hygiene.md` §1
+   expects a split, a single-problem change also gets a Low note asking for one,
+   unless it is a pure move or a generated or golden-file update.
 6. Test claims in the commit message (which tests ran, mutation results,
    coverage) match the code and tests in the change.
 7. Every line the change adds or edits follows the repository's current
