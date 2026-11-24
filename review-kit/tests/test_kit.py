@@ -792,7 +792,7 @@ class LocalReviewTest(KitTestCase):
         self.write_home("prompts/review.md",
                         "Review {{SHORT}} on {{BASE}}.\n{{STACK}}\n"
                         "{{MESSAGE}}\n{{CLAIMS}}\n{{LENSES}}\n{{CHECKS}}\n"
-                        "{{DIFF}}\n")
+                        "{{PREVIOUS}}\n{{DIFF}}\n")
         self.write_home("prompts/verify.md", "Verify {{SHORT}}.\n{{DIFF}}\n")
         os.environ["REVIEWKIT_HOME"] = self.home
         self.repo.git("config", "reviewkit.reviewCmd",
@@ -845,6 +845,50 @@ class LocalReviewTest(KitTestCase):
                         "checkout.\n\n" + PAD * 4)
         self.assertExit(self.repo.run("local_review.py"), 0)
         self.assertExit(self.repo.run("gate.py"), 0)
+
+    def last_prompt(self):
+        return self.stdin_seen().split("=====\n")[-2]
+
+    def review_with_open_finding(self):
+        self.set_report("## Findings\n### M1 — the notes miss a fix\n"
+                        + PAD * 4)
+        self.assertExit(self.repo.run("local_review.py"), 0)
+
+    def test_subject_is_saved_beside_the_report_not_in_it(self):
+        self.review_with_open_finding()
+        with open(self.report_path()[:-len(".md")] + ".subject") as handle:
+            self.assertEqual(handle.read(),
+                             "Add release notes for the next version\n")
+        with open(self.report_path()) as handle:
+            self.assertNotIn("Add release notes", handle.read())
+
+    def test_rereview_after_an_amend_sees_the_previous_report(self):
+        self.review_with_open_finding()
+        self.assertIn("(no earlier review of this commit)", self.last_prompt())
+        self.repo.commit(CLEAN_MESSAGE, {"notes.txt": "all fixes\n"},
+                         amend=True)
+        self.set_report("## Findings\nNone.\n\n" + PAD * 4)
+        self.assertExit(self.repo.run("local_review.py"), 0)
+        seen = self.last_prompt()
+        self.assertIn("### M1 — the notes miss a fix", seen)
+        self.assertNotIn("(no earlier review of this commit)", seen)
+
+    def test_commit_with_another_subject_gets_no_previous_report(self):
+        self.review_with_open_finding()
+        self.repo.commit("Add a changelog entry\n\nNames the fix.\n",
+                         {"log.txt": "entry\n"})
+        self.assertExit(self.repo.run("local_review.py"), 0)
+        seen = self.last_prompt()
+        self.assertIn("(no earlier review of this commit)", seen)
+        self.assertNotIn("the notes miss a fix", seen)
+
+    def test_same_subject_commit_of_the_stack_is_not_previous(self):
+        self.review_with_open_finding()
+        self.repo.commit(CLEAN_MESSAGE, {"other.txt": "more\n"})
+        self.assertExit(self.repo.run("local_review.py"), 0)
+        seen = self.last_prompt()
+        self.assertIn("(no earlier review of this commit)", seen)
+        self.assertNotIn("the notes miss a fix", seen)
 
     def test_short_declined_reason_blocks(self):
         self.set_report("## Summary\n" + PAD * 4

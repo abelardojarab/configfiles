@@ -19,8 +19,9 @@ brief: message and diff only), and its raw output reaches the main prompt as
 file holding the prompt instead of stdin.
 
 Placeholders in review.md: {{COMMIT}} {{SHORT}} {{BASE}} {{KIT}} {{STACK}}
-{{MESSAGE}} {{DIFF}} {{CLAIMS}} {{LENSES}} {{CHECKS}}. verify.md takes the
-same set except {{LENSES}}, {{CHECKS}} and {{CLAIMS}}. Every placeholder is
+{{MESSAGE}} {{DIFF}} {{CLAIMS}} {{LENSES}} {{CHECKS}} {{PREVIOUS}}. verify.md
+takes the same set except {{LENSES}}, {{CHECKS}}, {{CLAIMS}} and
+{{PREVIOUS}}. Every placeholder is
 replaced in one pass, so text inside a diff or a lens file that looks like a
 placeholder stays as it is. {{RULES}} is an older name for {{LENSES}}.
 
@@ -28,6 +29,13 @@ placeholder stays as it is. {{RULES}} is an older name for {{LENSES}}.
 commit needs: the ones reviewkit.lenses names, or, when it is `auto`, the
 languages of the files the commit touches (c, cpp, protobuf, python,
 typescript).
+
+{{PREVIOUS}} holds the newest saved report for an earlier version of the
+same commit, so a re-review after an amend can converge instead of starting
+over: a report whose saved subject matches this commit's subject, skipping
+the reports of the stack's current commits. Each report's subject is saved
+next to it in <stateDir>/reviews/<fingerprint>.subject, outside the report,
+so the gate judges the report text as before.
 
 Environment:
   PARALLEL   concurrent reviews (default 2)
@@ -55,6 +63,7 @@ MAX_DIFF_CHARS = 200000
 NO_VERIFIER = "(no independent verifier configured)"
 NO_LENSES = "(no lenses directory)"
 NO_CHECKS = "(no checks file)"
+NO_PREVIOUS = "(no earlier review of this commit)"
 REPORT = re.compile(r"^<<<LOCAL_REVIEW_REPORT[ \t]*\n(.*?)\n"
                     r"LOCAL_REVIEW_REPORT>>>[ \t]*$", re.S | re.M)
 PLACEHOLDER = re.compile(r"\{\{([A-Z]+)\}\}")
@@ -87,6 +96,30 @@ def lenses_text(home, names):
     if not parts:
         return NO_LENSES
     return "\n\n".join(parts)
+
+
+def subject_path(report):
+    return report[:-len(".md")] + ".subject"
+
+
+def previous_report(state, subject, skip_fps):
+    """Returns the newest saved report for an earlier version of a commit.
+
+    A report matches when its .subject file holds `subject` and its
+    fingerprint is not in `skip_fps` (the stack's current commits). Returns
+    NO_PREVIOUS when none matches.
+    """
+    best, best_time = None, None
+    for side in glob.glob(os.path.join(state, "reviews", "*.subject")):
+        report = side[:-len(".subject")] + ".md"
+        fp = os.path.basename(report)[:-len(".md")]
+        if (fp in skip_fps or not os.path.isfile(report)
+                or read_text(side).strip() != subject):
+            continue
+        mtime = os.path.getmtime(report)
+        if best_time is None or mtime > best_time:
+            best, best_time = report, mtime
+    return read_text(best).strip() if best else NO_PREVIOUS
 
 
 def checks_text(home):
@@ -157,7 +190,9 @@ def review(commit, ctx):
             claims = out
         prompt = fill(ctx["review_template"],
                       dict(values, CLAIMS=claims, LENSES=lenses, RULES=lenses,
-                           CHECKS=ctx["checks"]))
+                           CHECKS=ctx["checks"], PREVIOUS=previous_report(
+                               ctx["state"], kit.subject(msg),
+                               ctx["stack_fps"])))
         code, out, err = run_reviewer(ctx["review_cmd"], prompt, ctx["root"],
                                       ctx["timeout"])
     except subprocess.TimeoutExpired:
@@ -178,6 +213,7 @@ def review(commit, ctx):
     report = found[-1].strip()
     kit.write_atomic(path, kit.provenance_line(short, fp) + "\n"
                      + report + "\n")
+    kit.write_atomic(subject_path(path), kit.subject(msg) + "\n")
     open_ids = kit.open_findings(report)
     if open_ids:
         return "%d open High/Medium (%s) -> %s" % (
@@ -223,6 +259,7 @@ def main(argv):
             "checks": checks_text(home),
             "stack": "\n".join("%s %s" % (c[:12], kit.subject(kit.message(c)))
                                for c in commits),
+            "stack_fps": {kit.fingerprint_of(commit) for commit in commits},
         }
     except (kit.KitError, OSError, ValueError) as exc:
         print("local_review: %s" % exc)

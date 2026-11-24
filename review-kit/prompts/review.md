@@ -77,6 +77,19 @@ and the passes that found it. With no findings, list what each pass checked.
 
 {{CLAIMS}}
 
+## Previous review of this commit
+
+{{PREVIOUS}}
+
+When a previous review is shown above, it reviewed an earlier version of this
+commit (same subject), and the author has since changed it. Converge with it:
+for each of its High and Medium findings, say in your report whether it is
+fixed at {{SHORT}}. Do not raise again a finding it lists under `## Declined`
+unless the decline's reason is false at {{SHORT}}. Raise a new High or Medium
+finding only on lines changed since that review, or for a defect it missed
+that would ship wrong behavior; report anything else as Low. If the previous
+review is about a different change, ignore it.
+
 ## Lenses
 
 {{LENSES}}
