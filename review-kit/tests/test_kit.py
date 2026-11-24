@@ -1021,6 +1021,13 @@ class SweepTest(KitTestCase):
                              env={"REVIEWKIT_MAX_COLS": "0"})
         self.assertNotIn("maxCols", proc.stdout)
 
+    def test_size_over_ceiling_does_not_fail_strict(self):
+        self.repo.write("notes.txt", numbered(151))
+        self.repo.git("add", "notes.txt")
+        proc = self.repo.run("cq_sweep.py", "--staged", "--strict")
+        self.assertExit(proc, 0)
+        self.assertIn("151 changed lines (soft ceiling 150)", proc.stdout)
+
 
 class WorktreeSweepTest(KitTestCase):
 

@@ -11,7 +11,8 @@ Usage:
                 limit is skipped, since work in progress is not a commit
   --commit REV  one commit (default: --commit HEAD)
   --range A..B  the combined diff of a range
-  --strict      exit 1 when anything is printed
+  --strict      exit 1 when anything but the size note is printed: the
+                size is a soft ceiling, so it never blocks
 
 Each check prints a named section of `file: text` lines, only when it has
 findings, and `clean` when none has. Files are read as they are at the
@@ -22,7 +23,7 @@ reviewkit.maxLines; 0 disables either.
 
 Exit codes:
   0  clean, or findings without --strict
-  1  findings with --strict
+  1  findings other than size with --strict
   2  the revision or the repository could not be read
 """
 import argparse
@@ -34,6 +35,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kit  # noqa: E402
 
 MAX_PER_SECTION = 20
+SIZE_TITLE = ("Size over reviewkit.maxLines (a soft ceiling: check it is "
+              "one problem)")
 LINE_NUMBER_REF = re.compile(r"\b[Ll]ines? \d+|:\d+-\d+\b|;l=\d")
 BRACELESS_BODY = re.compile(
     r"^\s*(?:if|for)\s*\(.*\)\s*(?:continue|return|break)\b[^{]*;")
@@ -85,8 +88,7 @@ def sweep(diff, read_file, max_lines, max_cols, size_exempt=False):
     added = kit.added_lines(diff)
     size = kit.changed_line_count(diff)
     if max_lines > 0 and size > max_lines and not size_exempt:
-        section("Size over reviewkit.maxLines (a soft ceiling: check it is "
-                "one problem)",
+        section(SIZE_TITLE,
                 ["%d changed lines (soft ceiling %d)" % (size, max_lines)])
 
     texts = {}
@@ -261,7 +263,8 @@ def main(argv):
         print("cq_sweep: %s" % exc, file=sys.stderr)
         return 2
     print(render(found))
-    return 1 if found and args.strict else 0
+    blocking = [entry for entry in found if entry[0] != SIZE_TITLE]
+    return 1 if blocking and args.strict else 0
 
 
 if __name__ == "__main__":
