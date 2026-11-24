@@ -49,6 +49,10 @@ review-kit/scripts/gate.py
 - Push only when the gate exits 0, and only when asked to.
 - Never pass `--no-verify`. Never write a review report or a gate stamp by
   hand.
+- Stop after 7 AI review rounds on one commit (each amend and re-review is a
+  round) that still leave a High or Medium finding open: do not fix again.
+  Show the user the open findings and ask whether to fix them, decline them
+  under `## Declined`, or re-cut the commit.
 - Verify every sentence of the checklist the truth audit prints, then run
   the two checklists in `review-kit/lenses/common/review_lens.md` on the
   final diff and answer each check in one line in your reply.

@@ -54,8 +54,10 @@ for repositories that take large commits), unless its subject says pure move
 or golden. 150 is a soft ceiling to stay under, not a hard limit: a
 single-problem commit may go over it (`change_hygiene.md` §1).
 
-Every failure is fixed, then the gate is re-run until it exits 0. Never pass
-`--no-verify` to get around a hook.
+Every failure is fixed, then the gate is re-run until it exits 0, except that
+after 7 AI review rounds on one commit that still leave a High or Medium
+finding open, the agent stops and asks the user (`AGENTS.md`, "Before
+pushing"). Never pass `--no-verify` to get around a hook.
 
 ## 2. Never hand-write a local review
 
