@@ -97,4 +97,5 @@ new class of finding here, so every reviewer runs the same list.
     "restore the original structure and edit only the affected words in
     place". Do not flag simplifications on untouched lines of the block
     unless this change made them false or an added line states something
-    false.
+    false. Nor flag a larger rewrite when the change restructures the code
+    the whole comment describes and the description says so.
