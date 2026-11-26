@@ -22,6 +22,13 @@ What a reviewer checks in the design of production code: what to expose, which b
 - No zero-entry escape hatches: an allowlist, ignore list, optional parameter,
   default argument or `Default*()` returning an empty set is a dead mechanism.
   The first real exception adds it, with a reason and a `TODO(owner)`.
+- No compatibility default for a mode no configuration runs. Before keeping
+  today's behavior for an unset or empty configuration message ("unset means
+  the old check"), name the production configuration that relies on it. If
+  none does, there is nothing to keep: require the configuration to say what
+  it wants, and reject the rest in the validator. A fallback nobody needs
+  still costs: an explicitly disabled check can keep running, and a metric
+  can report the check as off while it runs.
 - One way to do each thing in a public API: no alias for an existing name,
   no overload or extra accepted type that only saves the caller a
   conversion, no implicit default that hides a choice, no convenience hook.

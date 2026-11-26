@@ -125,3 +125,9 @@ new class of finding here, so every reviewer runs the same list.
     Every constant the change replaces with a configuration field: the
     reason for the old value, and what each allowed value trades off, are
     in the field's doc. A rationale deleted with the constant is Medium.
+22. Fallbacks for unset configuration (`lenses/common/design.md` §1). Every
+    fallback the change gives an unset or empty configuration message
+    ("unset keeps today's behavior"): name the production configuration
+    that relies on it. None is Medium: require the configuration to say
+    what it wants and validate it. A metric or log that reports the
+    fallback's check as off while it runs is part of the same finding.
