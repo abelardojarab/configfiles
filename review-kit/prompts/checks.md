@@ -108,3 +108,11 @@ new class of finding here, so every reviewer runs the same list.
     list edge cases, retell the parent change, or put evidence or a diagram
     outside a collapsed block. ~150 is a soft ceiling; a sentence the
     description needs to be true is not a finding.
+19. New configuration fields (`lenses/common/design.md` §2). Every field the
+    change adds or first reads whose valid set is narrower than its type:
+    name the validator line that rejects the rest and the test that
+    exercises it. None is Medium; High when an invalid value silently
+    changes behavior (a helper clamps it, or it turns another check off).
+    For a field only one mode reads, also name the line that rejects it in
+    the other modes, and check that no early return in the validator skips
+    it; Medium otherwise.

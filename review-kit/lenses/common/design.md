@@ -47,6 +47,16 @@ What a reviewer checks in the design of production code: what to expose, which b
   "missing reading"), a later step must not re-check the same condition.
 - Input validation is upstream too: don't write or test branches for input
   shapes that an input validator already rejects.
+- A new configuration field is validated where its message is validated. A
+  field whose valid set is narrower than its type (a tier in {0, 1}, a
+  fraction in [0, 1], a count of at least 1) gets a range check in that
+  message's existing validator, in the change that first reads it, with a
+  test that rejects an out-of-range value. A downstream helper that clamps
+  does not count: the clamp turns a mistyped value into a different valid
+  one, silently. A field that only one mode reads is also rejected in the
+  other modes, and no early return in the validator skips it: a validator
+  that returns as soon as the mode is off never sees the field, so the
+  setting is accepted and does nothing.
 - Reachable is not needed: for every early return or special case, ask what the
   general path returns on the same input. If it returns the same on every input
   upstream allows (trace the callers' gates), delete the branch. A reachability
