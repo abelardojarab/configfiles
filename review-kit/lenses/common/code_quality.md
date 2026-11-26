@@ -23,6 +23,11 @@ cannot see. Goal: zero code-quality comments. The language lenses
   statements about it and about its siblings. A new mode makes neighboring
   sentences wrong ("No effect when the cap is unset", a heading that no longer
   covers a new row).
+- A constant that becomes a setting takes its rationale with it. When a
+  change replaces a constant with a configuration field, the reason for the
+  constant's value moves to the field's doc, which also says what each
+  allowed value trades off. Deleting the constant's comment leaves the next
+  person to pick a value blind.
 - Edit an existing comment in place by default: for a rename, a behavior
   change or an accuracy fix, change only the words or clauses the change made
   wrong. Keep the surrounding sentences: a condensed rewrite drops context the

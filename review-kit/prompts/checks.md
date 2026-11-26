@@ -121,3 +121,7 @@ new class of finding here, so every reviewer runs the same list.
     where it keeps the item and the test where it drops it. A mode with
     only one of the two is Medium: the mutation "this check always passes"
     stays green there.
+21. Constants turned into settings (`lenses/common/code_quality.md` §1).
+    Every constant the change replaces with a configuration field: the
+    reason for the old value, and what each allowed value trades off, are
+    in the field's doc. A rationale deleted with the constant is Medium.
