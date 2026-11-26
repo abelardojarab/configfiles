@@ -243,6 +243,18 @@ def _missing_impact(commits):
     return lacking
 
 
+def _prose_words(message):
+    """Returns the words of a commit message above its first <details> block,
+    trailers left out: what a reviewer reads before the collapsed evidence."""
+    body, _ = kit.split_message(message)
+    words = 0
+    for line in body.splitlines():
+        if line.lstrip().startswith("<details"):
+            break
+        words += len(line.split())
+    return words
+
+
 def stamp_key(commits):
     return hashlib.sha256("\n".join(sorted(commits)).encode()).hexdigest()[:16]
 
@@ -353,7 +365,7 @@ def run_gate(base_arg):
                     "ceiling %d): check it is one problem "
                     "(lenses/common/change_hygiene.md section 1)"
                     % (short, size, max_lines))
-            words = kit.prose_words(msg)
+            words = _prose_words(msg)
             if max_words > 0 and words > max_words:
                 word_warnings.append(
                     "WARNING (not blocking): %s: %d words of message prose "

@@ -569,18 +569,6 @@ def message_body(text):
     return "\n".join(lines).strip()
 
 
-def prose_words(text):
-    """Words of a message above its first <details> block, trailers left out:
-    what a reviewer reads before the collapsed evidence."""
-    body, _ = split_message(text)
-    words = 0
-    for line in body.splitlines():
-        if line.lstrip().startswith("<details"):
-            break
-        words += len(line.split())
-    return words
-
-
 def forbid_regex():
     """The compiled reviewkit.forbidMessage, or None when it is empty. When
     the setting is left at its default inside a kernel tree, the kernel's
