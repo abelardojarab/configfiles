@@ -507,6 +507,17 @@ class GateTest(KitTestCase):
         self.assertIn("######## Description length (not blocking)\nok",
                       proc.stdout)
 
+    def test_trailers_are_not_counted_as_prose(self):
+        # 10 words of prose, then 8 words of trailers.
+        self.feature()
+        self.repo.commit(CLEAN_MESSAGE.rstrip("\n") + "\n\nReviewed-by: Ann "
+                         "Lee <ann@example.com>\nTested-by: Bo Chen "
+                         "<bo@example.com>\n", {"notes.txt": "fixes\n"})
+        proc = self.gate(env={"REVIEWKIT_MAX_WORDS": "10"})
+        self.assertExit(proc, 0)
+        self.assertIn("######## Description length (not blocking)\nok",
+                      proc.stdout)
+
     def test_max_words_setting_is_read_and_zero_disables_it(self):
         self.feature()
         self.repo.commit(CLEAN_MESSAGE, {"notes.txt": "fixes\n"})
