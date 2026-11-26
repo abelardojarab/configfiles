@@ -74,6 +74,17 @@ runner's first line or under 400 characters.
 A report is keyed by the commit's fingerprint (message body plus net patch
 lines), so a rebase alone keeps it valid and any edit voids it.
 
+Don't skip `scripts/local_review.py` or the gate to avoid a side effect of
+running them (a slow build, an automatic upload): skipping avoids only the
+check. After a squash, fixup or fold moves code between commits, review the
+commits that now hold it; a review of the commit the code came from counts
+for nothing in the one it went to.
+
+When you relay a review to the person you are working for, list every open
+High and Medium by ID, one line each, with what you will do about it. A
+finding left out of the summary still blocks the gate, and the person
+cannot decide on one they never saw.
+
 ## 3. Overriding a truth-audit flag
 
 A flag that is a genuine false positive is overridden by one line in
