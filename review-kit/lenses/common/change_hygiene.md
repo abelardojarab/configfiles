@@ -76,6 +76,22 @@ The step order around pushing is in `lenses/common/gates.md`; the gate itself is
 
 ## 3. Description mechanics
 
+- Length and shape: a first line under 72 characters, then why, then what
+  only where the first line and the diff don't already say it. Aim to keep
+  the prose a reviewer sees first (above the first `<details>` block,
+  trailers excluded) under ~150 words: a soft ceiling, not a hard limit.
+  `scripts/gate.py` warns above `reviewkit.maxWords`.
+  - Don't narrate the diff: no lists of functions, files or tests, no
+    catalog of edge cases (tests and code comments carry those), no
+    retelling of the parent change. A change in a stack gets one sentence of
+    context.
+  - One fact per sentence, at most 25 words and one parenthetical. The
+    precision rules of §2 apply to the sentences you keep; they are not a
+    reason to add sentences.
+  - Required items stay, compact: `Precedent:` and `Prod reachability:` one
+    short line each; evidence, flow diagrams, example output, screenshots
+    and the production impact table in collapsed `<details>` blocks where
+    the review tool renders HTML.
 - List every test actually run. Touching a shared library means querying its
   reverse dependencies and running and listing all of them. Follow the
   directory's convention for how the list is written.
@@ -101,6 +117,9 @@ The step order around pushing is in `lenses/common/gates.md`; the gate itself is
   links them.
 - Back runtime claims with production data. If the description says what
   production did or does (a value, an assignment, a failure reason, a timeline):
+  - Keep one sentence with the before and after numbers in the visible
+    prose; the link, the graph and the reading below go in a collapsed
+    `Evidence` block where the review tool renders HTML.
   - Link the metrics-system or database query that shows it, pinned to the
     incident window and filtered to the exact entity and the production job
     (staging and production often export the same metrics; an unfiltered count
@@ -115,7 +134,8 @@ The step order around pushing is in `lenses/common/gates.md`; the gate itself is
   serialization path) shows before and after numbers from the same
   benchmark, inputs and machine, each run more than once, even when the
   change is not meant to change speed. A slowdown in a cleanup is a finding.
-- Add a flow diagram (at most 12 lines, in a fenced block) when the change reads
+- Add a flow diagram (at most 12 lines, in a fenced block inside a collapsed
+  `Flow` block where the review tool renders HTML) when the change reads
   more than one input or sits in the middle of a pipeline: inputs, this change,
   outcome, each box naming the real file or function.
 - End the description of every change that alters runtime behavior,

@@ -13,9 +13,11 @@ may be overridden in <stateDir>/truth_overrides/<fingerprint>.txt with lines
 proto enum values, stack churn, reads through a C++ map's operator[],
 lintCmd and tidyCmd, and, when reviewCmd is set, the saved AI review reports.
 The code-quality sweep, a warning for each commit over reviewkit.maxLines
-changed lines (a soft ceiling; off when it is 0), and a warning for each
-commit that touches reviewkit.impactPaths without a Production impact block
-or a "Production impact: none (" line, are printed without failing. On a
+changed lines (a soft ceiling; off when it is 0), a warning for each commit
+whose message has more than reviewkit.maxWords words above its first
+<details> block (off when it is 0), and a warning for each commit that
+touches reviewkit.impactPaths without a Production impact block or a
+"Production impact: none (" line, are printed without failing. On a
 pass it writes a stamp to <stateDir>/gate_pass/ that the pre-push check
 accepts for 7 days while the commits keep their fingerprints.
 
@@ -274,6 +276,7 @@ def run_gate(base_arg):
         head_start = kit.rev_parse("HEAD")
         commits = kit.stack_commits(base_commit, head_start)
         max_lines = kit.config_int("maxLines")
+        max_words = kit.config_int("maxWords")
         max_cols = kit.config_int("maxCols")
         churn_limit = kit.config_int("churnLimit")
     except kit.KitError as exc:
@@ -309,7 +312,7 @@ def run_gate(base_arg):
                             "stash them, so the checks see what is pushed"
                             % ", ".join(dirty[:10]))
 
-        size_warnings = []
+        size_warnings, word_warnings = [], []
         for commit in commits:
             short = commit[:12]
             msg = kit.message(commit)
@@ -350,12 +353,22 @@ def run_gate(base_arg):
                     "ceiling %d): check it is one problem "
                     "(lenses/common/change_hygiene.md section 1)"
                     % (short, size, max_lines))
+            words = kit.prose_words(msg)
+            if max_words > 0 and words > max_words:
+                word_warnings.append(
+                    "WARNING (not blocking): %s: %d words of message prose "
+                    "above the first <details> block (soft ceiling %d): cut "
+                    "what the diff already says and collapse evidence "
+                    "(lenses/common/change_hygiene.md section 3)"
+                    % (short, words, max_words))
 
             section("Code-quality sweep %s (not blocking)" % short,
                     cq_sweep.render(cq_sweep.sweep_commit(commit, max_lines,
                                                           max_cols)))
 
         section("Size (not blocking)", "\n".join(size_warnings) or "ok")
+        section("Description length (not blocking)",
+                "\n".join(word_warnings) or "ok")
 
         files = kit.changed_files(base_commit, head_start)
         code_files = {}

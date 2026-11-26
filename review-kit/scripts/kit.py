@@ -70,6 +70,7 @@ KERNEL_FORBID_MESSAGE = (
 DEFAULTS = {
     "base": "auto",
     "maxLines": "150",
+    "maxWords": "150",
     "maxCols": "80",
     "churnLimit": "5",
     "forbidMessage": DEFAULT_FORBID_MESSAGE,
@@ -566,6 +567,18 @@ def message_body(text):
     body, _ = split_message(text)
     lines = [line.strip() for line in body.strip().splitlines()]
     return "\n".join(lines).strip()
+
+
+def prose_words(text):
+    """Words of a message above its first <details> block, trailers left out:
+    what a reviewer reads before the collapsed evidence."""
+    body, _ = split_message(text)
+    words = 0
+    for line in body.splitlines():
+        if line.lstrip().startswith("<details"):
+            break
+        words += len(line.split())
+    return words
 
 
 def forbid_regex():

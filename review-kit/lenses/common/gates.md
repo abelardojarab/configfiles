@@ -52,7 +52,11 @@ It also warns, without failing, on a commit over `reviewkit.maxLines`
 changed lines (added plus deleted, 150 by default; 0 turns the warning off
 for repositories that take large commits), unless its subject says pure move
 or golden. 150 is a soft ceiling to stay under, not a hard limit: a
-single-problem commit may go over it (`change_hygiene.md` §1).
+single-problem commit may go over it (`change_hygiene.md` §1). It also warns
+on a commit whose message has more than `reviewkit.maxWords` words (150 by
+default; 0 turns the warning off) above its first `<details>` block,
+trailers excluded: cut what the diff already says and collapse evidence and
+diagrams (`change_hygiene.md` §3).
 
 Every failure is fixed, then the gate is re-run until it exits 0, except that
 after 7 AI review rounds on one commit that still leave a High or Medium

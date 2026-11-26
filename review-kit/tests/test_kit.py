@@ -484,6 +484,39 @@ class GateTest(KitTestCase):
                              env={"REVIEWKIT_MAX_LINES": "0"})
         self.assertNotIn("maxLines", proc.stdout)
 
+    def test_long_message_prose_warns_not_block(self):
+        self.feature()
+        words = ["w%d" % i for i in range(150)]
+        body = "\n".join(" ".join(words[i:i + 10]) for i in range(0, 150, 10))
+        self.repo.commit("Add release notes for the next version\n\n" + body
+                         + "\n", {"notes.txt": "fixes\n"})
+        proc = self.gate()
+        self.assertExit(proc, 0)
+        self.assertIn("######## Description length (not blocking)\nWARNING "
+                      "(not blocking): ", proc.stdout)
+        self.assertIn("157 words of message prose", proc.stdout)
+
+    def test_prose_inside_details_is_not_counted(self):
+        self.feature()
+        evidence = " ".join("e%d" % i for i in range(200))
+        self.repo.commit(CLEAN_MESSAGE.rstrip("\n") + "\n\n<details>\n\n"
+                         "<summary>Evidence</summary>\n\n" + evidence
+                         + "\n\n</details>\n", {"notes.txt": "fixes\n"})
+        proc = self.gate()
+        self.assertExit(proc, 0)
+        self.assertIn("######## Description length (not blocking)\nok",
+                      proc.stdout)
+
+    def test_max_words_setting_is_read_and_zero_disables_it(self):
+        self.feature()
+        self.repo.commit(CLEAN_MESSAGE, {"notes.txt": "fixes\n"})
+        proc = self.gate(env={"REVIEWKIT_MAX_WORDS": "5"})
+        self.assertExit(proc, 0)
+        self.assertIn("10 words of message prose above the first <details> "
+                      "block (soft ceiling 5)", proc.stdout)
+        proc = self.gate(env={"REVIEWKIT_MAX_WORDS": "0"})
+        self.assertNotIn("words of message prose", proc.stdout)
+
     def test_small_clean_commit_passes_and_writes_a_stamp(self):
         self.feature()
         commit = self.repo.commit(CLEAN_MESSAGE, {"notes.txt": "fixes\n"})

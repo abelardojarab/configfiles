@@ -92,6 +92,7 @@ environment variable `REVIEWKIT_<KEY>` in upper snake case overrides a key
 |---|---|---|
 | `reviewkit.base` | `origin/HEAD`, else `origin/main`, `origin/master`, `main`, `master` | Mainline ref the stack is measured from |
 | `reviewkit.maxLines` | 150 | Soft ceiling on changed lines (added plus deleted) per commit: the gate warns above it; 0 turns the warning off, for a repository that takes large commits |
+| `reviewkit.maxWords` | 150 | Soft ceiling on the words of a commit message above its first `<details>` block, trailers excluded: the gate warns above it; 0 turns the warning off, for a project that expects long messages |
 | `reviewkit.maxCols` | 80 | Column limit in the sweep; 0 turns it off |
 | `reviewkit.churnLimit` | 5 | Lines of an earlier commit a later one may remove |
 | `reviewkit.strict` | false | Make the pre-commit sweep block the commit |

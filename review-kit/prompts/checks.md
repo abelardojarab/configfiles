@@ -102,3 +102,9 @@ new class of finding here, so every reviewer runs the same list.
     unless this change made them false or an added line states something
     false. Nor flag a larger rewrite when the change restructures the code
     the whole comment describes and the description says so.
+18. Description length (`lenses/common/change_hygiene.md` §3). Prose above
+    the first `<details>` block, trailers excluded, over ~150 words: Low,
+    naming the sentences to cut or collapse: ones that narrate the diff,
+    list edge cases, retell the parent change, or put evidence or a diagram
+    outside a collapsed block. ~150 is a soft ceiling; a sentence the
+    description needs to be true is not a finding.
