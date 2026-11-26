@@ -116,3 +116,8 @@ new class of finding here, so every reviewer runs the same list.
     For a field only one mode reads, also name the line that rejects it in
     the other modes, and check that no early return in the validator skips
     it; Medium otherwise.
+20. Checks that configuration can run alone (`lenses/common/testing.md` §A).
+    For each such check, in each mode where it runs alone, name the test
+    where it keeps the item and the test where it drops it. A mode with
+    only one of the two is Medium: the mutation "this check always passes"
+    stays green there.

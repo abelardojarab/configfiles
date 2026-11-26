@@ -57,6 +57,12 @@ reviewer asks to shrink.
   above the test, short IDs (`"o1"`, `"u1"`), no external numbering prefixes.
 - Boundary tests: both sides of every threshold (`x < t` and `x >= t`),
   including IEEE-754 cases at exact rational boundaries (`2 - 1.8 = 0.2`).
+- A check that can run alone is tested alone, both ways. When configuration
+  picks which checks run (either one, or both), each check that can run
+  alone needs, in the mode where it does, one case where it keeps the item
+  and one where it drops it, and the mutation "this check always passes"
+  must fail a test in every such mode. A suite whose only single-check case
+  passes the item stays green when that check does nothing.
 - Exclusion tests flip the outcome: when testing that an entity is excluded from
   a sum, choose numbers where the result is below the threshold with the
   exclusion and would cross it without.
